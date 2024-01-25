@@ -1,23 +1,26 @@
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React from 'react';
-import { Button, SafeAreaView, StatusBar, Text, View } from 'react-native';
-import SunmiPrinter from '../utils/sunmi/printer';
+import AppProvider from '../contexts/AppContext';
+import Login from './screens/Login';
+
+const RootStack = createNativeStackNavigator();
 
 const App = () => {
-  const {printerText, lineWrap} = SunmiPrinter;
-  const printReceipt = () => {
-    printerText('print receipt');
-    lineWrap(5);
-  };
   return (
-    <SafeAreaView className="p-5">
-      <StatusBar barStyle="light-content" />
-      <View className="h-full items-center justify-center">
-        <Text className="text-lg text-gray-400 text-center font-bold capitalize mb-5">
-          sunmi printer demo
-        </Text>
-        <Button title="Print Now" onPress={printReceipt} />
-      </View>
-    </SafeAreaView>
+    <AppProvider>
+      <NavigationContainer>
+        <RootStack.Navigator>
+          <RootStack.Screen
+            name="Login"
+            component={Login}
+            options={{
+              headerShown: false,
+            }}
+          />
+        </RootStack.Navigator>
+      </NavigationContainer>
+    </AppProvider>
   );
 };
 

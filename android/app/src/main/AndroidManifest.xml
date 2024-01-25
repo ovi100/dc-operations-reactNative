@@ -22,4 +22,7 @@
         </intent-filter>
       </activity>
     </application>
+    <queries>
+      <package android:name="woyou.aidlservice.jiuiv5"/>
+    </queries>
 </manifest>

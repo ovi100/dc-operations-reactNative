@@ -1,19 +1,21 @@
 import React from 'react';
-
-import { SafeAreaView, StatusBar, Text, View } from 'react-native';
+import { Button, SafeAreaView, StatusBar, Text, View } from 'react-native';
+import SunmiPrinter from '../utils/sunmi/printer';
 
 const App = () => {
+  const {printerText, lineWrap} = SunmiPrinter;
+  const printReceipt = () => {
+    printerText('print receipt');
+    lineWrap(5);
+  };
   return (
     <SafeAreaView className="p-5">
       <StatusBar barStyle="light-content" />
-      <View className="h-full items-center justify-center mt-5">
-        <Text className="text-lg text-gray-400 text-center font-bold">
-          React native 0.73.2
+      <View className="h-full items-center justify-center">
+        <Text className="text-lg text-gray-400 text-center font-bold capitalize mb-5">
+          sunmi printer demo
         </Text>
-        <Text className="text-sm text-center font-bold my-5">with</Text>
-        <Text className="text-lg text-gray-400 text-center font-bold">
-          Tailwind CSS 3.3.2
-        </Text>
+        <Button title="Print Now" onPress={printReceipt} />
       </View>
     </SafeAreaView>
   );

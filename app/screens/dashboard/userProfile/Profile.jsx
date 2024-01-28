@@ -1,7 +1,7 @@
-import {Link} from '@react-navigation/native';
-import React, {useEffect, useState} from 'react';
-import {Image, Text, View} from 'react-native';
-import {ButtonBackProfile, ButtonLogin} from '../../../../components/buttons';
+import { Link } from '@react-navigation/native';
+import React, { useEffect, useState } from 'react';
+import { Image, Text, View } from 'react-native';
+import { ButtonBackProfile, ButtonLogin } from '../../../../components/buttons';
 import {
   AvatarImage,
   EmailIcon,
@@ -10,10 +10,10 @@ import {
   PasswordIcon,
   ProfileIcon,
 } from '../../../../constant/icons';
-import {getStorage, removeItem} from '../../../../hooks/useStorage';
+import { getStorage, removeItem } from '../../../../hooks/useStorage';
 import styles from '../../../../styles/button';
 
-const Profile = ({navigation}) => {
+const Profile = ({ navigation }) => {
   const [user, setUser] = useState({});
 
   useEffect(() => {
@@ -26,7 +26,7 @@ const Profile = ({navigation}) => {
     setUser({});
     removeItem('user');
     removeItem('token');
-    navigation.push('/');
+    navigation.push('Login');
   };
 
   return (
@@ -76,7 +76,7 @@ const Profile = ({navigation}) => {
             <View className="w-full px-4">
               <View className="password-change border-b border-gray-200 flex-row items-center gap-3 py-3">
                 <Image className="w-5 h-5" source={PasswordIcon} />
-                <Link to={{screen: 'changePassword', params: {id: user._id}}}>
+                <Link to={{ screen: 'changePassword', params: { id: user._id } }}>
                   <Text className="text-base text-blue-500 rounded font-medium capitalize py-1 px-2">
                     change password
                   </Text>

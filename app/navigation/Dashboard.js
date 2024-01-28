@@ -1,5 +1,4 @@
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import React from 'react';
 import Home from '../screens/dashboard';
 import Receiving from '../screens/dashboard/receiving/Receiving';
@@ -9,7 +8,7 @@ const Stack = createNativeStackNavigator();
 
 const Dashboard = () => {
   const routes = [
-    {id: 1, name: 'dashboard', component: Home},
+    {id: 1, name: 'home', component: Home},
     {id: 2, name: 'receiving', component: Receiving},
     {id: 3, name: 'profile', component: Profile},
     {id: 8, name: 'shelving', component: Home},
@@ -24,20 +23,18 @@ const Dashboard = () => {
     {id: 24, name: 'scanBarcode', component: Home},
   ];
   return (
-    <NavigationContainer>
-      <Stack.Navigator>
-        {routes.map(route => (
-          <Stack.Screen
-            key={route.id}
-            name={route.name}
-            component={route.component}
-            options={{
-              headerShown: false,
-            }}
-          />
-        ))}
-      </Stack.Navigator>
-    </NavigationContainer>
+    <Stack.Navigator>
+      {routes.map(route => (
+        <Stack.Screen
+          key={route.id}
+          name={route.name}
+          component={route.component}
+          options={{
+            headerShown: false,
+          }}
+        />
+      ))}
+    </Stack.Navigator>
   );
 };
 

@@ -1,27 +1,19 @@
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import AppProvider from '../contexts/AppContext';
-import Login from './screens/Login';
-
-const RootStack = createNativeStackNavigator();
+import { getStorage } from '../hooks/useStorage';
+import Dashboard from './navigation/Dashboard';
+import Root from './navigation/Root';
 
 const App = () => {
-  return (
-    <AppProvider>
-      <NavigationContainer>
-        <RootStack.Navigator>
-          <RootStack.Screen
-            name="Login"
-            component={Login}
-            options={{
-              headerShown: false,
-            }}
-          />
-        </RootStack.Navigator>
-      </NavigationContainer>
-    </AppProvider>
-  );
+  const [token, setToken] = useState('');
+
+  useEffect(() => {
+    getStorage('token', setToken, 'string');
+  }, []);
+
+  console.log(token);
+
+  return <AppProvider>{token ? <Dashboard /> : <Root />}</AppProvider>;
 };
 
 export default App;

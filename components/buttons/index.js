@@ -1,3 +1,4 @@
+import React from 'react';
 import {
   ActivityIndicator,
   Image,
@@ -31,7 +32,7 @@ const ButtonBack = ({navigation}) => {
 
 const ButtonBackProfile = ({navigation}) => {
   return (
-    <TouchableOpacity onPress={() => navigation.back()}>
+    <TouchableOpacity onPress={() => navigation.goBack()}>
       <Image className="w-8 h-8" source={ArrowLeftWhiteIcon} />
     </TouchableOpacity>
   );
@@ -82,9 +83,12 @@ const ButtonXs = ({title}) => {
 };
 
 export {
-  ButtonBack, ButtonBackProfile, ButtonLg,
+  ButtonBack,
+  ButtonBackProfile,
+  ButtonLg,
   ButtonLoading,
-  ButtonLogin, ButtonProfile,
+  ButtonLogin,
+  ButtonProfile,
   ButtonScan,
   ButtonXs
 };

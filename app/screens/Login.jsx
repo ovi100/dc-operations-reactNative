@@ -1,4 +1,4 @@
-import {useEffect, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   Image,
   Keyboard,
@@ -96,10 +96,7 @@ const Login = ({navigation}) => {
   return (
     <View className="bg-white h-full w-full">
       <StatusBar backgroundColor="#000" barStyle="light-content" />
-      <Image
-        className={`h-full w-full absolute ${keyboardStatus ? '' : ''}`}
-        source={LoginBGImage}
-      />
+      <Image className="h-full w-full absolute" source={LoginBGImage} />
 
       {/* title and form */}
       <View
@@ -116,7 +113,7 @@ const Login = ({navigation}) => {
         {/* form */}
         <View
           className={`flex items-center mx-5 ${keyboardStatus ? 'mt-5' : ''}`}>
-          <View className="w-full rounded-2xl px-5 mb-4">
+          <View className="w-full rounded-2xl px-3 mb-4">
             <View className="email relative">
               <TextInput
                 className={`border ${
@@ -138,7 +135,7 @@ const Login = ({navigation}) => {
               )}
             </View>
           </View>
-          <View className="w-full rounded-2xl px-5 mb-4">
+          <View className="w-full rounded-2xl px-3 mb-4">
             <View className="password relative">
               <TextInput
                 className={`border ${
@@ -171,7 +168,7 @@ const Login = ({navigation}) => {
             </View>
           </View>
 
-          <View className="w-full px-4">
+          <View className="w-full px-3">
             {isLoading ? (
               <ButtonLoading buttonStyles={styles.buttonLoginLoading} />
             ) : (

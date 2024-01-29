@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   Image,
   Keyboard,
@@ -8,22 +8,22 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { ButtonLoading, ButtonLogin } from '../../components/buttons';
+import {ButtonLoading, ButtonLogin} from '../../components/buttons';
 import {
   EyeInvisibleIcon,
   EyeVisibleIcon,
   LoginBGImage,
 } from '../../constant/icons';
 import useAppContext from '../../hooks/useAppContext';
-import { setStorage } from '../../hooks/useStorage';
+import {setStorage} from '../../hooks/useStorage';
 import styles from '../../styles/button';
-import { validateInput } from '../../utils';
+import {validateInput} from '../../utils';
 
-const Login = ({ navigation }) => {
+const Login = ({navigation}) => {
   const [keyboardStatus, setKeyboardStatus] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { authInfo } = useAppContext();
-  const { setUser, setToken } = authInfo;
+  const {authInfo} = useAppContext();
+  const {setUser, setToken} = authInfo;
   const [inputType, setInputType] = useState(false);
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState(null);
@@ -55,7 +55,7 @@ const Login = ({ navigation }) => {
     if (email && password) {
       setIsLoading(true);
       try {
-        let formData = { email, password };
+        let formData = {email, password};
         fetch(API_URL + 'user/login', {
           method: 'POST',
           headers: {
@@ -73,7 +73,7 @@ const Login = ({ navigation }) => {
               setStorage('user', user);
               setStorage('token', token);
               if (token) {
-                navigation.push('DashboardStack');
+                navigation.push('Dashboard');
               } else {
                 navigation.push('Login');
               }
@@ -100,8 +100,9 @@ const Login = ({ navigation }) => {
 
       {/* title and form */}
       <View
-        className={`h-full w-full flex justify-around pt-40 ${keyboardStatus ? 'pb-0' : 'pb-10'
-          }`}>
+        className={`h-full w-full flex justify-around pt-40 ${
+          keyboardStatus ? 'pb-0' : 'pb-10'
+        }`}>
         {/* title */}
         <View className={'flex items-center'}>
           <Text className="text-white font-bold tracking-wider text-5xl">
@@ -115,8 +116,9 @@ const Login = ({ navigation }) => {
           <View className="w-full rounded-2xl px-3 mb-4">
             <View className="email relative">
               <TextInput
-                className={`border ${emailError ? 'border-red-500' : 'border-[#bcbcbc]'
-                  } h-[55px] text-[#a9a9a9] rounded-[5px] px-4`}
+                className={`border ${
+                  emailError ? 'border-red-500' : 'border-[#bcbcbc]'
+                } h-[55px] text-[#a9a9a9] rounded-[5px] px-4`}
                 placeholder="Email"
                 selectionColor="#bcbcbc"
                 inputMode="email"
@@ -136,8 +138,9 @@ const Login = ({ navigation }) => {
           <View className="w-full rounded-2xl px-3 mb-4">
             <View className="password relative">
               <TextInput
-                className={`border ${passwordError ? 'border-red-500' : 'border-[#bcbcbc]'
-                  } h-[55px] text-[#a9a9a9] rounded-[5px] px-4`}
+                className={`border ${
+                  passwordError ? 'border-red-500' : 'border-[#bcbcbc]'
+                } h-[55px] text-[#a9a9a9] rounded-[5px] px-4`}
                 placeholder="Password"
                 selectionColor="#bcbcbc"
                 secureTextEntry={!inputType}

@@ -21,70 +21,73 @@ const Home = ({navigation}) => {
     {
       name: 'Receiving',
       icon: ReceivingIcon,
-      path: 'receiving',
+      screen: 'Receiving',
       access: ['all'],
     },
     {
       name: 'Shelving',
       icon: ShelvingIcon,
-      path: 'shelving',
+      screen: 'Shelving',
       access: ['all'],
     },
     {
       name: 'Delivery Plan',
       icon: DeliveryPlanIcon,
-      path: 'delivery-plan',
+      screen: 'DeliveryPlan',
       access: ['all'],
     },
     {
       name: 'Task Assign',
       icon: TaskAssignIcon,
-      path: 'task-assign',
+      screen: 'TaskAssign',
       access: ['all'],
     },
     {
       name: 'Picking',
       icon: PickingIcon,
-      path: 'picking',
+      screen: 'Picking',
       access: ['all'],
     },
     {
       name: 'Child Packing',
       icon: ChildPackingIcon,
-      path: 'child-packing',
+      screen: 'ChildPacking',
       access: ['all'],
     },
     {
       name: 'Master Packing',
       icon: MasterPackingIcon,
-      path: 'master-packing',
+      screen: 'MasterPacking',
       access: ['all'],
     },
     {
       name: 'Delivery Note',
       icon: DeliveryNoteIcon,
-      path: 'delivery-note',
+      screen: 'DeliveryNote',
       access: ['all'],
     },
     {
       name: 'Return',
       icon: ReturnIcon,
-      path: 'return',
+      screen: 'Return',
       access: ['all'],
     },
     {
       name: 'Print',
       icon: PrinterIcon,
-      path: 'printer',
+      screen: 'Print',
       access: ['all'],
     },
     {
       name: 'Scan Barcode',
       icon: ScannerIcon,
-      path: 'scanner',
-      access: 'private',
+      screen: 'ScanBarcode',
+      access: ['private'],
     },
   ];
+
+  const filteredLinks = navLinks.filter(link => link.access.includes('all'));
+
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">
       <View className="flex-1">
@@ -92,17 +95,19 @@ const Home = ({navigation}) => {
           <Text className="text-lg text-[#060239] text-center font-semibold capitalize">
             home
           </Text>
-          <ButtonProfile onPress={() => navigation.push('profile')} />
+          <ButtonProfile onPress={() => navigation.push('Profile')} />
         </View>
         <View className="flex-row flex-wrap items-center justify-between">
-          {navLinks.map(item => (
-            <View className="menu-box items-center w-1/3 mt-8" key={item.path}>
-              <Link to={{screen: item.path}}>
+          {filteredLinks.map(item => (
+            <View
+              className="menu-box items-center w-1/3 mt-8"
+              key={item.screen}>
+              <Link to={{screen: item.screen}}>
                 <View className="flex-col items-center">
                   <View className="icon">
                     <Image className="w-24 h-24" source={item.icon} />
                   </View>
-                  <Text className="text mt-3">{item.name}</Text>
+                  <Text className="text text-black mt-3">{item.name}</Text>
                 </View>
               </Link>
             </View>

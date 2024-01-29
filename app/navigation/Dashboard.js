@@ -1,29 +1,35 @@
-import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React from 'react';
 import Home from '../screens/dashboard';
+import PoArticles from '../screens/dashboard/receiving/PoArticles/PoArticles';
 import Receiving from '../screens/dashboard/receiving/Receiving';
+import PurchaseOrder from '../screens/dashboard/receiving/purchaseOrder/PurchaseOrder';
 import Profile from '../screens/dashboard/userProfile/Profile';
 
 const Stack = createNativeStackNavigator();
 
 const Dashboard = () => {
   const routes = [
-    {id: 1, name: 'home', component: Home},
-    {id: 2, name: 'receiving', component: Receiving},
-    {id: 3, name: 'profile', component: Profile},
-    {id: 8, name: 'shelving', component: Home},
-    {id: 10, name: 'deliveryPlan', component: Home},
-    {id: 11, name: 'taskAssign', component: Home},
-    {id: 13, name: 'picking', component: Home},
-    {id: 16, name: 'childPacking', component: Home},
-    {id: 18, name: 'masterPacking', component: Home},
-    {id: 19, name: 'deliveryNote', component: Home},
-    {id: 20, name: 'return', component: Home},
-    {id: 23, name: 'print', component: Home},
-    {id: 24, name: 'scanBarcode', component: Home},
+    {id: 'home', name: 'Home', component: Home},
+    {id: 'profile', name: 'Profile', component: Profile},
+    {id: 'receiving', name: 'Receiving', component: Receiving},
+    {id: 'purchase-order', name: 'PurchaseOrder', component: PurchaseOrder},
+    {id: 'po-articles', name: 'PoArticles', component: PoArticles},
+    {id: 'shelving', name: 'Shelving', component: Receiving},
+    {id: 'delivery-plan', name: 'DeliveryPlan', component: Receiving},
+    {id: 'task-assign', name: 'TaskAssign', component: Receiving},
+    {id: 'Picking', name: 'Picking', component: Receiving},
+    {id: 'child-packing', name: 'ChildPacking', component: Receiving},
+    {id: 'master-packing', name: 'MasterPacking', component: Receiving},
+    {id: 'delivery-note', name: 'DeliveryNote', component: Receiving},
+    {id: 'return', name: 'Return', component: Receiving},
+    {id: 'print', name: 'Print', component: Receiving},
+    {id: 'scan-barcode', name: 'ScanBarcode', component: Receiving},
   ];
   return (
-    <Stack.Navigator>
+    <Stack.Navigator
+      initialRouteName="Home"
+      screenOptions={{headerShown: false}}>
       {routes.map(route => (
         <Stack.Screen
           key={route.id}

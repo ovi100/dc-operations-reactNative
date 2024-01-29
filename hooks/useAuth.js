@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState } from 'react';
 
 const useAuth = () => {
   const [user, setUser] = useState({});
-  const [token, setToken] = useState("");
+  const [token, setToken] = useState(null);
 
   const authInfo = {
     user,

@@ -1,7 +1,7 @@
-import { Link } from '@react-navigation/native';
-import React, { useEffect, useState } from 'react';
-import { Image, Text, View } from 'react-native';
-import { ButtonBackProfile, ButtonLogin } from '../../../../components/buttons';
+import {Link} from '@react-navigation/native';
+import React, {useEffect, useState} from 'react';
+import {Image, Text, View} from 'react-native';
+import {ButtonBackProfile, ButtonLogin} from '../../../../components/buttons';
 import {
   AvatarImage,
   EmailIcon,
@@ -10,11 +10,14 @@ import {
   PasswordIcon,
   ProfileIcon,
 } from '../../../../constant/icons';
-import { getStorage, removeItem } from '../../../../hooks/useStorage';
+import useAppContext from '../../../../hooks/useAppContext';
+import {getStorage, removeAll} from '../../../../hooks/useStorage';
 import styles from '../../../../styles/button';
 
-const Profile = ({ navigation }) => {
-  const [user, setUser] = useState({});
+const Profile = ({navigation}) => {
+  const {authInfo} = useAppContext();
+  console.log('profile authinfo', authInfo);
+  const [user, setUser] = useState(authInfo.user);
 
   useEffect(() => {
     getStorage('user', setUser, 'object');
@@ -23,9 +26,10 @@ const Profile = ({ navigation }) => {
   console.log('Profile page', user);
 
   const logOut = () => {
-    setUser({});
-    removeItem('user');
-    removeItem('token');
+    authInfo.setUser({});
+    authInfo.setToken(null);
+    removeAll();
+    console.log('logout');
     navigation.push('Login');
   };
 
@@ -39,7 +43,7 @@ const Profile = ({ navigation }) => {
             profile
           </Text>
         </View>
-        <View className="content mt-10 pt-5">
+        <View className="content mt-32 pt-5">
           <View className="px-4 mt-5">
             <View className="w-full mt-5 px-4">
               <View className="profile-image mb-4 mx-auto">
@@ -76,8 +80,8 @@ const Profile = ({ navigation }) => {
             <View className="w-full px-4">
               <View className="password-change border-b border-gray-200 flex-row items-center gap-3 py-3">
                 <Image className="w-5 h-5" source={PasswordIcon} />
-                <Link to={{ screen: 'changePassword', params: { id: user._id } }}>
-                  <Text className="text-base text-blue-500 rounded font-medium capitalize py-1 px-2">
+                <Link to={{screen: 'ChangePassword', params: {id: user._id}}}>
+                  <Text className="bg-blue-500 text-base rounded font-medium capitalize py-2 px-3">
                     change password
                   </Text>
                 </Link>

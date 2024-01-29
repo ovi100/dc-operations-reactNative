@@ -1,3 +1,4 @@
+import {useIsFocused} from '@react-navigation/native';
 import React from 'react';
 import {SafeAreaView, Text, View} from 'react-native';
 import {ButtonBack} from '../../../../components/buttons';
@@ -7,9 +8,12 @@ import {poList} from '../../../../constant/data';
 const Receiving = ({navigation}) => {
   const tableHeader = ['Purchase Order ID', 'SKU'];
   const dataFields = ['id', 'sku'];
+  const isFocused = useIsFocused();
+
+  console.log(isFocused);
 
   return (
-    <SafeAreaView className="flex-1 bg-white pt-14">
+    <SafeAreaView className="flex-1 bg-white pt-8">
       <View className="flex-1 px-4">
         <View className="screen-header flex-row items-center mb-4">
           <ButtonBack navigation={navigation} />
@@ -24,7 +28,7 @@ const Receiving = ({navigation}) => {
             data={poList}
             dataFields={dataFields}
             navigation={navigation}
-            routePath="/home/receiving/purchaseOrder/${item.id}"
+            routeName="PurchaseOrder"
           />
         </View>
       </View>

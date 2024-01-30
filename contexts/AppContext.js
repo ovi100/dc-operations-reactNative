@@ -5,7 +5,6 @@ export const AppContext = createContext({});
 
 const AppProvider = ({children}) => {
   const authInfo = useAuth();
-  console.log('App Context token', authInfo);
   const contextValues = {
     authInfo,
   };

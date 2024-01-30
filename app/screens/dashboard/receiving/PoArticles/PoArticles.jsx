@@ -1,18 +1,66 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Alert, Image, SafeAreaView, Text, TextInput, View} from 'react-native';
 import {ButtonBack, ButtonLg} from '../../../../../components/buttons';
 import {BoxIcon} from '../../../../../constant/icons';
+import {getStorage} from '../../../../../hooks/useStorage';
 
 const PoArticles = ({navigation, route}) => {
-  const {id, name, quantity} = route.params;
+  const {description, material, po, quantity, receivingPlant} = route.params;
   const [newQuantity, setNewQuantity] = useState(quantity);
+  const [user, setUser] = useState({});
+  const [token, setToken] = useState('');
+  const API_URL =
+    'https://shwapnooperation.onrender.com/api/product-shelving/ready/';
 
-  const updateQuantity = () => {
+  useEffect(() => {
+    const subscribe = navigation.addListener('focus', () => {
+      getStorage('user', setUser, 'object');
+      getStorage('token', setToken, 'string');
+    });
+
+    return subscribe;
+  }, [navigation]);
+
+  const updateQuantity = async () => {
     if (newQuantity > quantity) {
       Alert.alert('Quantity exceed');
     } else {
-      Alert.alert('Ready for shelving');
-      navigation.push('PurchaseOrder');
+      const shelvingObject = {
+        po: po,
+        code: material,
+        description: description,
+        userId: user._id,
+        site: receivingPlant,
+        name: '',
+        quantity: quantity,
+        receivedQuantity: newQuantity,
+        receivedBy: user.name,
+      };
+      try {
+        await fetch(API_URL, {
+          method: 'POST',
+          headers: {
+            authorization: token,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(shelvingObject),
+        })
+          .then(response => response.json())
+          .then(data => {
+            console.log(data);
+            if (data.status) {
+              Alert.alert(data.message);
+              setTimeout(() => {
+                navigation.goBack();
+              }, 2000);
+            }
+          })
+          .catch(error => {
+            console.log(error);
+          });
+      } catch (error) {
+        console.log(error);
+      }
     }
   };
 
@@ -29,11 +77,11 @@ const PoArticles = ({navigation, route}) => {
                 receiving article
               </Text>
               <Text className="text-base text-sh font-bold capitalize">
-                {' ' + id}
+                {' ' + material}
               </Text>
             </View>
             <Text className="text-sm text-sh text-right font-medium capitalize">
-              {name}
+              {description}
             </Text>
           </View>
         </View>

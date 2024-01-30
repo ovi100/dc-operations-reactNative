@@ -1,5 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {
+  Alert,
   Image,
   Keyboard,
   StatusBar,
@@ -78,16 +79,16 @@ const Login = ({navigation}) => {
                 navigation.push('Login');
               }
             } else {
-              alert(data.message);
+              Alert.alert(data.message);
             }
             setIsLoading(false);
           })
           .catch(error => {
-            alert(error);
+            Alert.alert(error);
             setIsLoading(false);
           });
       } catch (error) {
-        alert(error);
+        console.log(error);
         setIsLoading(false);
       }
     }

@@ -43,7 +43,7 @@ const Profile = ({navigation}) => {
             profile
           </Text>
         </View>
-        <View className="content mt-32 pt-5">
+        <View className="content mt-28 pt-5">
           <View className="px-4 mt-5">
             <View className="w-full mt-5 px-4">
               <View className="profile-image mb-4 mx-auto">

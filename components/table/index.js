@@ -1,10 +1,7 @@
 import React from 'react';
 import { FlatList, Text, TouchableOpacity, View } from 'react-native';
 const Table = ({header, data, dataFields, navigation, routeName = ''}) => {
-  const hasSelectedField = dataFields.some(item => item === 'selected');
-
-  console.log(hasSelectedField);
-
+  // const hasSelectedField = dataFields.some(item => item === 'selected');
   const renderItem = ({item}) => {
     if (routeName) {
       return (

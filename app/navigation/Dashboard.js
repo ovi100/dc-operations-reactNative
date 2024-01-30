@@ -4,6 +4,7 @@ import Home from '../screens/dashboard';
 import PoArticles from '../screens/dashboard/receiving/PoArticles/PoArticles';
 import Receiving from '../screens/dashboard/receiving/Receiving';
 import PurchaseOrder from '../screens/dashboard/receiving/purchaseOrder/PurchaseOrder';
+import Shelving from '../screens/dashboard/shelving/Shelving';
 import Profile from '../screens/dashboard/userProfile/Profile';
 
 const Stack = createNativeStackNavigator();
@@ -15,7 +16,7 @@ const Dashboard = () => {
     {id: 'receiving', name: 'Receiving', component: Receiving},
     {id: 'purchase-order', name: 'PurchaseOrder', component: PurchaseOrder},
     {id: 'po-articles', name: 'PoArticles', component: PoArticles},
-    {id: 'shelving', name: 'Shelving', component: Receiving},
+    {id: 'shelving', name: 'Shelving', component: Shelving},
     {id: 'delivery-plan', name: 'DeliveryPlan', component: Receiving},
     {id: 'task-assign', name: 'TaskAssign', component: Receiving},
     {id: 'Picking', name: 'Picking', component: Receiving},

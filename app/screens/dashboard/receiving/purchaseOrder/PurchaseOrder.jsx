@@ -37,8 +37,35 @@ const PurchaseOrder = ({navigation, route}) => {
           .then(response => response.json())
           .then(data => {
             console.log(data);
-            setArticles(data.poDetails.items);
-            setIsLoading(false);
+            fetch(
+              'https://shwapnooperation.onrender.com/api/product-shelving/ready',
+              {
+                method: 'GET',
+                headers: {
+                  authorization: token,
+                },
+              },
+            )
+              .then(res => res.json())
+              .then(shelveData => {
+                if (data.status) {
+                  const poItems = data.poDetails.items;
+                  const shItems = shelveData.items;
+                  let remainingPoItems = poItems.filter(
+                    poItem =>
+                      !shItems.some(
+                        shItem =>
+                          shItem.po === poItem.po &&
+                          shItem.code === poItem.material,
+                      ),
+                  );
+
+                  console.log('remainingPoItems', remainingPoItems);
+                  setArticles(remainingPoItems);
+                  setIsLoading(false);
+                }
+              })
+              .catch(error => console.log('Fetch catch', error));
           })
           .catch(error => {
             console.log(error);
@@ -61,13 +88,23 @@ const PurchaseOrder = ({navigation, route}) => {
           {isLoading ? (
             <ActivityIndicator />
           ) : (
-            <Table
-              header={tableHeader}
-              data={articles}
-              dataFields={dataFields}
-              navigation={navigation}
-              routeName="PoArticles"
-            />
+            <>
+              {articles.length ? (
+                <Table
+                  header={tableHeader}
+                  data={articles}
+                  dataFields={dataFields}
+                  navigation={navigation}
+                  routeName="PoArticles"
+                />
+              ) : (
+                <View className="h-full justify-center pb-2">
+                  <Text className="text-base font-bold text-center">
+                    No purchase order left
+                  </Text>
+                </View>
+              )}
+            </>
           )}
         </View>
       </View>

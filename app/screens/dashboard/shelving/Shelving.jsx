@@ -15,7 +15,6 @@ const Shelving = ({navigation}) => {
   const [isLoading, setIsLoading] = useState(false);
   const [token, setToken] = useState('');
   const [articles, setArticles] = useState([]);
-  // let articles = [];
   const tableHeader = ['Article ID', 'BIN ID', 'Quantity'];
   const API_URL =
     'https://shwapnooperation.onrender.com/api/product-shelving/ready';
@@ -37,28 +36,11 @@ const Shelving = ({navigation}) => {
             .then(response => response.json())
             .then(data => {
               if (data.status) {
-                data.items.map(item => {
-                  fetch(
-                    `https://shelves-backend.onrender.com/api/bins/product/${item.code}`,
-                  )
-                    .then(res => res.json())
-                    .then(results => {
-                      const article = results.map(result => {
-                        return {
-                          code: item.code,
-                          quantity: item.quantity,
-                          description: item.description,
-                          bin_id: result.bin_ID,
-                          gondola_id: result.gondola_ID,
-                        };
-                      });
-                      setArticles(...articles, article);
-                    });
-                });
+                setArticles(data.items);
                 setIsLoading(false);
               }
             })
-            .catch(error => console.log(error));
+            .catch(error => console.log('Fetch catch', error));
         } catch (error) {
           console.log(error);
         }
@@ -67,23 +49,35 @@ const Shelving = ({navigation}) => {
     }, [token]),
   );
 
-  console.log('articles', articles);
-
   const renderItem = ({item}) => (
-    <TouchableOpacity className="flex-row border border-tb rounded-lg mt-2.5 p-3">
+    <TouchableOpacity
+      className="flex-row border border-tb rounded-lg mt-2.5 p-3"
+      onPress={() =>
+        navigation.push('ScanBarcode', {
+          screen: 'ShelveArticle',
+          item,
+        })
+      }>
       <View className="flex-1">
-        <Text className="text-[8px]" numberOfLines={1}>
+        <Text className="text-xs text-black" numberOfLines={1}>
           {item.code}
         </Text>
-        <Text className="mt-1" numberOfLines={1}>
+        <Text className="text-black text-base mt-1" numberOfLines={1}>
           {item.description}
         </Text>
       </View>
-      <Text className="flex-1 text-center" numberOfLines={1}>
-        {item.bin}
-      </Text>
-      <Text className="flex-1 text-center" numberOfLines={1}>
-        {item.quantity}
+      <View>
+        {item.bins.map((bin, i) => (
+          <Text
+            key={i}
+            className="flex-1 text-black text-center mb-1 last:mb-0"
+            numberOfLines={1}>
+            {bin.bin_id}
+          </Text>
+        ))}
+      </View>
+      <Text className="flex-1 text-black text-center" numberOfLines={1}>
+        {item.receivedQuantity}
       </Text>
     </TouchableOpacity>
   );

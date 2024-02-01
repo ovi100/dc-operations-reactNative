@@ -1,5 +1,5 @@
-import {useFocusEffect} from '@react-navigation/native';
-import React, {useCallback, useState} from 'react';
+import { useFocusEffect } from '@react-navigation/native';
+import React, { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -8,10 +8,10 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import {ButtonBack} from '../../../../components/buttons';
-import {getStorage} from '../../../../hooks/useStorage';
+import { ButtonBack } from '../../../../components/buttons';
+import { getStorage } from '../../../../hooks/useStorage';
 
-const Shelving = ({navigation}) => {
+const Shelving = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [token, setToken] = useState('');
   const [articles, setArticles] = useState([]);
@@ -49,14 +49,11 @@ const Shelving = ({navigation}) => {
     }, [token]),
   );
 
-  const renderItem = ({item}) => (
+  const renderItem = ({ item }) => (
     <TouchableOpacity
       className="flex-row border border-tb rounded-lg mt-2.5 p-3"
       onPress={() =>
-        navigation.push('ScanBarcode', {
-          screen: 'ShelveArticle',
-          item,
-        })
+        navigation.push('ShelvingScanner', { item })
       }>
       <View className="flex-1">
         <Text className="text-xs text-black" numberOfLines={1}>
@@ -83,7 +80,7 @@ const Shelving = ({navigation}) => {
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-white pt-14">
+    <SafeAreaView className="flex-1 bg-white pt-8">
       <View className="flex-1 h-full px-4">
         <View className="screen-header flex-row items-center mb-4">
           <ButtonBack navigation={navigation} />

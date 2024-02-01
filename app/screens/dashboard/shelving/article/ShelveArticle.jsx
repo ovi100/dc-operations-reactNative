@@ -1,31 +1,59 @@
-import React, {useEffect, useState} from 'react';
-import {Alert, Image, SafeAreaView, Text, TextInput, View} from 'react-native';
-import {ButtonBack, ButtonLg} from '../../../../../components/buttons';
-import {BoxIcon} from '../../../../../constant/icons';
-import {getStorage} from '../../../../../hooks/useStorage';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Alert, Image, SafeAreaView, Text, TextInput, View } from 'react-native';
+import { ButtonBack, ButtonLg } from '../../../../../components/buttons';
+import { BoxIcon } from '../../../../../constant/icons';
+import { getStorage } from '../../../../../hooks/useStorage';
+import { useFocusEffect } from '@react-navigation/native';
 
-const ShelveArticle = ({navigation, route}) => {
-  const {item} = route.params;
+const ShelveArticle = ({ navigation, route }) => {
+  const { item } = route.params;
   const [newQuantity, setNewQuantity] = useState(item.quantity);
-  const [user, setUser] = useState({});
   const [token, setToken] = useState('');
-  const API_URL =
-    'https://shwapnooperation.onrender.com/api/product-shelving/ready/';
+  const API_URL = 'https://shwapnooperation.onrender.com/api/';
 
-  useEffect(() => {
-    const subscribe = navigation.addListener('focus', () => {
-      getStorage('user', setUser, 'object');
+  useFocusEffect(
+    useCallback(() => {
       getStorage('token', setToken, 'string');
-    });
-
-    return subscribe;
-  }, [navigation]);
+    }, [])
+  );
 
   const shelveArticle = async () => {
     if (newQuantity > item.quantity) {
       Alert.alert('Quantity exceed');
     } else {
-      console.log('else');
+      const assignToShelveObject = {
+        gondola: item.bins[0].gondola_id,
+        bin: item.bins[0].bin_id,
+        quantity: newQuantity,
+      };
+      console.log(assignToShelveObject);
+      try {
+        await fetch(API_URL + 'product-shelving/in-shelf/', {
+          method: 'POST',
+          headers: {
+            authorization: token,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(assignToShelveObject),
+        })
+          .then(response => response.json())
+          .then(data => {
+            console.log(data);
+            if (data.status) {
+              Alert.alert(data.message);
+              setTimeout(() => {
+                navigation.navigate('Shelving');
+              }, 2000);
+            } else {
+              Alert.alert(data.message);
+            }
+          })
+          .catch(error => {
+            console.log('Fetch Error',error);
+          });
+      } catch (error) {
+        console.log(error);
+      }
     }
   };
 

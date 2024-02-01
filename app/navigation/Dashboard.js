@@ -8,6 +8,7 @@ import ScanBarCode from '../screens/dashboard/scanbarcode/ScanBarCode';
 import Shelving from '../screens/dashboard/shelving/Shelving';
 import ShelveArticle from '../screens/dashboard/shelving/article/ShelveArticle';
 import Profile from '../screens/dashboard/userProfile/Profile';
+import ShelvingScanner from '../screens/dashboard/shelving/scanner/Scanner';
 
 const Stack = createNativeStackNavigator();
 
@@ -19,6 +20,7 @@ const Dashboard = () => {
     {id: 'purchase-order', name: 'PurchaseOrder', component: PurchaseOrder},
     {id: 'po-articles', name: 'PoArticles', component: PoArticles},
     {id: 'shelving', name: 'Shelving', component: Shelving},
+    {id: 'shelving-scanner', name: 'ShelvingScanner', component: ShelvingScanner},
     {id: 'shelve-article', name: 'ShelveArticle', component: ShelveArticle},
     {id: 'delivery-plan', name: 'DeliveryPlan', component: Receiving},
     {id: 'task-assign', name: 'TaskAssign', component: Receiving},

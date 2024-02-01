@@ -1,25 +1,25 @@
-import React, {useEffect, useState} from 'react';
-import {Alert, Image, SafeAreaView, Text, TextInput, View} from 'react-native';
-import {ButtonBack, ButtonLg} from '../../../../../components/buttons';
-import {BoxIcon} from '../../../../../constant/icons';
-import {getStorage} from '../../../../../hooks/useStorage';
+import React, { useEffect, useState } from 'react';
+import { Alert, Image, SafeAreaView, Text, TextInput, View } from 'react-native';
+import { ButtonBack, ButtonLg } from '../../../../../components/buttons';
+import { BoxIcon } from '../../../../../constant/icons';
+import { getStorage } from '../../../../../hooks/useStorage';
 
-const PoArticles = ({navigation, route}) => {
-  const {description, material, po, quantity, receivingPlant} = route.params;
+const PoArticles = ({ navigation, route }) => {
+  const { description, material, po, quantity, receivingPlant } = route.params;
   const [bins, setBins] = useState([]);
   const [newQuantity, setNewQuantity] = useState(quantity);
   const [user, setUser] = useState({});
   const [token, setToken] = useState('');
-  const API_URL =
-    'https://shwapnooperation.onrender.com/api/product-shelving/ready/';
+  const API_URL = 'https://shwapnooperation.onrender.com/api/';
+  const API_URL2 = 'https://shelves-backend.onrender.com/api/';
 
   useEffect(() => {
     const getBins = async code => {
-      fetch(`https://shelves-backend.onrender.com/api/bins/product/${code}`)
+      fetch(API_URL2 + `bins/product/${code}`)
         .then(res => res.json())
         .then(results => {
           let binsData = results.map(result => {
-            return {bin_id: result.bin_ID, gondola_id: result.gondola_ID};
+            return { bin_id: result.bin_ID, gondola_id: result.gondola_ID };
           });
           setBins(binsData);
         });
@@ -51,7 +51,7 @@ const PoArticles = ({navigation, route}) => {
       };
       console.log(shelvingObject);
       try {
-        await fetch(API_URL, {
+        await fetch(API_URL + 'product-shelving/ready/', {
           method: 'POST',
           headers: {
             authorization: token,

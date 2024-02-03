@@ -28,7 +28,7 @@ const ShelveArticle = ({ navigation, route }) => {
       };
       console.log(assignToShelveObject);
       try {
-        await fetch(API_URL + 'product-shelving/in-shelf/', {
+        await fetch(API_URL + `product-shelving/in-shelf/${item._id}`, {
           method: 'POST',
           headers: {
             authorization: token,
@@ -49,7 +49,7 @@ const ShelveArticle = ({ navigation, route }) => {
             }
           })
           .catch(error => {
-            console.log('Fetch Error',error);
+            console.log('Fetch Error', error);
           });
       } catch (error) {
         console.log(error);

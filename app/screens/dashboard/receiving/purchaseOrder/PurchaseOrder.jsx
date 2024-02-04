@@ -36,7 +36,6 @@ const PurchaseOrder = ({navigation, route}) => {
         })
           .then(response => response.json())
           .then(data => {
-            console.log(data);
             fetch(
               'https://shwapnooperation.onrender.com/api/product-shelving/ready',
               {

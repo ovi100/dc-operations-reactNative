@@ -43,31 +43,31 @@ const articles = [
 
 const stoList = [
   {
-    id: 8000135524,
+    id: 8000000023,
     sku: 10,
     outlet: 'outlet name 1',
     status: 'picked',
   },
   {
-    id: 8000135525,
+    id: 8000000024,
     sku: 15,
     outlet: 'outlet name 2',
     status: 'picked',
   },
   {
-    id: 8000135526,
+    id: 8000000025,
     sku: 20,
     outlet: 'outlet name 3',
     status: 'loading',
   },
   {
-    id: 8000135527,
+    id: 8000000026,
     sku: 18,
     outlet: 'outlet name 4',
     status: 'loading',
   },
   {
-    id: 8000135528,
+    id: 8000000027,
     sku: 25,
     outlet: 'outlet name 5',
     status: 'loading',
@@ -99,36 +99,32 @@ const poList = [
 
 const dnList = [
   {
-    _id: 'dn326574usdt',
-    dn_id: 9066573,
+
+    id: 9066573,
     outlet: 'outlet 1',
     packed_quantity: 8,
     order_quantity: 8,
   },
   {
-    _id: 'dn3268713pqr',
-    dn_id: 9066574,
+    id: 9066574,
     outlet: 'outlet 2',
     packed_quantity: 10,
     order_quantity: 12,
   },
   {
-    _id: 'dn5318713efg',
-    dn_id: 9066575,
+    id: 9066575,
     outlet: 'outlet 3',
     packed_quantity: 15,
     order_quantity: 14,
   },
   {
-    _id: 'dn5318713asd',
-    dn_id: 9066576,
+    id: 9066576,
     outlet: 'outlet 4',
     packed_quantity: 12,
     order_quantity: 15,
   },
   {
-    _id: 'dn5318713tsh',
-    dn_id: 9066577,
+    id: 9066577,
     outlet: 'outlet 5',
     packed_quantity: 15,
     order_quantity: 13,

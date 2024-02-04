@@ -1,18 +1,15 @@
 import React from 'react';
 import { FlatList, Text, TouchableOpacity, View } from 'react-native';
 const Table = ({header, data, dataFields, navigation, routeName = ''}) => {
-  // const hasSelectedField = dataFields.some(item => item === 'selected');
+  // const isStoID = header.some(item => item === 'STO ID');
   const renderItem = ({item}) => {
     if (routeName) {
       return (
         <TouchableOpacity
-          className="flex-row border border-tb rounded-lg mt-2.5 p-4"
+          className="flex-row border border-tb justify-between rounded-lg mt-2.5 p-4"
           onPress={() => navigation.push(routeName, item)}>
           {dataFields.map(dataField => (
-            <Text
-              className="flex-1 text-black text-center"
-              key={dataField}
-              numberOfLines={1}>
+            <Text className="flex-1 text-black text-center" numberOfLines={1}>
               {item[dataField]}
             </Text>
           ))}

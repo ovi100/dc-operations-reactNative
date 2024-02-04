@@ -1,61 +1,19 @@
-import {useFocusEffect} from '@react-navigation/native';
-import React, {useCallback, useState} from 'react';
+import React, {useState} from 'react';
 import {Alert, Image, SafeAreaView, Text, TextInput, View} from 'react-native';
 import {ButtonBack, ButtonLg} from '../../../../../components/buttons';
 import {BoxIcon} from '../../../../../constant/icons';
-import {getStorage} from '../../../../../hooks/useStorage';
 
-const ShelveArticle = ({navigation, route}) => {
-  const {item} = route.params;
-  const [newQuantity, setNewQuantity] = useState(item.quantity);
-  const [token, setToken] = useState('');
-  const API_URL = 'https://shwapnooperation.onrender.com/api/product-shelving/';
+const ReturnDetails = ({navigation, route}) => {
+  const {id, name, quantity} = route.params;
+  const [newQuantity, setNewQuantity] = useState(quantity);
 
-  useFocusEffect(
-    useCallback(() => {
-      getStorage('token', setToken, 'string');
-    }, []),
-  );
-
-  console.log('shelving--> Barcode --> article', route.params);
+  console.log('Return--> Barcode --> article', route.params);
 
   const shelveArticle = async () => {
-    if (newQuantity > item.quantity) {
+    if (newQuantity > quantity) {
       Alert.alert('Quantity exceed');
     } else {
-      const assignToShelveObject = {
-        gondola: item.bins.length ? item.bins[0].gondola_id : '',
-        bin: item.bins.length ? item.bins[0].bin_id : '',
-        quantity: newQuantity,
-      };
-      console.log(assignToShelveObject);
-      try {
-        await fetch(API_URL + `in-shelf/${item._id}`, {
-          method: 'POST',
-          headers: {
-            authorization: token,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(assignToShelveObject),
-        })
-          .then(response => response.json())
-          .then(data => {
-            console.log(data);
-            if (data.status) {
-              Alert.alert(data.message);
-              setTimeout(() => {
-                navigation.navigate('Shelving');
-              }, 2000);
-            } else {
-              Alert.alert(data.message);
-            }
-          })
-          .catch(error => {
-            console.log('Fetch Error', error);
-          });
-      } catch (error) {
-        console.log(error);
-      }
+      console.log('returning');
     }
   };
 
@@ -70,11 +28,11 @@ const ShelveArticle = ({navigation, route}) => {
                 Shelving article
               </Text>
               <Text className="text-base text-sh font-bold capitalize">
-                {' ' + item.code}{' '}
+                {' ' + id}
               </Text>
             </View>
             <Text className="text-sm text-sh text-right font-medium capitalize">
-              {item.description}
+              {name}
             </Text>
           </View>
         </View>
@@ -89,7 +47,7 @@ const ShelveArticle = ({navigation, route}) => {
             </View>
             <View className="quantity flex-row items-center gap-3">
               <Image source={BoxIcon} />
-              <Text className="font-bold text-black">{item.quantity}</Text>
+              <Text className="font-bold text-black">{quantity}</Text>
             </View>
           </View>
           <View className="input-box mt-6">
@@ -116,4 +74,4 @@ const ShelveArticle = ({navigation, route}) => {
   );
 };
 
-export default ShelveArticle;
+export default ReturnDetails;

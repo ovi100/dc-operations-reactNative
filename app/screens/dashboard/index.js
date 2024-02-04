@@ -58,7 +58,7 @@ const Home = ({navigation}) => {
       name: 'Master Packing',
       icon: MasterPackingIcon,
       screen: 'MasterPacking',
-      access: ['all'],
+      access: ['private'],
     },
     {
       name: 'Delivery Note',

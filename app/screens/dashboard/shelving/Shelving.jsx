@@ -1,5 +1,5 @@
-import { useFocusEffect } from '@react-navigation/native';
-import React, { useCallback, useState } from 'react';
+import {useFocusEffect} from '@react-navigation/native';
+import React, {useCallback, useState} from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -8,16 +8,15 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { ButtonBack } from '../../../../components/buttons';
-import { getStorage } from '../../../../hooks/useStorage';
+import {ButtonBack} from '../../../../components/buttons';
+import {getStorage} from '../../../../hooks/useStorage';
 
-const Shelving = ({ navigation }) => {
+const Shelving = ({navigation}) => {
   const [isLoading, setIsLoading] = useState(false);
   const [token, setToken] = useState('');
   const [articles, setArticles] = useState([]);
   const tableHeader = ['Article ID', 'BIN ID', 'Quantity'];
-  const API_URL =
-    'https://shwapnooperation.onrender.com/api/product-shelving/ready';
+  const API_URL = 'https://shwapnooperation.onrender.com/api/product-shelving/';
 
   getStorage('token', setToken, 'string');
 
@@ -27,7 +26,7 @@ const Shelving = ({ navigation }) => {
       const getShelvingReady = async () => {
         try {
           setIsLoading(true);
-          await fetch(API_URL, {
+          await fetch(API_URL + 'ready', {
             method: 'GET',
             headers: {
               authorization: token,
@@ -36,8 +35,30 @@ const Shelving = ({ navigation }) => {
             .then(response => response.json())
             .then(data => {
               if (data.status) {
-                setArticles(data.items);
-                setIsLoading(false);
+                fetch(API_URL + 'in-shelf', {
+                  method: 'GET',
+                  headers: {
+                    authorization: token,
+                  },
+                })
+                  .then(res => res.json())
+                  .then(inShelveData => {
+                    if (data.status) {
+                      const readyItems = data.items;
+                      const inShelveItems = inShelveData.items;
+                      let remainingShelvingItems = readyItems.filter(
+                        readyItem =>
+                          !inShelveItems.some(
+                            inShelveItem =>
+                              inShelveItem.po === readyItem.po &&
+                              inShelveItem.code === readyItem.code,
+                          ),
+                      );
+                      setArticles(remainingShelvingItems);
+                      setIsLoading(false);
+                    }
+                  })
+                  .catch(error => console.log('Fetch catch', error));
               }
             })
             .catch(error => console.log('Fetch catch', error));
@@ -49,12 +70,10 @@ const Shelving = ({ navigation }) => {
     }, [token]),
   );
 
-  const renderItem = ({ item }) => (
+  const renderItem = ({item}) => (
     <TouchableOpacity
       className="flex-row border border-tb rounded-lg mt-2.5 p-3"
-      onPress={() =>
-        navigation.push('ShelvingScanner', { item })
-      }>
+      onPress={() => navigation.push('ShelvingScanner', {item})}>
       <View className="flex-1">
         <Text className="text-xs text-black" numberOfLines={1}>
           {item.code}

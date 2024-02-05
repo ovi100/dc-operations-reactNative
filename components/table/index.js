@@ -9,7 +9,10 @@ const Table = ({header, data, dataFields, navigation, routeName = ''}) => {
           className="flex-row border border-tb justify-between rounded-lg mt-2.5 p-4"
           onPress={() => navigation.push(routeName, item)}>
           {dataFields.map(dataField => (
-            <Text className="flex-1 text-black text-center" numberOfLines={1}>
+            <Text
+              className="flex-1 text-black text-center"
+              numberOfLines={1}
+              key={dataField}>
               {item[dataField]}
             </Text>
           ))}

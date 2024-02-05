@@ -1,6 +1,7 @@
 import CheckBox from '@react-native-community/checkbox';
 import React, {useEffect, useState} from 'react';
 import {
+  Alert,
   FlatList,
   Image,
   Keyboard,
@@ -39,7 +40,9 @@ const DeliveryPlan = ({navigation}) => {
   console.log('keyboard status', keyboardStatus);
 
   const renderItem = ({item}) => (
-    <View className="flex-row items-center border border-tb rounded-lg mt-2.5 p-4">
+    <TouchableOpacity
+      className="flex-row items-center border border-tb rounded-lg mt-2.5 p-4"
+      onPress={() => handelCheckbox(item)}>
       <View className="flex-1 flex-row items-center">
         <CheckBox
           tintColors={item.selected ? '#56D342' : '#f5f5f5'}
@@ -60,7 +63,7 @@ const DeliveryPlan = ({navigation}) => {
       <Text className="flex-1 text-black text-center" numberOfLines={1}>
         {item.status}
       </Text>
-    </View>
+    </TouchableOpacity>
   );
 
   const handelCheckbox = sto => {
@@ -93,7 +96,12 @@ const DeliveryPlan = ({navigation}) => {
   };
 
   const updateDelivery = () => {
-    alert(`\n Total DN ready--> ${selectedList.length}`);
+    if (selectedList.length > 0) {
+      Alert.alert(`\n Total DP ready--> ${selectedList.length}`);
+      return;
+    } else {
+      Alert.alert('please select an item');
+    }
   };
 
   if (search !== '') {

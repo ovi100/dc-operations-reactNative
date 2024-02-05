@@ -67,8 +67,8 @@ const ButtonLogin = ({title, onPress, buttonStyles, textStyles}) => {
 const ButtonLg = ({title, onPress}) => {
   return (
     <TouchableOpacity onPress={onPress}>
-      <View style={styles.buttonLg}>
-        <Text style={styles.lgText}>{title}</Text>
+      <View className="bg-theme rounded-md p-4">
+        <Text className="text-white text-xl text-center font-semibold">{title}</Text>
       </View>
     </TouchableOpacity>
   );

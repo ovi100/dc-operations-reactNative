@@ -1,6 +1,7 @@
 import {useFocusEffect} from '@react-navigation/native';
 import React, {useCallback, useState} from 'react';
 import {ActivityIndicator, SafeAreaView, Text, View} from 'react-native';
+import DataNotFound from '../../../../../components/DataNotFound';
 import {ButtonBack} from '../../../../../components/buttons';
 import Table from '../../../../../components/table';
 import {getStorage} from '../../../../../hooks/useStorage';
@@ -13,14 +14,11 @@ const PurchaseOrder = ({navigation, route}) => {
   const dataFields = ['material', 'description', 'quantity'];
   const API_URL = 'https://shwapnooperation.onrender.com/bapi/po/display';
 
-  console.log(route.params);
   const {id} = route.params;
 
   console.log('receiving--> po id', id);
 
   getStorage('token', setToken, 'string');
-
-  console.log(token);
 
   useFocusEffect(
     useCallback(() => {
@@ -35,7 +33,7 @@ const PurchaseOrder = ({navigation, route}) => {
           body: JSON.stringify({po: id.toString()}),
         })
           .then(response => response.json())
-          .then(data => {
+          .then(result => {
             fetch(
               'https://shwapnooperation.onrender.com/api/product-shelving/ready',
               {
@@ -47,8 +45,8 @@ const PurchaseOrder = ({navigation, route}) => {
             )
               .then(res => res.json())
               .then(shelveData => {
-                if (data.status) {
-                  const poItems = data.poDetails.items;
+                if (result.status) {
+                  const poItems = result.data.items;
                   const shItems = shelveData.items;
                   let remainingPoItems = poItems.filter(
                     poItem =>
@@ -58,8 +56,6 @@ const PurchaseOrder = ({navigation, route}) => {
                           shItem.code === poItem.material,
                       ),
                   );
-
-                  console.log('remainingPoItems', remainingPoItems);
                   setArticles(remainingPoItems);
                   setIsLoading(false);
                 }
@@ -73,6 +69,8 @@ const PurchaseOrder = ({navigation, route}) => {
       fetchPO();
     }, [token, id]),
   );
+
+  console.log('PO Articles', articles);
 
   return (
     <SafeAreaView className="flex-1 bg-white pt-14">
@@ -97,10 +95,8 @@ const PurchaseOrder = ({navigation, route}) => {
                   routeName="PoArticles"
                 />
               ) : (
-                <View className="h-full justify-center pb-2">
-                  <Text className="text-base font-bold text-center">
-                    No purchase order left
-                  </Text>
+                <View className="h-[90%] justify-center ">
+                  <DataNotFound message="No purchase order left" />
                 </View>
               )}
             </>

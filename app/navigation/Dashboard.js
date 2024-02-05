@@ -5,6 +5,8 @@ import ChildPacking from '../screens/dashboard/childPacking/ChildPacking';
 import QualityCheck from '../screens/dashboard/childPacking/qualityCheck/QualityCheck';
 import DeliveryNote from '../screens/dashboard/deliveryNote/DeliveryNote';
 import DeliveryPlan from '../screens/dashboard/deliveryPlan/DeliveryPlan';
+import Picking from '../screens/dashboard/picking/Picking';
+import PickingSto from '../screens/dashboard/picking/pickingSTO/PickingSto';
 import PoArticles from '../screens/dashboard/receiving/PoArticles/PoArticles';
 import Receiving from '../screens/dashboard/receiving/Receiving';
 import PurchaseOrder from '../screens/dashboard/receiving/purchaseOrder/PurchaseOrder';
@@ -42,7 +44,9 @@ const Dashboard = () => {
       name: 'PickerPackerTaskAssign',
       component: PickerPackerTaskAssign,
     },
-    {id: 'Picking', name: 'Picking', component: Receiving},
+    {id: 'picking', name: 'Picking', component: Picking},
+    {id: 'picking-sto', name: 'PickingSto', component: PickingSto},
+    {id: 'picking-sto-article', name: 'PickingStoArticle', component: PickingSto},
     {id: 'child-packing', name: 'ChildPacking', component: ChildPacking},
     {id: 'quality-check', name: 'QualityCheck', component: QualityCheck},
     {id: 'master-packing', name: 'MasterPacking', component: Receiving},

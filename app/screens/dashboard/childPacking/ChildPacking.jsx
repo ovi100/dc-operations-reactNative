@@ -18,7 +18,9 @@ const ChildPacking = ({navigation}) => {
   const tableHeader = ['Article ID', 'Article Name', 'Quantity'];
 
   const renderItem = ({item}) => (
-    <View className="flex-row border border-tb rounded-lg mt-2.5 p-4">
+    <TouchableOpacity
+      className="flex-row border border-tb rounded-lg mt-2.5 p-4"
+      onPress={() => handelCheckbox(item)}>
       <View className="flex-1 flex-row items-center">
         <CheckBox
           tintColors={item.selected ? '#56D342' : '#f5f5f5'}
@@ -35,7 +37,7 @@ const ChildPacking = ({navigation}) => {
       <Text className="flex-1 text-black text-center" numberOfLines={1}>
         {item.quantity}
       </Text>
-    </View>
+    </TouchableOpacity>
   );
 
   const handelCheckbox = article => {

@@ -9,44 +9,41 @@ import {
 } from 'react-native';
 import {launchCamera} from 'react-native-image-picker';
 import {ButtonBack, ButtonLg} from '../../../../../components/buttons';
-import {CloseIcon, ImageIcon} from '../../../../../constant/icons';
+import {ImageIcon} from '../../../../../constant/icons';
 
 const QualityCheck = ({navigation}) => {
   const [image, setImage] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const pickImage = async () => {
-    const options = {
-      mediaType: 'photo',
-    };
     try {
       setIsLoading(true);
-      const options = {
-        mediaType: 'photo',
-      };
+      const result = await launchCamera({mediaType: 'photo', quality: 1});
+      console.log(result);
 
-      await launchCamera(options, response => {
-        if (response.didCancel) {
-          console.log('User cancelled image picker');
-        } else if (response.error) {
-          console.log('ImagePicker Error: ', response.error);
-        } else {
-          // You can use response.uri to get the selected image URI
-          const selectedImageUri = response.uri;
-          console.log('Selected Image URI: ', selectedImageUri);
+      if (result.didCancel) {
+        setImage(null);
+        setIsLoading(false);
+        return;
+      }
 
-          // Handle the selected image URI as needed in your application
-        }
-      });
-      setIsLoading(false);
+      if (result.assets[0].uri) {
+        setImage(result.assets[0].uri);
+        setIsLoading(false);
+        return;
+      }
     } catch (error) {
       console.error(error);
     }
-    console.log(image, isLoading);
   };
 
   const removeImage = () => {
     setImage(null);
+  };
+
+  const reTake = () => {
+    setImage(null);
+    pickImage();
   };
 
   return (
@@ -66,23 +63,22 @@ const QualityCheck = ({navigation}) => {
               </View>
             )}
             {image === null && !isLoading && (
-              <View className="image-picker h-60 items-center justify-center border border-dashed border-theme">
-                <TouchableOpacity className="" onPress={pickImage}>
+              <TouchableOpacity onPress={pickImage}>
+                <View className="image-picker h-60 items-center justify-center border border-dashed border-theme">
                   <Image className="mx-auto mb-2" source={ImageIcon} />
                   <Text className="text-theme text-base text-center">
                     Click here to upload image
                   </Text>
-                </TouchableOpacity>
-              </View>
+                </View>
+              </TouchableOpacity>
             )}
             {image && (
-              <View className="image-preview relative h-60">
-                <TouchableOpacity
-                  className="absolute top-0 right-0 z-10"
-                  onPress={() => removeImage()}>
-                  <Image className="w-10 h-10" source={CloseIcon} />
-                </TouchableOpacity>
+              <View className="image-preview">
                 <Image className="w-full h-60" source={{uri: image}} />
+                <View className="buttons flex-row justify-around mt-3">
+                  <ButtonLg title="Remove" onPress={() => removeImage()} />
+                  <ButtonLg title="Retake" onPress={() => reTake()} />
+                </View>
               </View>
             )}
           </View>

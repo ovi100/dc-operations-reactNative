@@ -95,6 +95,10 @@ const poList = [
     id: 3000000013,
     sku: 20,
   },
+  {
+    id: 3000000017,
+    sku: 32,
+  },
 ];
 
 const dnList = [

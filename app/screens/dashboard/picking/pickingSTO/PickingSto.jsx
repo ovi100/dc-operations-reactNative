@@ -21,7 +21,7 @@ const PickingSto = ({navigation, route}) => {
             picking {' ' + id}
           </Text>
         </View>
-        <View className="content flex-1 justify-around my-5">
+        <View className="content flex-1 justify-around mt-5 mb-6">
           <Table
             header={tableHeader}
             data={articles}

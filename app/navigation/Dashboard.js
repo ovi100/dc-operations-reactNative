@@ -20,6 +20,7 @@ import ShelvingScanner from '../screens/dashboard/shelving/scanner/Scanner';
 import PickerPackerTaskAssign from '../screens/dashboard/taskAssign/PickerPackerTaskAssign/PickerPackerTaskAssign';
 import TaskAssign from '../screens/dashboard/taskAssign/TaskAssign';
 import Profile from '../screens/dashboard/userProfile/Profile';
+import PickingStoArticle from '../screens/dashboard/picking/pickingStoArticle/PickingStoArticle';
 
 const Stack = createNativeStackNavigator();
 
@@ -46,7 +47,7 @@ const Dashboard = () => {
     },
     {id: 'picking', name: 'Picking', component: Picking},
     {id: 'picking-sto', name: 'PickingSto', component: PickingSto},
-    {id: 'picking-sto-article', name: 'PickingStoArticle', component: PickingSto},
+    {id: 'picking-sto-article', name: 'PickingStoArticle', component: PickingStoArticle},
     {id: 'child-packing', name: 'ChildPacking', component: ChildPacking},
     {id: 'quality-check', name: 'QualityCheck', component: QualityCheck},
     {id: 'master-packing', name: 'MasterPacking', component: Receiving},

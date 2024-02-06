@@ -1,16 +1,13 @@
-import {useIsFocused} from '@react-navigation/native';
 import React from 'react';
-import {SafeAreaView, Text, View} from 'react-native';
-import {ButtonBack} from '../../../../components/buttons';
+import { SafeAreaView, Text, View } from 'react-native';
+import { ButtonBack } from '../../../../components/buttons';
 import Table from '../../../../components/table';
-import {poList} from '../../../../constant/data';
+import { poList } from '../../../../constant/data';
 
-const Receiving = ({navigation}) => {
+const Receiving = ({ navigation }) => {
   const tableHeader = ['Purchase Order ID', 'SKU'];
   const dataFields = ['id', 'sku'];
-  const isFocused = useIsFocused();
 
-  console.log(isFocused);
 
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">

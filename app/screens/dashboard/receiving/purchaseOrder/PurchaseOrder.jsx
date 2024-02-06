@@ -1,9 +1,9 @@
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useState } from 'react';
 import { SafeAreaView, Text, View } from 'react-native';
-import DataNotFound from '../../../../../components/DataNotFound';
-import ServerError from '../../../../../components/ServerError';
+import ReadyForShelving from '../../../../../components/animations/ReadyForShelving';
 import SearchAnimation from '../../../../../components/animations/Search';
+import ServerError from '../../../../../components/animations/ServerError';
 import { ButtonBack } from '../../../../../components/buttons';
 import Table from '../../../../../components/table';
 import { getStorage } from '../../../../../hooks/useStorage';
@@ -37,7 +37,9 @@ const PurchaseOrder = ({ navigation, route }) => {
         })
           .then(response => response.json())
           .then(result => {
+            console.log('po display', result)
             if (result.status) {
+              setIsServerError(false);
               fetch(API_URL + 'api/product-shelving/ready',
                 {
                   method: 'GET',
@@ -47,20 +49,26 @@ const PurchaseOrder = ({ navigation, route }) => {
                 },
               )
                 .then(res => res.json())
-                .then(shelveData => {
-                  const poItems = result.data.items;
-                  const shItems = shelveData.items;
-                  let remainingPoItems = poItems.filter(
-                    poItem =>
-                      !shItems.some(
-                        shItem =>
-                          shItem.po === poItem.po &&
-                          shItem.code === poItem.material,
-                      ),
-                  );
-                  setArticles(remainingPoItems);
-                  setIsLoading(false);
-                  setIsServerError(false);
+                .then(async shelveData => {
+                  if (shelveData.status) {
+                    console.log('shelve data', shelveData)
+                    const poItems = result.data.items;
+                    const shItems = shelveData.items;
+                    let remainingPoItems = await poItems.filter(
+                      poItem =>
+                        !shItems.some(
+                          shItem =>
+                            shItem.po === poItem.po &&
+                            shItem.code === poItem.material,
+                        ),
+                    );
+                    setArticles(remainingPoItems);
+                    setIsLoading(false);
+                    setIsServerError(false);
+                  }
+                  else {
+                    setIsServerError(true);
+                  }
                 })
                 .catch(error => console.log('Fetch catch', error));
             } else {
@@ -77,7 +85,8 @@ const PurchaseOrder = ({ navigation, route }) => {
   );
 
   console.log('PO Articles', articles);
-  console.log(isLoading);
+  console.log('is loading', isLoading);
+  console.log('server error', isServerError);
 
   return (
     <SafeAreaView className="flex-1 bg-white pt-14">
@@ -89,28 +98,37 @@ const PurchaseOrder = ({ navigation, route }) => {
           </Text>
         </View>
         <View className="content flex-1 justify-between py-5">
-          {isLoading ? (
-            <SearchAnimation />
-          ) : (
-            <View>
-              {isServerError ? (<ServerError />) : (<>
-                {articles.length ? (
-                  <Table
-                    header={tableHeader}
-                    data={articles}
-                    dataFields={dataFields}
-                    navigation={navigation}
-                    routeName="PoArticles"
-                  />
-                ) : (
-                  <View className="h-[90%] justify-center ">
-                    <DataNotFound message="All articles are ready for shelving" />
-                  </View>
-                )}
-              </>)}
-
-            </View>
-          )}
+          {
+            isLoading ? (
+              <SearchAnimation />
+            )
+              : (
+                <>
+                  {
+                    isServerError ?
+                      (<ServerError />)
+                      : (
+                        <>
+                          {
+                            articles.length ?
+                              (
+                                <Table
+                                  header={tableHeader}
+                                  data={articles}
+                                  dataFields={dataFields}
+                                  navigation={navigation}
+                                  routeName="PoArticles"
+                                />
+                              )
+                              : (
+                                <View className="h-[90%] justify-center">
+                                  <ReadyForShelving />
+                                </View>
+                              )}
+                        </>
+                      )}
+                </>
+              )}
         </View>
       </View>
     </SafeAreaView >

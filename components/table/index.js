@@ -21,10 +21,10 @@ const Table = ({header, data, dataFields, navigation, routeName = ''}) => {
     } else {
       return (
         <View className="flex-row border border-tb rounded-lg mt-2.5 p-4">
-          {dataFields.map(dataField => (
+          {dataFields.map((dataField, i) => (
             <Text
               className="flex-1 text-black text-center"
-              key={dataField}
+              key={i}
               numberOfLines={1}>
               {item[dataField]}
             </Text>

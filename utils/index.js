@@ -39,5 +39,22 @@ const uniqueArrayOfObjects = (arr, prop) => {
   return unique;
 };
 
-export { uniqueArray, uniqueArrayOfObjects, validateFile, validateInput };
+const groupBy = (array, type) => {
+  return array.reduce((acc, obj) => {
+    const key = obj[type];
+    if (!acc[key]) {
+      acc[key] = [];
+    }
+    acc[key].push(obj);
+    return acc;
+  }, {});
+};
+
+export {
+  groupBy,
+  uniqueArray,
+  uniqueArrayOfObjects,
+  validateFile,
+  validateInput
+};
 

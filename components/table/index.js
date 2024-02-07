@@ -8,11 +8,11 @@ const Table = ({header, data, dataFields, navigation, routeName = ''}) => {
         <TouchableOpacity
           className="flex-row border border-tb justify-between rounded-lg mt-2.5 p-4"
           onPress={() => navigation.push(routeName, item)}>
-          {dataFields.map(dataField => (
+          {dataFields.map((dataField, i) => (
             <Text
               className="flex-1 text-black text-center"
               numberOfLines={1}
-              key={dataField}>
+              key={i}>
               {item[dataField]}
             </Text>
           ))}
@@ -46,7 +46,7 @@ const Table = ({header, data, dataFields, navigation, routeName = ''}) => {
       <FlatList
         data={data}
         renderItem={renderItem}
-        keyExtractor={item => item.id}
+        keyExtractor={item => String(item.id)}
       />
     </View>
   );

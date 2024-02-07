@@ -1,17 +1,17 @@
-import {useFocusEffect} from '@react-navigation/native';
-import React, {useCallback, useState} from 'react';
+import { useFocusEffect } from '@react-navigation/native';
+import React, { useCallback, useState } from 'react';
 import {
-  ActivityIndicator,
   FlatList,
   SafeAreaView,
   Text,
   TouchableOpacity,
-  View,
+  View
 } from 'react-native';
-import {ButtonBack} from '../../../../components/buttons';
-import {getStorage} from '../../../../hooks/useStorage';
+import SearchAnimation from '../../../../components/animations/Search';
+import { ButtonBack } from '../../../../components/buttons';
+import { getStorage } from '../../../../hooks/useStorage';
 
-const Shelving = ({navigation}) => {
+const Shelving = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [token, setToken] = useState('');
   const [articles, setArticles] = useState([]);
@@ -42,16 +42,16 @@ const Shelving = ({navigation}) => {
                   },
                 })
                   .then(res => res.json())
-                  .then(inShelveData => {
+                  .then(inShelfData => {
                     if (data.status) {
                       const readyItems = data.items;
-                      const inShelveItems = inShelveData.items;
+                      const inShelfItems = inShelfData.items;
                       let remainingShelvingItems = readyItems.filter(
                         readyItem =>
-                          !inShelveItems.some(
-                            inShelveItem =>
-                              inShelveItem.po === readyItem.po &&
-                              inShelveItem.code === readyItem.code,
+                          !inShelfItems.some(
+                            inShelfItem =>
+                              inShelfItem.po === readyItem.po &&
+                              inShelfItem.code === readyItem.code,
                           ),
                       );
                       setArticles(remainingShelvingItems);
@@ -70,10 +70,10 @@ const Shelving = ({navigation}) => {
     }, [token]),
   );
 
-  const renderItem = ({item}) => (
+  const renderItem = ({ item }) => (
     <TouchableOpacity
       className="flex-row border border-tb rounded-lg mt-2.5 p-3"
-      onPress={() => navigation.push('ShelvingScanner', {item})}>
+      onPress={() => navigation.push('ShelvingScanner', { item })}>
       <View className="flex-1">
         <Text className="text-xs text-black" numberOfLines={1}>
           {item.code}
@@ -110,7 +110,7 @@ const Shelving = ({navigation}) => {
 
         <View className="content flex-1">
           {isLoading ? (
-            <ActivityIndicator />
+            <SearchAnimation />
           ) : (
             <>
               {articles.length ? (

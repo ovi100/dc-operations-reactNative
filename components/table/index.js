@@ -8,11 +8,11 @@ const Table = ({header, data, dataFields, navigation, routeName = ''}) => {
         <TouchableOpacity
           className="flex-row border border-tb justify-between rounded-lg mt-2.5 p-4"
           onPress={() => navigation.push(routeName, item)}>
-          {dataFields.map((dataField, i) => (
+          {dataFields.map((dataField) => (
             <Text
               className="flex-1 text-black text-center"
               numberOfLines={1}
-              key={i}>
+              key={item[dataField]}>
               {item[dataField]}
             </Text>
           ))}

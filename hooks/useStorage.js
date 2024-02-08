@@ -14,7 +14,7 @@ const setStorage = async (key, value) => {
   }
 };
 
-const getStorage = async (key, fn, type) => {
+const getStorage = async (key, fn, type = '') => {
   try {
     const value = await AsyncStorage.getItem(key);
     if (type === 'object') {

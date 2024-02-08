@@ -77,7 +77,7 @@ const ButtonLg = ({title, onPress}) => {
 const ButtonXs = ({title}) => {
   return (
     <View style={styles.buttonXs}>
-      <Text style={styles.xsText}>{title}</Text>
+      <Text className="text-white text-sm text-center font-medium">{title}</Text>
     </View>
   );
 };

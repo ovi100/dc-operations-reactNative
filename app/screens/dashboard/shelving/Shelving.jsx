@@ -18,10 +18,9 @@ const Shelving = ({ navigation }) => {
   const tableHeader = ['Article ID', 'BIN ID', 'Quantity'];
   const API_URL = 'https://shwapnooperation.onrender.com/api/product-shelving/';
 
-  getStorage('token', setToken, 'string');
-
   useFocusEffect(
     useCallback(() => {
+      getStorage('token', setToken, 'string');
       setIsLoading(true);
       const getShelvingReady = async () => {
         try {
@@ -33,9 +32,9 @@ const Shelving = ({ navigation }) => {
             },
           })
             .then(response => response.json())
-            .then(data => {
+            .then(async data => {
               if (data.status) {
-                fetch(API_URL + 'in-shelf', {
+                await fetch(API_URL + 'in-shelf', {
                   method: 'GET',
                   headers: {
                     authorization: token,
@@ -59,6 +58,8 @@ const Shelving = ({ navigation }) => {
                     }
                   })
                   .catch(error => console.log('Fetch catch', error));
+              } else {
+
               }
             })
             .catch(error => console.log('Fetch catch', error));
@@ -66,7 +67,9 @@ const Shelving = ({ navigation }) => {
           console.log(error);
         }
       };
-      getShelvingReady();
+      if (token) {
+        getShelvingReady();
+      }
     }, [token]),
   );
 

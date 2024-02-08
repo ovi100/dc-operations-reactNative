@@ -1,5 +1,5 @@
 import CheckBox from '@react-native-community/checkbox';
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Alert,
   FlatList,
@@ -11,11 +11,11 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import {ButtonBack, ButtonLg, ButtonXs} from '../../../../components/buttons';
-import {stoList} from '../../../../constant/data';
-import {SearchIcon} from '../../../../constant/icons';
+import { ButtonBack, ButtonLg, ButtonXs } from '../../../../components/buttons';
+import { stoList } from '../../../../constant/data';
+import { SearchIcon } from '../../../../constant/icons';
 
-const DeliveryPlan = ({navigation}) => {
+const DeliveryPlan = ({ navigation }) => {
   const [keyboardStatus, setKeyboardStatus] = useState(false);
   let [deliveryPlanList, setDeliveryPlanList] = useState(stoList);
   const [selectedList, setSelectedList] = useState([]);
@@ -39,7 +39,7 @@ const DeliveryPlan = ({navigation}) => {
 
   console.log('keyboard status', keyboardStatus);
 
-  const renderItem = ({item}) => (
+  const renderItem = ({ item }) => (
     <TouchableOpacity
       className="flex-row items-center border border-tb rounded-lg mt-2.5 p-4"
       onPress={() => handelCheckbox(item)}>
@@ -50,8 +50,7 @@ const DeliveryPlan = ({navigation}) => {
           onValueChange={() => handelCheckbox(item)}
         />
         <Text className="text-black" numberOfLines={1}>
-          {String(item.id).slice(0, 2) +
-            String(item.id).replace(/.{6}/, d => '.'.repeat(d.length))}
+          {String(item.id).slice(0, 2) + '...' + String(item.id).slice(7, item.id.length)}
         </Text>
       </View>
       <Text className="flex-1 text-black text-center" numberOfLines={1}>
@@ -68,7 +67,7 @@ const DeliveryPlan = ({navigation}) => {
 
   const handelCheckbox = sto => {
     let newItems = deliveryPlanList.map(item =>
-      sto.id === item.id ? {...item, selected: !item.selected} : item,
+      sto.id === item.id ? { ...item, selected: !item.selected } : item,
     );
     setSelectedList(newItems.filter(item => item.selected));
     setDeliveryPlanList(newItems);
@@ -77,7 +76,7 @@ const DeliveryPlan = ({navigation}) => {
 
   const checkAll = () => {
     const checkAllData = deliveryPlanList.map(item => {
-      return {...item, selected: true};
+      return { ...item, selected: true };
     });
     setDeliveryPlanList(checkAllData);
     setSelectedList(checkAllData);
@@ -87,7 +86,7 @@ const DeliveryPlan = ({navigation}) => {
 
   const uncheckAll = () => {
     const checkAllData = deliveryPlanList.map(item => {
-      return {...item, selected: false};
+      return { ...item, selected: false };
     });
     setDeliveryPlanList(checkAllData);
     setSelectedList(checkAllData);

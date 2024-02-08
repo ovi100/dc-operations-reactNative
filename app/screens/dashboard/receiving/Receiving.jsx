@@ -16,7 +16,7 @@ const Receiving = ({ navigation }) => {
     }, [])
   );
 
-  if (barcode.length == 11) {
+  if (barcode.length == 10) {
     navigation.push('PurchaseOrder', { po_id: barcode });
     setBarcode('')
   }

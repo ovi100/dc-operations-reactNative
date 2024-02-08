@@ -1,4 +1,4 @@
-import { Alert } from 'react-native';
+import { Alert, ToastAndroid } from 'react-native';
 
 const validateInput = (type, value) => {
   if (!value) {
@@ -50,8 +50,17 @@ const groupBy = (array, type) => {
   }, {});
 };
 
+const toast = message => {
+  ToastAndroid.show(
+    message,
+    ToastAndroid.LONG,
+    ToastAndroid.CENTER,
+  );
+};
+
 export {
   groupBy,
+  toast,
   uniqueArray,
   uniqueArrayOfObjects,
   validateFile,

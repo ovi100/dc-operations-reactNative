@@ -1,17 +1,22 @@
 import React, { useEffect, useState } from 'react';
-import { Alert, Image, SafeAreaView, Text, TextInput, View } from 'react-native';
+import { Image, SafeAreaView, Text, TextInput, View } from 'react-native';
 import { ButtonBack, ButtonLg } from '../../../../../components/buttons';
 import { BoxIcon } from '../../../../../constant/icons';
+import useAppContext from '../../../../../hooks/useAppContext';
 import { getStorage } from '../../../../../hooks/useStorage';
+import { toast } from '../../../../../utils';
 
 const PoArticles = ({ navigation, route }) => {
-  const { description, material, po, quantity, receivingPlant } = route.params;
+  const { description, material, po, poItem, quantity, receivingPlant, storeLocation, unit } = route.params;
   const [bins, setBins] = useState([]);
   const [newQuantity, setNewQuantity] = useState(quantity);
   const [user, setUser] = useState({});
   const [token, setToken] = useState('');
   const API_URL = 'https://shwapnooperation.onrender.com/api/';
   const API_URL2 = 'https://shelves-backend.onrender.com/api/';
+
+  const { GRNInfo } = useAppContext();
+  const { setGrnPo, addToGRN } = GRNInfo
 
   useEffect(() => {
     const getBins = async code => {
@@ -35,8 +40,26 @@ const PoArticles = ({ navigation, route }) => {
 
   const updateQuantity = async () => {
     if (newQuantity > quantity) {
-      Alert.alert('Quantity exceed');
+      toast('Quantity exceed')
     } else {
+      const grnItem = {
+        MOVE_TYPE: '101',
+        MVT_IND: 'B',
+        PO_NUMBER: po,
+        PO_ITEM: Number(poItem).toString(),
+        MATERIAL: material,
+        PLANT: receivingPlant,
+        STGE_LOC: storeLocation,
+        ENTRY_QNT: Number(newQuantity),
+        ENTRY_UOM: unit,
+        ENTRY_UOM_ISO: unit,
+      };
+      console.log('GRM Item', grnItem)
+      // setGrnPo(po);
+      // addToGRN(grnItem);
+      // setTimeout(() => {
+      //   navigation.goBack();
+      // }, 1000);
       const shelvingObject = {
         po: po,
         code: material,
@@ -63,12 +86,14 @@ const PoArticles = ({ navigation, route }) => {
           .then(data => {
             console.log(data);
             if (data.status) {
-              Alert.alert(data.message);
+              toast(data.message);
+              setGrnPo(po);
+              addToGRN(grnItem);
               setTimeout(() => {
                 navigation.goBack();
-              }, 2000);
+              }, 1000);
             } else {
-              Alert.alert(data.message);
+              toast(data.message);
               setTimeout(() => {
                 navigation.goBack();
               }, 2000);
@@ -84,6 +109,7 @@ const PoArticles = ({ navigation, route }) => {
   };
 
   console.log('receiving--> PO List --> article', route.params);
+
 
   return (
     <SafeAreaView className="flex-1 bg-white pt-14">

@@ -1,11 +1,11 @@
 import React from 'react';
 import AppProvider from '../contexts/AppContext';
-import Root from './navigation/Root';
+import AppNavigation from './navigation/AppNavigation';
 
 const App = () => {
   return (
     <AppProvider>
-      <Root />
+      <AppNavigation />
     </AppProvider>
   );
 };

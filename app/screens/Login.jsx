@@ -1,36 +1,32 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
-  Alert,
   Image,
   Keyboard,
   StatusBar,
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from 'react-native';
-import {ButtonLoading, ButtonLogin} from '../../components/buttons';
+import { ButtonLoading, ButtonLogin } from '../../components/buttons';
 import {
   EyeInvisibleIcon,
   EyeVisibleIcon,
   LoginBGImage,
 } from '../../constant/icons';
 import useAppContext from '../../hooks/useAppContext';
-import {setStorage} from '../../hooks/useStorage';
 import styles from '../../styles/button';
-import {validateInput} from '../../utils';
+import { validateInput } from '../../utils';
 
-const Login = ({navigation}) => {
+const Login = () => {
   const [keyboardStatus, setKeyboardStatus] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const {authInfo} = useAppContext();
-  const {setUser, setToken} = authInfo;
+  const { authInfo } = useAppContext();
+  const { login, isLoading } = authInfo;
   const [inputType, setInputType] = useState(false);
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState(null);
   const [password, setPassword] = useState('');
   const [passwordError, setPasswordError] = useState(null);
-  const API_URL = 'https://shwapnooperation.onrender.com/api/';
 
   useEffect(() => {
     const showKeyboard = Keyboard.addListener('keyboardDidShow', () => {
@@ -54,43 +50,7 @@ const Login = ({navigation}) => {
     setEmailError(validateInput('email', email));
     setPasswordError(validateInput('password', password));
     if (email && password) {
-      setIsLoading(true);
-      try {
-        let formData = {email, password};
-        fetch(API_URL + 'user/login', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(formData),
-        })
-          .then(response => response.json())
-          .then(data => {
-            if (data.status) {
-              const token = data.token;
-              const user = data.user;
-              setUser(user);
-              setToken(token);
-              setStorage('user', user);
-              setStorage('token', token);
-              if (token) {
-                navigation.push('Dashboard');
-              } else {
-                navigation.push('Login');
-              }
-            } else {
-              Alert.alert(data.message);
-            }
-            setIsLoading(false);
-          })
-          .catch(error => {
-            Alert.alert(error);
-            setIsLoading(false);
-          });
-      } catch (error) {
-        console.log(error);
-        setIsLoading(false);
-      }
+      login(email, password);
     }
   };
 
@@ -101,9 +61,8 @@ const Login = ({navigation}) => {
 
       {/* title and form */}
       <View
-        className={`h-full w-full flex justify-around pt-40 ${
-          keyboardStatus ? 'pb-0' : 'pb-10'
-        }`}>
+        className={`h-full w-full flex justify-around pt-40 ${keyboardStatus ? 'pb-0' : 'pb-10'
+          }`}>
         {/* title */}
         <View className={'flex items-center'}>
           <Text className="text-white font-bold tracking-wider text-5xl">
@@ -117,9 +76,8 @@ const Login = ({navigation}) => {
           <View className="w-full rounded-2xl px-3 mb-4">
             <View className="email relative">
               <TextInput
-                className={`border ${
-                  emailError ? 'border-red-500' : 'border-[#bcbcbc]'
-                } h-[55px] text-[#a9a9a9] rounded-[5px] px-4`}
+                className={`border ${emailError ? 'border-red-500' : 'border-[#bcbcbc]'
+                  } h-[55px] text-[#a9a9a9] rounded-[5px] px-4`}
                 placeholder="Email"
                 selectionColor="#bcbcbc"
                 inputMode="email"
@@ -139,9 +97,8 @@ const Login = ({navigation}) => {
           <View className="w-full rounded-2xl px-3 mb-4">
             <View className="password relative">
               <TextInput
-                className={`border ${
-                  passwordError ? 'border-red-500' : 'border-[#bcbcbc]'
-                } h-[55px] text-[#a9a9a9] rounded-[5px] px-4`}
+                className={`border ${passwordError ? 'border-red-500' : 'border-[#bcbcbc]'
+                  } h-[55px] text-[#a9a9a9] rounded-[5px] px-4`}
                 placeholder="Password"
                 selectionColor="#bcbcbc"
                 secureTextEntry={!inputType}

@@ -51,8 +51,8 @@ const useGRN = () => {
     }
   };
 
-  console.log('From GRN Hook', grn);
-  console.log('From GRN Hook', grnItems);
+  // console.log('From GRN Hook', grn);
+  // console.log('From GRN Hook', grnItems);
 
   const GRNInfo = {
     setGrnPo,

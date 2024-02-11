@@ -1,5 +1,6 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React from 'react';
+// screens
 import Home from '../screens/dashboard';
 import ChildPacking from '../screens/dashboard/childPacking/ChildPacking';
 import QualityCheck from '../screens/dashboard/childPacking/qualityCheck/QualityCheck';
@@ -7,6 +8,8 @@ import DeliveryNote from '../screens/dashboard/deliveryNote/DeliveryNote';
 import DeliveryPlan from '../screens/dashboard/deliveryPlan/DeliveryPlan';
 import Picking from '../screens/dashboard/picking/Picking';
 import PickingSto from '../screens/dashboard/picking/pickingSTO/PickingSto';
+import PickingStoArticle from '../screens/dashboard/picking/pickingStoArticle/PickingStoArticle';
+import Print from '../screens/dashboard/print/Print';
 import PoArticles from '../screens/dashboard/receiving/PoArticles/PoArticles';
 import Receiving from '../screens/dashboard/receiving/Receiving';
 import PurchaseOrder from '../screens/dashboard/receiving/purchaseOrder/PurchaseOrder';
@@ -20,11 +23,10 @@ import ShelvingScanner from '../screens/dashboard/shelving/scanner/Scanner';
 import PickerPackerTaskAssign from '../screens/dashboard/taskAssign/PickerPackerTaskAssign/PickerPackerTaskAssign';
 import TaskAssign from '../screens/dashboard/taskAssign/TaskAssign';
 import Profile from '../screens/dashboard/userProfile/Profile';
-import PickingStoArticle from '../screens/dashboard/picking/pickingStoArticle/PickingStoArticle';
 
 const Stack = createNativeStackNavigator();
 
-const Dashboard = () => {
+const AppStack = () => {
   const routes = [
     {id: 'home', name: 'Home', component: Home},
     {id: 'profile', name: 'Profile', component: Profile},
@@ -47,7 +49,11 @@ const Dashboard = () => {
     },
     {id: 'picking', name: 'Picking', component: Picking},
     {id: 'picking-sto', name: 'PickingSto', component: PickingSto},
-    {id: 'picking-sto-article', name: 'PickingStoArticle', component: PickingStoArticle},
+    {
+      id: 'picking-sto-article',
+      name: 'PickingStoArticle',
+      component: PickingStoArticle,
+    },
     {id: 'child-packing', name: 'ChildPacking', component: ChildPacking},
     {id: 'quality-check', name: 'QualityCheck', component: QualityCheck},
     {id: 'master-packing', name: 'MasterPacking', component: Receiving},
@@ -55,12 +61,12 @@ const Dashboard = () => {
     {id: 'return', name: 'Return', component: Return},
     {id: 'return-scanner', name: 'ReturnScanner', component: ReturnScanner},
     {id: 'return-details', name: 'ReturnDetails', component: ReturnDetails},
-    {id: 'print', name: 'Print', component: Receiving},
+    {id: 'print', name: 'Print', component: Print},
     {id: 'scan-barcode', name: 'ScanBarcode', component: ScanBarCode},
   ];
   return (
     <Stack.Navigator
-      initialRouteName="Home"
+      initialRouteName="Login"
       screenOptions={{headerShown: false}}>
       {routes.map(route => (
         <Stack.Screen
@@ -76,4 +82,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default AppStack;

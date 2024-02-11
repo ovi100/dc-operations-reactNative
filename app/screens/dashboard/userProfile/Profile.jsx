@@ -1,7 +1,7 @@
-import {Link} from '@react-navigation/native';
-import React, {useEffect, useState} from 'react';
-import {Image, Text, View} from 'react-native';
-import {ButtonBackProfile, ButtonLogin} from '../../../../components/buttons';
+import { Link } from '@react-navigation/native';
+import React, { useEffect, useState } from 'react';
+import { Image, Text, View } from 'react-native';
+import { ButtonBackProfile, ButtonLogin } from '../../../../components/buttons';
 import {
   AvatarImage,
   EmailIcon,
@@ -11,25 +11,19 @@ import {
   ProfileIcon,
 } from '../../../../constant/icons';
 import useAppContext from '../../../../hooks/useAppContext';
-import {getStorage, removeAll} from '../../../../hooks/useStorage';
+import { getStorage } from '../../../../hooks/useStorage';
 import styles from '../../../../styles/button';
 
-const Profile = ({navigation}) => {
-  const {authInfo} = useAppContext();
-  const [user, setUser] = useState(authInfo.user);
+const Profile = ({ navigation }) => {
+  const { authInfo } = useAppContext();
+  const { logout, user } = authInfo;
+  const [asUser, setAsUser] = useState(user);
 
   useEffect(() => {
-    getStorage('user', setUser, 'object');
+    getStorage('user', setAsUser, 'object');
   }, []);
 
-  console.log('Profile page', user);
-
-  const logOut = () => {
-    authInfo.setUser({});
-    authInfo.setToken(null);
-    removeAll();
-    navigation.push('Login');
-  };
+  console.log('Profile page', asUser);
 
   return (
     <View className="flex-1 bg-white">
@@ -55,7 +49,7 @@ const Profile = ({navigation}) => {
               <View className="name border-b border-gray-200 flex-row items-center gap-3 py-3">
                 <Image className="w-5 h-5" source={ProfileIcon} />
                 <Text className="text-base text-gray-400 font-medium capitalize">
-                  {user.name}
+                  {asUser.name}
                 </Text>
               </View>
             </View>
@@ -63,7 +57,7 @@ const Profile = ({navigation}) => {
               <View className="email border-b border-gray-200 flex-row items-center gap-3 py-3">
                 <Image className="w-5 h-5" source={EmailIcon} />
                 <Text className="text-base text-gray-400 font-medium">
-                  {user.email}
+                  {asUser.email}
                 </Text>
               </View>
             </View>
@@ -78,7 +72,7 @@ const Profile = ({navigation}) => {
             <View className="w-full px-4">
               <View className="password-change border-b border-gray-200 flex-row items-center gap-3 py-3">
                 <Image className="w-5 h-5" source={PasswordIcon} />
-                <Link to={{screen: 'ChangePassword', params: {id: user._id}}}>
+                <Link to={{ screen: 'ChangePassword', params: { id: asUser._id } }}>
                   <Text className="text-blue-500 text-base rounded font-medium capitalize py-2 px-3">
                     change password
                   </Text>
@@ -91,7 +85,7 @@ const Profile = ({navigation}) => {
         <View className="w-full px-4 mt-5">
           <ButtonLogin
             title="Logout"
-            onPress={logOut}
+            onPress={logout}
             buttonStyles={styles.buttonLogin}
             textStyles={styles.lgText}
           />

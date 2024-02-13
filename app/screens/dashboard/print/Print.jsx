@@ -6,6 +6,7 @@ import SunmiPrinter from '../../../../utils/sunmi/printer';
 const Print = ({ navigation }) => {
   const { printerText, lineWrap } = SunmiPrinter;
   const printReceipt = () => {
+    lineWrap(5);
     printerText('DC print receipt\n');
     printerText('*************************\n');
     printerText('Receipt printed');

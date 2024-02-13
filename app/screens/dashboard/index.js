@@ -61,7 +61,7 @@ const Home = ({navigation}) => {
       access: ['private'],
     },
     {
-      name: 'Delivery Note',
+      name: 'Final Delivery Note',
       icon: DeliveryNoteIcon,
       screen: 'DeliveryNote',
       access: ['all'],
@@ -97,7 +97,7 @@ const Home = ({navigation}) => {
           </Text>
           <ButtonProfile onPress={() => navigation.push('Profile')} />
         </View>
-        <View className="flex-row flex-wrap items-center justify-between">
+        <View className="flex-row flex-wrap items-center justify-between px-3">
           {filteredLinks.map(item => (
             <View
               className="menu-box items-center w-1/3 mt-8"

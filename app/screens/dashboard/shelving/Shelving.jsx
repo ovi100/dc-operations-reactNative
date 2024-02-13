@@ -1,6 +1,7 @@
 import { useFocusEffect } from '@react-navigation/native';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
+  ActivityIndicator,
   FlatList,
   SafeAreaView,
   Text,
@@ -15,66 +16,85 @@ const Shelving = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [token, setToken] = useState('');
   const [articles, setArticles] = useState([]);
+  const [page, setPage] = useState(1);
+  const [totalPage, setTotalPage] = useState(0);
   const tableHeader = ['Article ID', 'BIN ID', 'Quantity'];
   const API_URL = 'https://shwapnooperation.onrender.com/api/product-shelving/';
 
+  useEffect(() => {
+    getStorage('token', setToken, 'string');
+  }, []);
+
+  const getShelvingReady = async () => {
+    try {
+      setIsLoading(true);
+      await fetch(API_URL + 'ready' + `?currentPage=${page}`, {
+        method: 'GET',
+        headers: {
+          authorization: token,
+        },
+      })
+        .then(response => response.json())
+        .then(async readyData => {
+          if (readyData.status) {
+            await fetch(API_URL + 'in-shelf', {
+              method: 'GET',
+              headers: {
+                authorization: token,
+              },
+            })
+              .then(res => res.json())
+              .then(inShelfData => {
+                if (inShelfData.status) {
+                  const readyItems = readyData.items;
+                  const inShelfItems = inShelfData.items;
+                  let remainingShelvingItems = readyItems.filter(
+                    readyItem =>
+                      !inShelfItems.some(
+                        inShelfItem =>
+                          inShelfItem.po === readyItem.po &&
+                          inShelfItem.code === readyItem.code,
+                      ),
+                  );
+                  setArticles([...articles, ...remainingShelvingItems]);
+                  setTotalPage(readyData.totalPages);
+                } else {
+                  const readyItems = readyData.items;
+                  setArticles([...articles, ...readyItems]);
+                  setTotalPage(readyData.totalPages);
+
+                }
+              })
+              .catch(error => console.log('Fetch catch', error));
+          }
+        })
+        .catch(error => console.log('Fetch catch', error));
+    } catch (error) {
+      console.log(error);
+      setIsLoading(false);
+    }
+  };
+
   useFocusEffect(
     useCallback(() => {
-      getStorage('token', setToken, 'string');
-      setIsLoading(true);
-      const getShelvingReady = async () => {
-        try {
-          setIsLoading(true);
-          await fetch(API_URL + 'ready', {
-            method: 'GET',
-            headers: {
-              authorization: token,
-            },
-          })
-            .then(response => response.json())
-            .then(async data => {
-              if (data.status) {
-                await fetch(API_URL + 'in-shelf', {
-                  method: 'GET',
-                  headers: {
-                    authorization: token,
-                  },
-                })
-                  .then(res => res.json())
-                  .then(inShelfData => {
-                    if (data.status) {
-                      const readyItems = data.items;
-                      const inShelfItems = inShelfData.items;
-                      let remainingShelvingItems = readyItems.filter(
-                        readyItem =>
-                          !inShelfItems.some(
-                            inShelfItem =>
-                              inShelfItem.po === readyItem.po &&
-                              inShelfItem.code === readyItem.code,
-                          ),
-                      );
-                      setArticles(remainingShelvingItems);
-                      setIsLoading(false);
-                    }
-                  })
-                  .catch(error => console.log('Fetch catch', error));
-              } else {
-
-              }
-            })
-            .catch(error => console.log('Fetch catch', error));
-        } catch (error) {
-          console.log(error);
-        }
-      };
       if (token) {
         getShelvingReady();
       }
-    }, [token]),
+    }, [token, page]),
   );
 
-  const renderItem = ({ item }) => (
+  const loadMoreItem = () => {
+    if (totalPage >= page) {
+      setPage(prev => prev + 1);
+    } else {
+      setIsLoading(false);
+    }
+  };
+
+
+  const renderItem = ({ item, index }) => (
     <TouchableOpacity
+      key={index}
       className="flex-row border border-tb rounded-lg mt-2.5 p-3"
       onPress={() => navigation.push('ShelvingScanner', { item })}>
       <View className="flex-1">
@@ -86,14 +106,18 @@ const Shelving = ({ navigation }) => {
         </Text>
       </View>
       <View>
-        {item.bins.map((bin, i) => (
-          <Text
-            key={i}
-            className="flex-1 text-black text-center mb-1 last:mb-0"
-            numberOfLines={1}>
-            {bin.bin_id}
-          </Text>
-        ))}
+        {item.bins.length ? (
+          <>
+            {item.bins.map((bin, i) => (
+              <Text
+                key={i}
+                className="flex-1 text-black text-center mb-1 last:mb-0"
+                numberOfLines={1}>
+                {bin.bin_id}
+              </Text>
+            ))}
+          </>
+        ) : (<Text>No bins found!</Text>)}
       </View>
       <Text className="flex-1 text-black text-center" numberOfLines={1}>
         {item.receivedQuantity}
@@ -112,9 +136,7 @@ const Shelving = ({ navigation }) => {
         </View>
 
         <View className="content flex-1">
-          {isLoading ? (
-            <SearchAnimation />
-          ) : (
+          {isLoading ? <SearchAnimation /> :
             <>
               {articles.length ? (
                 <View className="h-full pb-2">
@@ -132,6 +154,9 @@ const Shelving = ({ navigation }) => {
                     data={articles}
                     renderItem={renderItem}
                     keyExtractor={item => item._id}
+                    onEndReached={loadMoreItem}
+                    ListFooterComponent={isLoading && <ActivityIndicator />}
+                    onEndReachedThreshold={0}
                   />
                 </View>
               ) : (
@@ -141,8 +166,7 @@ const Shelving = ({ navigation }) => {
                   </Text>
                 </View>
               )}
-            </>
-          )}
+            </>}
         </View>
       </View>
     </SafeAreaView>

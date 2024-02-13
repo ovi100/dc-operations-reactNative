@@ -70,7 +70,7 @@ const PoArticles = ({ navigation, route }) => {
         quantity: quantity,
         receivedQuantity: newQuantity,
         receivedBy: user.name,
-        bins,
+        bins: bins.length ? bins : "No bins found!",
       };
       console.log(shelvingObject);
       try {

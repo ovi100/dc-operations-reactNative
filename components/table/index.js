@@ -46,7 +46,7 @@ const Table = ({header, data, dataFields, navigation, routeName = ''}) => {
       <FlatList
         data={data}
         renderItem={renderItem}
-        keyExtractor={item => String(item.id)}
+        keyExtractor={item => String(item._id)}
       />
     </View>
   );

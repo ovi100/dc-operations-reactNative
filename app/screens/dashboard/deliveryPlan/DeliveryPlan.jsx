@@ -1,6 +1,8 @@
 import CheckBox from '@react-native-community/checkbox';
-import React, { useEffect, useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
+  ActivityIndicator,
   Alert,
   FlatList,
   Image,
@@ -12,18 +14,24 @@ import {
   View,
 } from 'react-native';
 import { ButtonBack, ButtonLg, ButtonXs } from '../../../../components/buttons';
-import { stoList } from '../../../../constant/data';
 import { SearchIcon } from '../../../../constant/icons';
+import { getStorage } from '../../../../hooks/useStorage';
 
 const DeliveryPlan = ({ navigation }) => {
+  const [isLoading, setIsLoading] = useState(false);
   const [keyboardStatus, setKeyboardStatus] = useState(false);
-  let [deliveryPlanList, setDeliveryPlanList] = useState(stoList);
+  const [token, setToken] = useState('');
+  let [dpList, setDpList] = useState([]);
+  const [page, setPage] = useState(1);
+  const [totalPage, setTotalPage] = useState(0);
   const [selectedList, setSelectedList] = useState([]);
   const [isAllChecked, setIsAllChecked] = useState(false);
   const [search, setSearch] = useState('');
-  const tableHeader = ['STO ID', 'SKU', 'Outlet Name', 'Status'];
+  const tableHeader = ['STO ID', 'SKU', 'Outlet Code', 'Status'];
+  const API_URL = 'https://shwapnooperation.onrender.com/api/sto-tracking/pending-for-dn';
 
   useEffect(() => {
+    getStorage('token', setToken, 'string');
     const showKeyboard = Keyboard.addListener('keyboardDidShow', () => {
       setKeyboardStatus(true);
     });
@@ -37,12 +45,57 @@ const DeliveryPlan = ({ navigation }) => {
     };
   }, []);
 
+  const getDnList = async () => {
+    setIsLoading(true);
+    try {
+      await fetch(API_URL + `?currentPage=${page}`, {
+        method: 'GET',
+        headers: {
+          authorization: token,
+        },
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.status) {
+            const dpData = data.items.map(item => {
+              return { ...item, selected: false }
+            });
+            setDpList([...dpList, ...dpData]);
+            setTotalPage(data.totalPages);
+            setIsLoading(false);
+          } else {
+            console.log(data.message);
+            setIsLoading(false);
+          }
+        })
+        .catch(error => console.log('Fetch catch', error));
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      if (token) {
+        getDnList();
+      }
+    }, [token, page])
+  );
+
   console.log('keyboard status', keyboardStatus);
 
-  const renderItem = ({ item }) => (
+  const loadMoreItem = () => {
+    if (totalPage >= page) {
+      setPage(prev => prev + 1);
+    } else {
+      setIsLoading(false);
+    }
+  };
+
+  const renderItem = ({ item, index }) => (
     <TouchableOpacity
       className="flex-row items-center border border-tb rounded-lg mt-2.5 p-4"
-      onPress={() => handelCheckbox(item)}>
+      onPress={() => handelCheckbox(item)} key={index}>
       <View className="flex-1 flex-row items-center">
         <CheckBox
           tintColors={item.selected ? '#56D342' : '#f5f5f5'}
@@ -50,45 +103,45 @@ const DeliveryPlan = ({ navigation }) => {
           onValueChange={() => handelCheckbox(item)}
         />
         <Text className="text-black" numberOfLines={1}>
-          {String(item.id).slice(0, 2) + '...' + String(item.id).slice(7, item.id.length)}
+          {item.sto.slice(0, 2) + '...' + item.sto.slice(7, item.sto.length)}
         </Text>
       </View>
       <Text className="flex-1 text-black text-center" numberOfLines={1}>
         {item.sku}
       </Text>
       <Text className="flex-1 text-black text-center" numberOfLines={1}>
-        {item.outlet}
+        {item.receivingPlant}
       </Text>
       <Text className="flex-1 text-black text-center" numberOfLines={1}>
-        {item.status}
+        {item.status.split(" ")[0]}
       </Text>
     </TouchableOpacity>
   );
 
   const handelCheckbox = sto => {
-    let newItems = deliveryPlanList.map(item =>
-      sto.id === item.id ? { ...item, selected: !item.selected } : item,
+    let newItems = dpList.map(item =>
+      sto._id === item._id ? { ...item, selected: !item.selected } : item,
     );
     setSelectedList(newItems.filter(item => item.selected));
-    setDeliveryPlanList(newItems);
+    setDpList(newItems);
     Keyboard.dismiss();
   };
 
   const checkAll = () => {
-    const checkAllData = deliveryPlanList.map(item => {
+    const checkAllData = dpList.map(item => {
       return { ...item, selected: true };
     });
-    setDeliveryPlanList(checkAllData);
+    setDpList(checkAllData);
     setSelectedList(checkAllData);
     setIsAllChecked(current => !current);
     Keyboard.dismiss();
   };
 
   const uncheckAll = () => {
-    const checkAllData = deliveryPlanList.map(item => {
+    const checkAllData = dpList.map(item => {
       return { ...item, selected: false };
     });
-    setDeliveryPlanList(checkAllData);
+    setDpList(checkAllData);
     setSelectedList(checkAllData);
     setIsAllChecked(current => !current);
     Keyboard.dismiss();
@@ -104,10 +157,9 @@ const DeliveryPlan = ({ navigation }) => {
   };
 
   if (search !== '') {
-    deliveryPlanList = deliveryPlanList.filter(
+    dpList = dpList.filter(
       dp =>
-        String(dp.id).toLowerCase().includes(search.toLowerCase()) ||
-        dp.outlet.toLowerCase().includes(search.toLowerCase()),
+        dp.sto.toLowerCase().includes(search.toLowerCase())
     );
   }
 
@@ -126,13 +178,13 @@ const DeliveryPlan = ({ navigation }) => {
           <View className="input-box relative flex-1">
             <Image className="absolute top-3 left-3 z-10" source={SearchIcon} />
             <TextInput
-              className="bg-[#F5F6FA] h-[50px] text-[#5D80C5] rounded-lg pl-12 pr-4"
-              placeholder="Search for STO/Outlet"
+              className="bg-[#F5F6FA] h-[50px] text-black rounded-lg pl-12 pr-4"
+              placeholder="Search for STO"
+              inputMode='text'
               placeholderTextColor="#CBC9D9"
               selectionColor="#CBC9D9"
-              onChangeText={value => {
-                setSearch(value);
-              }}
+              onChangeText={value => setSearch(value)}
+              value={search}
             />
           </View>
           <View className="box-header flex-row items-center justify-between">
@@ -149,7 +201,7 @@ const DeliveryPlan = ({ navigation }) => {
         </View>
         <View className="content flex-1 justify-around my-6">
           {/* Table data */}
-          <View className="table h-full pb-2">
+          <View className="table h-[90%] pb-2">
             <View className="flex-row bg-th text-center mb-2 py-2">
               {tableHeader.map(th => (
                 <Text
@@ -160,14 +212,17 @@ const DeliveryPlan = ({ navigation }) => {
               ))}
             </View>
             <FlatList
-              data={deliveryPlanList}
+              data={dpList}
               renderItem={renderItem}
-              keyExtractor={item => item.id}
+              keyExtractor={item => item.sto}
+              onEndReached={loadMoreItem}
+              ListFooterComponent={isLoading && <ActivityIndicator />}
+              onEndReachedThreshold={0}
             />
           </View>
 
           {!keyboardStatus && (
-            <View className="button">
+            <View className="button mt-4">
               <ButtonLg
                 title="Mark as delivery ready"
                 onPress={() => updateDelivery()}

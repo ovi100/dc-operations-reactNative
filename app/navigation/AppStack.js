@@ -1,4 +1,5 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+// import { createDrawerNavigator } from '@react-navigation/drawer';
 import React from 'react';
 // screens
 import Home from '../screens/dashboard';
@@ -25,6 +26,8 @@ import TaskAssign from '../screens/dashboard/taskAssign/TaskAssign';
 import Profile from '../screens/dashboard/userProfile/Profile';
 
 const Stack = createNativeStackNavigator();
+
+// const Drawer = createDrawerNavigator();
 
 const AppStack = () => {
   const routes = [
@@ -79,6 +82,16 @@ const AppStack = () => {
         />
       ))}
     </Stack.Navigator>
+    // <Drawer.Navigator initialRouteName="Login" screenOptions={{headerShown: false}}>
+    //   {routes.map(route => (
+    //     <Drawer.Screen
+    //       key={route.id}
+    //       name={route.name}
+    //       component={route.component}
+    //       options={{headerShown: false}}
+    //     />
+    //   ))}
+    // </Drawer.Navigator>
   );
 };
 

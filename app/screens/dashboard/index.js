@@ -70,7 +70,7 @@ const Home = ({navigation}) => {
       name: 'Return',
       icon: ReturnIcon,
       screen: 'Return',
-      access: ['all'],
+      access: ['private'],
     },
     {
       name: 'Print',
@@ -97,7 +97,7 @@ const Home = ({navigation}) => {
           </Text>
           <ButtonProfile onPress={() => navigation.push('Profile')} />
         </View>
-        <View className="flex-row flex-wrap items-center justify-between px-3">
+        <View className="flex-row flex-wrap items-center px-3">
           {filteredLinks.map(item => (
             <View
               className="menu-box items-center w-1/3 mt-8"

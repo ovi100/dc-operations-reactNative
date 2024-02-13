@@ -8,6 +8,7 @@ import QualityCheck from '../screens/dashboard/childPacking/qualityCheck/Quality
 import DeliveryNote from '../screens/dashboard/deliveryNote/DeliveryNote';
 import DeliveryPlan from '../screens/dashboard/deliveryPlan/DeliveryPlan';
 import Picking from '../screens/dashboard/picking/Picking';
+import PickedSto from '../screens/dashboard/picking/pickedSTO/PickedSto';
 import PickingSto from '../screens/dashboard/picking/pickingSTO/PickingSto';
 import PickingStoArticle from '../screens/dashboard/picking/pickingStoArticle/PickingStoArticle';
 import Print from '../screens/dashboard/print/Print';
@@ -52,6 +53,7 @@ const AppStack = () => {
     },
     {id: 'picking', name: 'Picking', component: Picking},
     {id: 'picking-sto', name: 'PickingSto', component: PickingSto},
+    {id: 'picked-sto', name: 'PickedSto', component: PickedSto},
     {
       id: 'picking-sto-article',
       name: 'PickingStoArticle',

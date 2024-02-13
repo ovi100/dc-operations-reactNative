@@ -14,9 +14,9 @@ import {
 } from '../../constant/icons';
 import styles from '../../styles/button';
 
-const ButtonLoading = ({buttonStyles}) => {
+const ButtonLoading = ({styles}) => {
   return (
-    <TouchableOpacity style={buttonStyles}>
+    <TouchableOpacity className={styles}>
       <ActivityIndicator size="small" color="#ffffff" />
     </TouchableOpacity>
   );

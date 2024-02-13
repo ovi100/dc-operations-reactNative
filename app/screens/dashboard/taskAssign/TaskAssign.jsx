@@ -1,11 +1,85 @@
-import {SafeAreaView, Text, View} from 'react-native';
-import {ButtonBack} from '../../../../components/buttons';
-import Table from '../../../../components/table';
-import {stoList} from '../../../../constant/data';
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback, useEffect, useState } from 'react';
+import { ActivityIndicator, FlatList, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
+import { ButtonBack } from '../../../../components/buttons';
+import { getStorage } from '../../../../hooks/useStorage';
+import { toast } from '../../../../utils';
 
-const TaskAssign = ({navigation}) => {
+const TaskAssign = ({ navigation }) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [token, setToken] = useState('');
+  const [taskList, setTaskList] = useState([]);
+  const [page, setPage] = useState(1);
+  const [totalPage, setTotalPage] = useState(0);
   const tableHeader = ['STO ID', 'SKU', 'Outlet Name', 'Status'];
-  const dataFields = ['id', 'sku', 'outlet', 'status'];
+  const API_URL = 'https://shwapnooperation.onrender.com/api/sto-tracking/in-dn';
+
+  useEffect(() => {
+    getStorage('token', setToken, 'string');
+  }, []);
+
+  const getInDnList = async () => {
+    setIsLoading(true);
+    try {
+      await fetch(API_URL + `?currentPage=${page}`, {
+        method: 'GET',
+        headers: {
+          authorization: token,
+        },
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.status) {
+            setTaskList([...taskList, ...data.items]);
+            setTotalPage(data.totalPages);
+            setIsLoading(false);
+          } else {
+            toast(data.message);
+            setIsLoading(false);
+          }
+        })
+        .catch(error => console.log('Fetch catch', error));
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      if (token) {
+        getInDnList();
+      }
+    }, [token, page])
+  );
+
+  const loadMoreItem = () => {
+    if (totalPage >= page) {
+      setPage(prev => prev + 1);
+    } else {
+      setIsLoading(false);
+    }
+  };
+
+  const renderItem = ({ item, index }) => (
+    <TouchableOpacity
+      className="flex-row items-center border border-tb rounded-lg mt-2.5 p-4"
+      key={index}
+      onPress={() => navigation.push('PickerPackerTaskAssign', item)}
+    >
+      <Text className="flex-1 text-black text-center" numberOfLines={1}>
+        {item.sto.slice(0, 2) + '...' + item.sto.slice(7, item.sto.length)}
+      </Text>
+      <Text className="flex-1 text-black text-center" numberOfLines={1}>
+        {item.sku}
+      </Text>
+      <Text className="flex-1 text-black text-center" numberOfLines={1}>
+        {item.receivingPlant}
+      </Text>
+      <Text className="flex-1 text-black text-center uppercase" numberOfLines={1}>
+        {item.status}
+      </Text>
+    </TouchableOpacity>
+  );
 
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">
@@ -16,15 +90,24 @@ const TaskAssign = ({navigation}) => {
             task assign
           </Text>
         </View>
-
-        <View className="content">
-          <Table
-            header={tableHeader}
-            data={stoList}
-            dataFields={dataFields}
-            navigation={navigation}
-            routeName="PickerPackerTaskAssign"
-          />
+        <View className="content flex-1 justify-between py-5">
+          <View className="table h-full pb-2">
+            <View className="flex-row bg-th text-center mb-2 py-2">
+              {tableHeader.map(th => (
+                <Text className="flex-1 text-white text-center font-bold" key={th}>
+                  {th}
+                </Text>
+              ))}
+            </View>
+            <FlatList
+              data={taskList}
+              renderItem={renderItem}
+              keyExtractor={item => item._id}
+              onEndReached={loadMoreItem}
+              ListFooterComponent={isLoading && <ActivityIndicator />}
+              onEndReachedThreshold={0}
+            />
+          </View>
         </View>
       </View>
     </SafeAreaView>

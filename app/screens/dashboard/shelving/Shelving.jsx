@@ -8,7 +8,6 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
-import SearchAnimation from '../../../../components/animations/Search';
 import { ButtonBack } from '../../../../components/buttons';
 import { getStorage } from '../../../../hooks/useStorage';
 
@@ -58,11 +57,12 @@ const Shelving = ({ navigation }) => {
                   );
                   setArticles([...articles, ...remainingShelvingItems]);
                   setTotalPage(readyData.totalPages);
+                  setIsLoading(false);
                 } else {
                   const readyItems = readyData.items;
                   setArticles([...articles, ...readyItems]);
                   setTotalPage(readyData.totalPages);
-
+                  setIsLoading(false);
                 }
               })
               .catch(error => console.log('Fetch catch', error));
@@ -136,37 +136,34 @@ const Shelving = ({ navigation }) => {
         </View>
 
         <View className="content flex-1">
-          {isLoading ? <SearchAnimation /> :
-            <>
-              {articles.length ? (
-                <View className="h-full pb-2">
-                  <View className="flex-row bg-th mb-2 py-2">
-                    {tableHeader.map(th => (
-                      <Text
-                        className="flex-1 text-white text-center font-bold"
-                        key={th}>
-                        {th}
-                      </Text>
-                    ))}
-                  </View>
-
-                  <FlatList
-                    data={articles}
-                    renderItem={renderItem}
-                    keyExtractor={item => item._id}
-                    onEndReached={loadMoreItem}
-                    ListFooterComponent={isLoading && <ActivityIndicator />}
-                    onEndReachedThreshold={0}
-                  />
-                </View>
-              ) : (
-                <View className="h-full justify-center pb-2">
-                  <Text className="text-base font-bold text-center">
-                    No product is ready for shelving!
+          {articles.length ? (
+            <View className="h-full pb-2">
+              <View className="flex-row bg-th mb-2 py-2">
+                {tableHeader.map(th => (
+                  <Text
+                    className="flex-1 text-white text-center font-bold"
+                    key={th}>
+                    {th}
                   </Text>
-                </View>
-              )}
-            </>}
+                ))}
+              </View>
+
+              <FlatList
+                data={articles}
+                renderItem={renderItem}
+                keyExtractor={item => item._id}
+                onEndReached={loadMoreItem}
+                ListFooterComponent={isLoading && <ActivityIndicator />}
+                onEndReachedThreshold={0}
+              />
+            </View>
+          ) : (
+            <View className="h-full justify-center pb-2">
+              <Text className="text-base font-bold text-center">
+                No product is ready for shelving!
+              </Text>
+            </View>
+          )}
         </View>
       </View>
     </SafeAreaView>

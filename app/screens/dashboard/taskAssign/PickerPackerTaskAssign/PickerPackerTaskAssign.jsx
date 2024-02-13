@@ -1,10 +1,10 @@
-import {Picker} from '@react-native-picker/picker';
-import {useState} from 'react';
-import {Alert, SafeAreaView, Text, View} from 'react-native';
-import {ButtonBack, ButtonLg} from '../../../../../components/buttons';
+import { Picker } from '@react-native-picker/picker';
+import { useState } from 'react';
+import { Alert, SafeAreaView, Text, View } from 'react-native';
+import { ButtonBack, ButtonLg } from '../../../../../components/buttons';
 
-const PickerPackerTaskAssign = ({navigation, route}) => {
-  const {id} = route.params;
+const PickerPackerTaskAssign = ({ navigation, route }) => {
+  const { sto } = route.params;
   const pickers = [
     {
       id: 'pi1',
@@ -67,7 +67,7 @@ const PickerPackerTaskAssign = ({navigation, route}) => {
           <ButtonBack navigation={navigation} />
           <View className="flex-1 flex-row justify-center">
             <Text className="text-lg text-sh font-bold uppercase">sto:</Text>
-            <Text className="text-lg text-sh">{' ' + id}</Text>
+            <Text className="text-lg text-sh">{' ' + sto}</Text>
           </View>
         </View>
         <View className="content flex-1 justify-between py-5">
@@ -81,13 +81,13 @@ const PickerPackerTaskAssign = ({navigation, route}) => {
                 <Picker
                   selectedValue={selectedPicker}
                   onValueChange={picker => setSelectedPicker(picker)}
-                  style={{color: 'black'}}>
+                  style={{ color: 'black' }}>
                   {pickers.map((picker, i) => (
                     <Picker.Item
                       label={picker.name}
                       value={picker.name}
                       key={i}
-                      style={{color: 'white'}}
+                      style={{ color: 'white' }}
                     />
                   ))}
                 </Picker>
@@ -103,13 +103,13 @@ const PickerPackerTaskAssign = ({navigation, route}) => {
                 <Picker
                   selectedValue={selectedPacker}
                   onValueChange={packer => setSelectedPacker(packer)}
-                  style={{color: 'black'}}>
+                  style={{ color: 'black' }}>
                   {packers.map((packer, i) => (
                     <Picker.Item
                       label={packer.name}
                       value={packer.name}
                       key={i}
-                      style={{color: 'white'}}
+                      style={{ color: 'white' }}
                     />
                   ))}
                 </Picker>

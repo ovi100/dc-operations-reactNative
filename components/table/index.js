@@ -2,13 +2,14 @@ import React from 'react';
 import { FlatList, Text, TouchableOpacity, View } from 'react-native';
 const Table = ({header, data, dataFields, navigation, routeName = ''}) => {
   // const isStoID = header.some(item => item === 'STO ID');
-  const renderItem = ({item}) => {
+  const renderItem = ({item, index}) => {
     if (routeName) {
       return (
         <TouchableOpacity
+          key={index}
           className="flex-row border border-tb justify-between rounded-lg mt-2.5 p-4"
           onPress={() => navigation.push(routeName, item)}>
-          {dataFields.map((dataField) => (
+          {dataFields.map(dataField => (
             <Text
               className="flex-1 text-black text-center"
               numberOfLines={1}
@@ -20,7 +21,7 @@ const Table = ({header, data, dataFields, navigation, routeName = ''}) => {
       );
     } else {
       return (
-        <View className="flex-row border border-tb rounded-lg mt-2.5 p-4">
+        <View key={index} className="flex-row border border-tb rounded-lg mt-2.5 p-4">
           {dataFields.map((dataField, i) => (
             <Text
               className="flex-1 text-black text-center"

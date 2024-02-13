@@ -1,10 +1,10 @@
 import React from 'react';
 import { Alert, SafeAreaView, Text, View } from 'react-native';
-import { ButtonBack } from '../../../../../components/buttons';
+import { ButtonBack, ButtonLg } from '../../../../../components/buttons';
 import Table from '../../../../../components/table';
 import { articles } from '../../../../../constant/data';
 
-const PickingSto = ({ navigation, route }) => {
+const PickedSto = ({ navigation, route }) => {
   const { id } = route.params;
   const tableHeader = ['Article ID', 'Article Name', 'Quantity'];
   const dataFields = ['id', 'name', 'quantity'];
@@ -18,7 +18,7 @@ const PickingSto = ({ navigation, route }) => {
         <View className="screen-header flex-row items-center mb-4">
           <ButtonBack navigation={navigation} />
           <Text className="flex-1 text-lg text-sh text-center font-semibold capitalize">
-            picking {' ' + id}
+            picked {' ' + id}
           </Text>
         </View>
         <View className="content flex-1 justify-around mt-5 mb-6">
@@ -29,10 +29,17 @@ const PickingSto = ({ navigation, route }) => {
             navigation={navigation}
             routeName="PickingStoArticle"
           />
+
+          <View className="button">
+            <ButtonLg
+              title="Send to Packing Zone"
+              onPress={() => updatePackingZone()}
+            />
+          </View>
         </View>
       </View>
     </SafeAreaView>
   );
 };
 
-export default PickingSto;
+export default PickedSto;

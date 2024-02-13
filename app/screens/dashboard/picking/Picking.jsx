@@ -1,11 +1,11 @@
-import React, {useState} from 'react';
-import {Image, SafeAreaView, Text, TouchableOpacity, View} from 'react-native';
-import {ButtonBack} from '../../../../components/buttons';
+import React, { useState } from 'react';
+import { Image, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
+import { ButtonBack } from '../../../../components/buttons';
 import Table from '../../../../components/table';
-import {stoList} from '../../../../constant/data';
-import {NotPickingIcon, PickingIcon} from '../../../../constant/icons';
+import { stoList } from '../../../../constant/data';
+import { NotPickingIcon, PickingIcon } from '../../../../constant/icons';
 
-const Picking = ({navigation}) => {
+const Picking = ({ navigation }) => {
   const pickedInfo = [
     {
       id: 1,
@@ -42,11 +42,10 @@ const Picking = ({navigation}) => {
             <TouchableOpacity
               key={item.id}
               onPress={() => setActive(item)}
-              className={`w-1/2 ${
-                active.name === item.name
+              className={`w-1/2 ${active.name === item.name
                   ? 'bg-[#F6FEFF] border border-gray-200 rounded-full'
                   : ''
-              } p-1.5`}>
+                } p-1.5`}>
               <View className="item-box flex-row items-center justify-center">
                 <Image className="w-8 h-8" source={item.icon} />
                 <Text className="text-sm text-sh font-semibold mx-1.5">
@@ -75,6 +74,7 @@ const Picking = ({navigation}) => {
               data={pickedData}
               dataFields={dataFields}
               navigation={navigation}
+              routeName="PickedSto"
             />
           )}
         </View>

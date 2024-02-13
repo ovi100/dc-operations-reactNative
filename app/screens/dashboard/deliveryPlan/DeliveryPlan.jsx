@@ -3,7 +3,6 @@ import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   FlatList,
   Image,
   Keyboard,
@@ -11,14 +10,16 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from 'react-native';
-import { ButtonBack, ButtonLg, ButtonXs } from '../../../../components/buttons';
+import { ButtonBack, ButtonLg, ButtonLoading, ButtonXs } from '../../../../components/buttons';
 import { SearchIcon } from '../../../../constant/icons';
 import { getStorage } from '../../../../hooks/useStorage';
+import { toast } from '../../../../utils';
 
 const DeliveryPlan = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
+  const [isButtonLoading, setIsButtonLoading] = useState(false);
   const [keyboardStatus, setKeyboardStatus] = useState(false);
   const [token, setToken] = useState('');
   let [dpList, setDpList] = useState([]);
@@ -28,7 +29,7 @@ const DeliveryPlan = ({ navigation }) => {
   const [isAllChecked, setIsAllChecked] = useState(false);
   const [search, setSearch] = useState('');
   const tableHeader = ['STO ID', 'SKU', 'Outlet Code', 'Status'];
-  const API_URL = 'https://shwapnooperation.onrender.com/api/sto-tracking/pending-for-dn';
+  const API_URL = 'https://shwapnooperation.onrender.com/';
 
   useEffect(() => {
     getStorage('token', setToken, 'string');
@@ -48,23 +49,46 @@ const DeliveryPlan = ({ navigation }) => {
   const getDnList = async () => {
     setIsLoading(true);
     try {
-      await fetch(API_URL + `?currentPage=${page}`, {
+      await fetch(API_URL + `api/sto-tracking/pending-for-dn?currentPage=${page}`, {
         method: 'GET',
         headers: {
           authorization: token,
         },
       })
         .then(response => response.json())
-        .then(data => {
-          if (data.status) {
-            const dpData = data.items.map(item => {
-              return { ...item, selected: false }
-            });
-            setDpList([...dpList, ...dpData]);
-            setTotalPage(data.totalPages);
-            setIsLoading(false);
+        .then(async dnData => {
+          if (dnData.status) {
+            await fetch(API_URL + 'api/sto-tracking/in-dn', {
+              method: 'GET',
+              headers: {
+                authorization: token,
+              },
+            })
+              .then(res => res.json())
+              .then(inDnData => {
+                if (inDnData.status) {
+                  const pendingDnItems = dnData.items;
+                  const inDnItems = inDnData.items;
+                  let remainingDnItems = pendingDnItems.filter(
+                    pdnItem => !inDnItems.some(inDnItem => inDnItem.sto === pdnItem.sto)
+                  );
+                  const dpData = remainingDnItems.map(item => {
+                    return { ...item, selected: false }
+                  });
+                  setDpList([...dpList, ...dpData]);
+                  setTotalPage(dnData.totalPages);
+                } else {
+                  const pendingDnItems = dnData.items;
+                  const dpData = pendingDnItems.map(item => {
+                    return { ...item, selected: false }
+                  });
+                  setDpList([...dpList, ...dpData]);
+                  setTotalPage(dnData.totalPages);
+                }
+              })
+              .catch(error => console.log('Fetch catch', error));
           } else {
-            console.log(data.message);
+            toast(dnData.message);
             setIsLoading(false);
           }
         })
@@ -81,8 +105,6 @@ const DeliveryPlan = ({ navigation }) => {
       }
     }, [token, page])
   );
-
-  console.log('keyboard status', keyboardStatus);
 
   const loadMoreItem = () => {
     if (totalPage >= page) {
@@ -147,12 +169,37 @@ const DeliveryPlan = ({ navigation }) => {
     Keyboard.dismiss();
   };
 
-  const updateDelivery = () => {
+  const createDN = () => {
+    console.log(selectedList.length);
     if (selectedList.length > 0) {
-      Alert.alert(`\n Total DP ready--> ${selectedList.length}`);
-      return;
+      setIsButtonLoading(true);
+      try {
+        selectedList.map(async item => {
+          await fetch(API_URL + 'bapi/dn/create', {
+            method: 'POST',
+            headers: {
+              authorization: token,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ sto: item.sto }),
+          })
+            .then(response => response.json())
+            .then(data => {
+              if (data.status) {
+                toast(data)
+                setIsButtonLoading(false);
+              } else {
+                toast(data.message);
+                setIsButtonLoading(false);
+              }
+            })
+            .catch(error => console.log('Fetch catch', error));
+        })
+      } catch (error) {
+        console.log(error);
+      }
     } else {
-      Alert.alert('please select an item');
+      toast('No item selected!');
     }
   };
 
@@ -162,6 +209,8 @@ const DeliveryPlan = ({ navigation }) => {
         dp.sto.toLowerCase().includes(search.toLowerCase())
     );
   }
+
+  console.log(selectedList)
 
   return (
     <SafeAreaView className="flex-1 bg-white pt-14">
@@ -203,10 +252,10 @@ const DeliveryPlan = ({ navigation }) => {
           {/* Table data */}
           <View className="table h-[90%] pb-2">
             <View className="flex-row bg-th text-center mb-2 py-2">
-              {tableHeader.map(th => (
+              {tableHeader.map((th, i) => (
                 <Text
                   className="flex-1 text-white text-center font-bold"
-                  key={th}>
+                  key={i}>
                   {th}
                 </Text>
               ))}
@@ -214,7 +263,7 @@ const DeliveryPlan = ({ navigation }) => {
             <FlatList
               data={dpList}
               renderItem={renderItem}
-              keyExtractor={item => item.sto}
+              keyExtractor={item => item._id}
               onEndReached={loadMoreItem}
               ListFooterComponent={isLoading && <ActivityIndicator />}
               onEndReachedThreshold={0}
@@ -223,10 +272,12 @@ const DeliveryPlan = ({ navigation }) => {
 
           {!keyboardStatus && (
             <View className="button mt-4">
-              <ButtonLg
-                title="Mark as delivery ready"
-                onPress={() => updateDelivery()}
-              />
+              {isButtonLoading ? <ButtonLoading styles='bg-theme rounded-md p-5' /> :
+                <ButtonLg
+                  title="Mark as delivery ready"
+                  onPress={() => createDN()}
+                />
+              }
             </View>
           )}
         </View>

@@ -1,18 +1,27 @@
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, FlatList, Keyboard, SafeAreaView, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Button, FlatList, Image, Keyboard, SafeAreaView, Text, TextInput, View } from 'react-native';
+import CustomDrawer from '../../../../components/Drawer';
 import { ButtonBack } from '../../../../components/buttons';
+import { SearchIcon } from '../../../../constant/icons';
 import { getStorage } from '../../../../hooks/useStorage';
+import { formatDateYYYYMMDD, toast } from '../../../../utils';
 
 const Receiving = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
+  const [toggleDrawer, setToggleDrawer] = useState(false);
   const [token, setToken] = useState('');
   const [barcode, setBarcode] = useState('');
-  const [poList, setPoList] = useState([]);
+  let [poList, setPoList] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPage, setTotalPage] = useState(0);
+  const [search, setSearch] = useState('');
   const tableHeader = ['Purchase Order ID', 'SKU'];
-  // const dataFields = ['po', 'sku'];
+  const [startDate, setStartDate] = useState(new Date());
+  const [endDate, setEndDate] = useState(new Date());
+  const [showStartDatePicker, setShowStartDatePicker] = useState(false);
+  const [showEndDatePicker, setShowEndDatePicker] = useState(false);
   const API_URL = 'https://shwapnooperation.onrender.com/api/po-tracking/pending-for-grn';
 
   useEffect(() => {
@@ -32,12 +41,11 @@ const Receiving = ({ navigation }) => {
         .then(response => response.json())
         .then(data => {
           if (data.status) {
-            console.log(data)
             setPoList([...poList, ...data.items]);
             setTotalPage(data.totalPages);
             setIsLoading(false);
           } else {
-            console.log(data.message);
+            toast(data.message);
             setIsLoading(false);
           }
         })
@@ -83,6 +91,37 @@ const Receiving = ({ navigation }) => {
     </View>
   );
 
+  console.log(search)
+
+  if (search !== '') {
+    poList = poList.filter(item => item.po.includes(search.toLowerCase()));
+  }
+
+  poList = [...new Set(poList)]
+
+  const handleStartDateChange = (event, selectedDate) => {
+    const currentDate = selectedDate || startDate;
+    setShowStartDatePicker(false);
+    setStartDate(currentDate);
+  };
+
+  const handleEndDateChange = (event, selectedDate) => {
+    const currentDate = selectedDate || endDate;
+    setShowEndDatePicker(false);
+    setEndDate(currentDate);
+  };
+
+  const showStartDatePickerModal = () => {
+    setShowStartDatePicker(true);
+  };
+
+  const showEndDatePickerModal = () => {
+    setShowEndDatePicker(true);
+  };
+
+  console.log('start date', formatDateYYYYMMDD(startDate))
+  console.log('end date', formatDateYYYYMMDD(endDate))
+
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">
       <View className="flex-1 px-4">
@@ -91,7 +130,26 @@ const Receiving = ({ navigation }) => {
           <Text className="text-lg flex-1 text-sh text-center font-semibold capitalize">
             receiving screen
           </Text>
-          {/* <Button onPress={() => navigation.toggleDrawer()} title="Menu" /> */}
+          {/* <TouchableOpacity className="toggle-icon" onPress={() => setToggleDrawer(true)}>
+            <View className="toggle-bar bg-black w-7 h-[3px] mb-[5px]"></View>
+            <View className="toggle-bar bg-black w-7 h-[3px] mb-[5px]"></View>
+            <View className="toggle-bar bg-black w-7 h-[3px]"></View>
+          </TouchableOpacity> */}
+        </View>
+        {/* Search and Button */}
+        <View className="search-button flex-row items-center gap-3">
+          <View className="input-box relative flex-1">
+            <Image className="absolute top-3 left-3 z-10" source={SearchIcon} />
+            <TextInput
+              className="bg-[#F5F6FA] h-[50px] text-black rounded-lg pl-12 pr-4"
+              placeholder="Search by purchase order"
+              inputMode='text'
+              placeholderTextColor="#CBC9D9"
+              selectionColor="#CBC9D9"
+              onChangeText={value => setSearch(value)}
+              value={search}
+            />
+          </View>
         </View>
         <View className="content flex-1 justify-between py-5">
           <View className="table h-full pb-2">
@@ -120,6 +178,26 @@ const Receiving = ({ navigation }) => {
             onChangeText={data => setBarcode(data)}
           />
         </View>
+        <CustomDrawer toggleDrawer={toggleDrawer} setToggleDrawer={setToggleDrawer}>
+          <View>
+            <Button title="Start Date" onPress={showStartDatePickerModal} />
+            <Button title="End Date" onPress={showEndDatePickerModal} />
+            {showStartDatePicker && (
+              <DateTimePicker
+                value={startDate}
+                mode="date"
+                onChange={handleStartDateChange}
+              />
+            )}
+            {showEndDatePicker && (
+              <DateTimePicker
+                value={endDate}
+                mode="date"
+                onChange={handleEndDateChange}
+              />
+            )}
+          </View>
+        </CustomDrawer>
       </View>
     </SafeAreaView>
   );

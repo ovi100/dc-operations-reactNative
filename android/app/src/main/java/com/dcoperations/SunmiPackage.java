@@ -11,12 +11,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class SunmiPrinterPackage implements ReactPackage {
+public class SunmiPackage implements ReactPackage {
   @NonNull
   @Override
   public List<NativeModule> createNativeModules(@NonNull ReactApplicationContext reactContext) {
     List<NativeModule> modules = new ArrayList<>();
     modules.add(new SunmiPrinterModule(reactContext));
+    modules.add(new SunmiScannerModule(reactContext));
     return modules;
   }
 

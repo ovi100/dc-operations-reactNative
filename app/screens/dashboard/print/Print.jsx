@@ -1,10 +1,26 @@
-import React from 'react';
-import { SafeAreaView, Text, View } from 'react-native';
+import React, { useEffect } from 'react';
+import { DeviceEventEmitter, SafeAreaView, Text, View } from 'react-native';
 import { ButtonBack, ButtonLg } from '../../../../components/buttons';
 import SunmiPrinter from '../../../../utils/sunmi/printer';
+import SunmiScanner from '../../../../utils/sunmi/scanner';
+
 
 const Print = ({ navigation }) => {
+  const { startScan, stopScan } = SunmiScanner;
   const { printerText, lineWrap } = SunmiPrinter;
+
+  useEffect(() => {
+    startScan();
+    DeviceEventEmitter.addListener('ScanDataReceived', data => {
+      console.log(data.code);
+    });
+
+    return () => {
+      stopScan();
+      DeviceEventEmitter.removeAllListeners('ScanDataReceived');
+    };
+  }, []);
+
   const printReceipt = () => {
     lineWrap(5);
     printerText('DC print receipt\n');

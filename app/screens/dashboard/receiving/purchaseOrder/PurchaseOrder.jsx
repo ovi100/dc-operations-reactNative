@@ -24,12 +24,9 @@ const PurchaseOrder = ({ navigation, route }) => {
   const { GRNInfo } = useAppContext();
   const { grn, setGrnPo, grnItems, setGrnItems } = GRNInfo;
 
-  // console.log('receiving--> po id', po_id);
-
-  // console.log('GRN -->', grn);
-  // console.log('GRN Items -->', grnItems);
-
-  getStorage('token', setToken, 'string');
+  useEffect(() => {
+    getStorage('token', setToken, 'string');
+  }, []);
 
   useFocusEffect(
     useCallback(() => {

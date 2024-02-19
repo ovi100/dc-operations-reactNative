@@ -347,13 +347,4 @@ type SunmiPrinterType = {
   hasPrinter: () => Promise<boolean>;
 };
 
-// type SunmiScanType = {
-//   /**
-//    * 摄像头扫码
-//    */
-//   scan: () => Promise<any>;
-// };
-
-// export const SunmiScan = SunmiScanModule as SunmiScanType;
-
 export default SunmiPrinter as SunmiPrinterType;

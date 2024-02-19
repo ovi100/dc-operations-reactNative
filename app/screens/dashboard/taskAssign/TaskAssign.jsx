@@ -8,11 +8,11 @@ import { toast } from '../../../../utils';
 const TaskAssign = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [token, setToken] = useState('');
-  const [taskList, setTaskList] = useState([]);
+  let [taskList, setTaskList] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPage, setTotalPage] = useState(0);
-  const tableHeader = ['STO ID', 'SKU', 'Outlet Name', 'Status'];
-  const API_URL = 'https://shwapnooperation.onrender.com/api/sto-tracking/in-dn';
+  const tableHeader = ['STO ID', 'SKU', 'Outlet Code', 'Status'];
+  const API_URL = 'https://shwapnooperation.onrender.com/api/sto-tracking';
 
   useEffect(() => {
     getStorage('token', setToken, 'string');
@@ -30,7 +30,9 @@ const TaskAssign = ({ navigation }) => {
         .then(response => response.json())
         .then(data => {
           if (data.status) {
-            setTaskList([...taskList, ...data.items]);
+            const serverData = data.items.filter(item => item.status === 'in dn' || item.status === 'picker assigned');
+
+            setTaskList([...taskList, ...serverData]);
             setTotalPage(data.totalPages);
             setIsLoading(false);
           } else {
@@ -75,11 +77,13 @@ const TaskAssign = ({ navigation }) => {
       <Text className="flex-1 text-black text-center" numberOfLines={1}>
         {item.receivingPlant}
       </Text>
-      <Text className="flex-1 text-black text-center uppercase" numberOfLines={1}>
+      <Text className="flex-1 text-black text-center uppercase" numberOfLines={2}>
         {item.status}
       </Text>
     </TouchableOpacity>
   );
+
+  taskList = [...new Set(taskList)];
 
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">

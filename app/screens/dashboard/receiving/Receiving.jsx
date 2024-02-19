@@ -1,16 +1,14 @@
-import DateTimePicker from '@react-native-community/datetimepicker';
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Button, FlatList, Image, Keyboard, SafeAreaView, Text, TextInput, View } from 'react-native';
-import CustomDrawer from '../../../../components/Drawer';
-import { ButtonBack } from '../../../../components/buttons';
+import { ActivityIndicator, DeviceEventEmitter, FlatList, Image, Keyboard, SafeAreaView, Text, TextInput, View } from 'react-native';
+// import { ButtonBack } from '../../../../components/buttons';
 import { SearchIcon } from '../../../../constant/icons';
 import { getStorage } from '../../../../hooks/useStorage';
-import { formatDateYYYYMMDD, toast } from '../../../../utils';
+import { toast } from '../../../../utils';
+import SunmiScanner from '../../../../utils/sunmi/scanner';
 
 const Receiving = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
-  const [toggleDrawer, setToggleDrawer] = useState(false);
   const [token, setToken] = useState('');
   const [barcode, setBarcode] = useState('');
   let [poList, setPoList] = useState([]);
@@ -18,15 +16,25 @@ const Receiving = ({ navigation }) => {
   const [totalPage, setTotalPage] = useState(0);
   const [search, setSearch] = useState('');
   const tableHeader = ['Purchase Order ID', 'SKU'];
-  const [startDate, setStartDate] = useState(new Date());
-  const [endDate, setEndDate] = useState(new Date());
-  const [showStartDatePicker, setShowStartDatePicker] = useState(false);
-  const [showEndDatePicker, setShowEndDatePicker] = useState(false);
   const API_URL = 'https://shwapnooperation.onrender.com/api/po-tracking/pending-for-grn';
+  const { startScan, stopScan } = SunmiScanner;
 
   useEffect(() => {
     getStorage('token', setToken, 'string');
     Keyboard.dismiss();
+  }, []);
+
+  useEffect(() => {
+    startScan();
+    DeviceEventEmitter.addListener('ScanDataReceived', data => {
+      console.log(data.code);
+      setBarcode(data.code);
+    });
+
+    return () => {
+      stopScan();
+      DeviceEventEmitter.removeAllListeners('ScanDataReceived');
+    };
   }, []);
 
   const getPoList = async () => {
@@ -63,7 +71,7 @@ const Receiving = ({ navigation }) => {
     }, [token, page])
   );
 
-  if (barcode.length == 10) {
+  if (barcode) {
     navigation.push('PurchaseOrder', { po_id: barcode });
     setBarcode('')
   }
@@ -99,42 +107,15 @@ const Receiving = ({ navigation }) => {
 
   poList = [...new Set(poList)]
 
-  const handleStartDateChange = (event, selectedDate) => {
-    const currentDate = selectedDate || startDate;
-    setShowStartDatePicker(false);
-    setStartDate(currentDate);
-  };
-
-  const handleEndDateChange = (event, selectedDate) => {
-    const currentDate = selectedDate || endDate;
-    setShowEndDatePicker(false);
-    setEndDate(currentDate);
-  };
-
-  const showStartDatePickerModal = () => {
-    setShowStartDatePicker(true);
-  };
-
-  const showEndDatePickerModal = () => {
-    setShowEndDatePicker(true);
-  };
-
-  console.log('start date', formatDateYYYYMMDD(startDate))
-  console.log('end date', formatDateYYYYMMDD(endDate))
 
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">
       <View className="flex-1 px-4">
         <View className="screen-header flex-row items-center mb-4">
-          <ButtonBack navigation={navigation} />
+          {/* <ButtonBack navigation={navigation} /> */}
           <Text className="text-lg flex-1 text-sh text-center font-semibold capitalize">
             receiving screen
           </Text>
-          {/* <TouchableOpacity className="toggle-icon" onPress={() => setToggleDrawer(true)}>
-            <View className="toggle-bar bg-black w-7 h-[3px] mb-[5px]"></View>
-            <View className="toggle-bar bg-black w-7 h-[3px] mb-[5px]"></View>
-            <View className="toggle-bar bg-black w-7 h-[3px]"></View>
-          </TouchableOpacity> */}
         </View>
         {/* Search and Button */}
         <View className="search-button flex-row items-center gap-3">
@@ -169,35 +150,7 @@ const Receiving = ({ navigation }) => {
               onEndReachedThreshold={0}
             />
           </View>
-
-          <TextInput
-            className="h-0 border-0 text-center"
-            caretHidden={true}
-            autoFocus={true}
-            value={barcode}
-            onChangeText={data => setBarcode(data)}
-          />
         </View>
-        <CustomDrawer toggleDrawer={toggleDrawer} setToggleDrawer={setToggleDrawer}>
-          <View>
-            <Button title="Start Date" onPress={showStartDatePickerModal} />
-            <Button title="End Date" onPress={showEndDatePickerModal} />
-            {showStartDatePicker && (
-              <DateTimePicker
-                value={startDate}
-                mode="date"
-                onChange={handleStartDateChange}
-              />
-            )}
-            {showEndDatePicker && (
-              <DateTimePicker
-                value={endDate}
-                mode="date"
-                onChange={handleEndDateChange}
-              />
-            )}
-          </View>
-        </CustomDrawer>
       </View>
     </SafeAreaView>
   );

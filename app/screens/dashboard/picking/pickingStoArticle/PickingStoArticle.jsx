@@ -1,21 +1,54 @@
-import {useState} from 'react';
-import {Image, SafeAreaView, Text, TextInput, View} from 'react-native';
-import {ButtonBack, ButtonLg} from '../../../../../components/buttons';
-import {BoxIcon} from '../../../../../constant/icons';
+import { useEffect, useState } from 'react';
+import { Image, SafeAreaView, Text, TextInput, View } from 'react-native';
+import { ButtonBack, ButtonLg, ButtonLoading } from '../../../../../components/buttons';
+import { BoxIcon } from '../../../../../constant/icons';
+import { getStorage } from '../../../../../hooks/useStorage';
+import { toast } from '../../../../../utils';
 
-const PickingStoArticle = ({navigation, route}) => {
-  const {id, name, quantity} = route.params;
-  const [newQuantity, setNewQuantity] = useState(quantity);
+const PickingStoArticle = ({ navigation, route }) => {
+  const [isButtonLoading, setIsButtonLoading] = useState(false);
+  const [token, setToken] = useState('');
+  const { sto, material, description, quantity } = route.params;
+  const [pickedQuantity, setPickedQuantity] = useState(quantity);
+  const API_URL = 'https://shwapnooperation.onrender.com/api/article-tracking';
 
-  const updateQuantity = () => {
-    if (newQuantity > quantity) {
-      alert('Quantity exceed');
+  useEffect(() => {
+    getStorage('token', setToken, 'string');
+  }, []);
+
+  const addToArticleTracking = async () => {
+    if (pickedQuantity > quantity) {
+      toast('Quantity exceed');
     } else {
-      alert(`Quantity ${newQuantity}`);
+      let data = { sto, code: material, quantity, name: description, status: 'inbound picking', pickedQuantity }
+      console.log(data);
+
+      try {
+        setIsButtonLoading(true);
+        await fetch(API_URL, {
+          method: 'POST',
+          headers: {
+            authorization: token,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data),
+        })
+          .then(response => response.json())
+          .then(result => {
+            toast(result.message)
+            setIsButtonLoading(false);
+            navigation.goBack();
+          })
+          .catch(error => {
+            console.log(error);
+            setIsButtonLoading(true);
+          });
+      } catch (error) {
+        console.log(error);
+        setIsButtonLoading(true);
+      }
     }
   };
-
-  console.log(route.params);
 
   return (
     <SafeAreaView className="flex-1 bg-white pt-14">
@@ -28,11 +61,11 @@ const PickingStoArticle = ({navigation, route}) => {
                 picking article
               </Text>
               <Text className="text-base text-sh font-bold capitalize">
-                {' ' + id}
+                {' ' + material}
               </Text>
             </View>
             <Text className="text-sm text-sh text-right font-medium capitalize">
-              {name}
+              {description}
             </Text>
           </View>
         </View>
@@ -42,7 +75,7 @@ const PickingStoArticle = ({navigation, route}) => {
           <View className="box-header flex-row items-center justify-between">
             <View className="text">
               <Text className="text-base text-[#2E2C3B] font-medium capitalize">
-                ordered quantity
+                picked quantity
               </Text>
             </View>
             <View className="quantity flex-row items-center gap-3">
@@ -57,16 +90,20 @@ const PickingStoArticle = ({navigation, route}) => {
               placeholderTextColor="#5D80C5"
               selectionColor="#5D80C5"
               keyboardType="numeric"
-              value={newQuantity.toString()}
+              autoFocus={true}
+              value={pickedQuantity.toString()}
               onChangeText={value => {
-                setNewQuantity(value);
+                setPickedQuantity(value);
               }}
             />
           </View>
         </View>
 
         <View className="button mt-3">
-          <ButtonLg title="Mark as Received" onPress={() => updateQuantity()} />
+          {isButtonLoading ? <ButtonLoading styles='bg-theme rounded-md p-5' /> :
+            <ButtonLg title="Mark as Picked" onPress={() => addToArticleTracking()} />
+          }
+
         </View>
       </View>
     </SafeAreaView>

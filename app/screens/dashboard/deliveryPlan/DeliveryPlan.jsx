@@ -186,7 +186,7 @@ const DeliveryPlan = ({ navigation }) => {
             .then(response => response.json())
             .then(data => {
               if (data.status) {
-                toast(data)
+                toast(data.message)
                 setIsButtonLoading(false);
               } else {
                 toast(data.message);

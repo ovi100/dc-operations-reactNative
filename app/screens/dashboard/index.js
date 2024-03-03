@@ -1,7 +1,7 @@
-import { Link } from '@react-navigation/native';
-import React from 'react';
-import { Image, SafeAreaView, Text, View } from 'react-native';
-import { ButtonProfile } from '../../../components/buttons';
+import {Link} from '@react-navigation/native';
+import React, {useEffect, useState} from 'react';
+import {Image, SafeAreaView, Text, View} from 'react-native';
+import {ButtonProfile} from '../../../components/buttons';
 import {
   ChildPackingIcon,
   DeliveryNoteIcon,
@@ -15,78 +15,84 @@ import {
   ShelvingIcon,
   TaskAssignIcon,
 } from '../../../constant/icons';
+import {getStorage} from '../../../hooks/useStorage';
 
 const Home = ({navigation}) => {
+  const [user, setUser] = useState({});
+
+  useEffect(() => {
+    getStorage('user', setUser, 'object');
+  }, []);
   const navLinks = [
     {
       name: 'Receiving',
       icon: ReceivingIcon,
       screen: 'Receiving',
-      access: ['all'],
+      role: 'receiver',
     },
     {
       name: 'Shelving',
       icon: ShelvingIcon,
       screen: 'Shelving',
-      access: ['all'],
+      role: 'shelver',
     },
     {
       name: 'Delivery Plan',
       icon: DeliveryPlanIcon,
       screen: 'DeliveryPlan',
-      access: ['all'],
+      role: 'delivery-planner',
     },
     {
       name: 'Task Assign',
       icon: TaskAssignIcon,
       screen: 'TaskAssign',
-      access: ['all'],
+      role: 'task-assigner',
     },
     {
       name: 'Picking',
       icon: PickingIcon,
       screen: 'Picking',
-      access: ['all'],
+      role: 'picker',
     },
     {
       name: 'Child Packing',
       icon: ChildPackingIcon,
       screen: 'ChildPacking',
-      access: ['all'],
+      role: 'packer',
     },
     {
       name: 'Master Packing',
       icon: MasterPackingIcon,
       screen: 'MasterPacking',
-      access: ['private'],
+      role: 'packer',
     },
     {
       name: 'Final Delivery Note',
       icon: DeliveryNoteIcon,
       screen: 'DeliveryNote',
-      access: ['all'],
+      role: 'DN charge',
     },
     {
       name: 'Return',
       icon: ReturnIcon,
       screen: 'Return',
-      access: ['private'],
+      role: 'returner',
     },
     {
       name: 'Print',
       icon: PrinterIcon,
       screen: 'Print',
-      access: ['all'],
+      role: 'printer',
     },
     {
       name: 'Scan Barcode',
       icon: ScannerIcon,
       screen: 'ScanBarcode',
-      access: ['private'],
+      role: '',
     },
   ];
 
-  const filteredLinks = navLinks.filter(link => link.access.includes('all'));
+  const filteredLinks = navLinks.filter(link => link.role === user.role);
 
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">

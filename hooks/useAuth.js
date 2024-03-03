@@ -1,17 +1,24 @@
-import { useEffect, useState } from 'react';
-import { Alert } from 'react-native';
-import { getStorage, removeItem, setStorage } from './useStorage';
+import {useEffect, useState} from 'react';
+import {Alert} from 'react-native';
+import {getStorage, removeItem, setStorage} from './useStorage';
 
 const useAuth = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
-  const API_URL = 'https://shwapnooperation.onrender.com/api/';
+  const [storedUser, setStoredUser] = useState(null);
+  const [storedToken, setStoredToken] = useState(null);
+  const API_URL = 'https://shwapnooperation.onrender.com/api/user/login';
+
+  useEffect(() => {
+    getStorage('token', setStoredToken);
+    getStorage('user', setStoredUser, 'object');
+  }, []);
 
   const login = async (email, password) => {
     setIsLoading(true);
     try {
-      const response = await fetch(API_URL + 'user/login', {
+      const response = await fetch(API_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -45,19 +52,21 @@ const useAuth = () => {
   };
 
   const isLoggedIn = () => {
-    console.log('checking is logged in')
     try {
+      console.log('checking is logged in');
       setIsLoading(true);
-      let storedUser = getStorage('user', setUser, 'object');
-      let storedToken = getStorage('token', setToken);
 
       if (storedUser) {
         setUser(storedUser);
         setToken(storedToken);
         setIsLoading(false);
+        console.log('user already logged in');
+      } else {
+        console.log('user not logged in');
+        setIsLoading(false);
       }
     } catch (error) {
-      Alert.alert('Error', 'Login failed');
+      Alert.alert(error);
       setIsLoading(false);
     }
   };

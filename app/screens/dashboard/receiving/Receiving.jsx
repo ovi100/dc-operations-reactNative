@@ -9,18 +9,27 @@ import SunmiScanner from '../../../../utils/sunmi/scanner';
 
 const Receiving = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
+  const [user, setUser] = useState(null);
   const [token, setToken] = useState('');
   const [barcode, setBarcode] = useState('');
   let [poList, setPoList] = useState([]);
-  const [page, setPage] = useState(1);
-  const [totalPage, setTotalPage] = useState(0);
   const [search, setSearch] = useState('');
   const tableHeader = ['Purchase Order ID', 'SKU'];
-  const API_URL = 'https://shwapnooperation.onrender.com/api/po-tracking/pending-for-grn';
+  const API_URL = 'https://shwapnooperation.onrender.com/bapi/po/list';
+  // const API_URL = 'https://shwapnooperation.onrender.com/api/po-tracking/pending-for-grn';
   const { startScan, stopScan } = SunmiScanner;
 
+  const date = new Date();
+  const dateTo = date.toISOString().split('T')[0].replaceAll('-', '')
+
+  const dateFormTimeStamp = new Date(date.getTime() - 15 * 24 * 60 * 60 * 1000);
+  const dateForm = dateFormTimeStamp.toISOString().split('T')[0].replaceAll('-', '');
+
+  const postData = { site: user?.site[0], from: dateForm, to: dateTo }
+
   useEffect(() => {
-    getStorage('token', setToken, 'string');
+    getStorage('user', setUser, 'object');
+    getStorage('token', setToken,);
     Keyboard.dismiss();
   }, []);
 
@@ -40,26 +49,31 @@ const Receiving = ({ navigation }) => {
   const getPoList = async () => {
     setIsLoading(true);
     try {
-      await fetch(API_URL + `?currentPage=${page}`, {
-        method: 'GET',
+      await fetch(API_URL, {
+        method: 'POST',
         headers: {
           authorization: token,
+          'Content-Type': 'application/json',
         },
+        body: JSON.stringify(postData),
       })
         .then(response => response.json())
-        .then(data => {
-          if (data.status) {
-            setPoList([...poList, ...data.items]);
-            setTotalPage(data.totalPages);
+        .then(result => {
+          if (result.status) {
+            setPoList([...poList, ...result.data.po]);
             setIsLoading(false);
           } else {
             toast(data.message);
             setIsLoading(false);
           }
         })
-        .catch(error => console.log('Fetch catch', error));
+        .catch(error => {
+          console.log('Fetch catch', error)
+          setIsLoading(false);
+        });
     } catch (error) {
       console.log(error);
+      setIsLoading(false);
     }
   };
 
@@ -68,7 +82,7 @@ const Receiving = ({ navigation }) => {
       if (token) {
         getPoList();
       }
-    }, [token, page])
+    }, [token])
   );
 
   if (barcode) {
@@ -76,13 +90,6 @@ const Receiving = ({ navigation }) => {
     setBarcode('')
   }
 
-  const loadMoreItem = () => {
-    if (totalPage >= page) {
-      setPage(prev => prev + 1);
-    } else {
-      setIsLoading(false);
-    }
-  };
 
   const renderItem = ({ item, index }) => (
     <View className="flex-row border border-tb rounded-lg mt-2.5 p-4" key={index}>
@@ -98,8 +105,6 @@ const Receiving = ({ navigation }) => {
       </Text>
     </View>
   );
-
-  console.log(search)
 
   if (search !== '') {
     poList = poList.filter(item => item.po.includes(search.toLowerCase()));
@@ -144,10 +149,8 @@ const Receiving = ({ navigation }) => {
             <FlatList
               data={poList}
               renderItem={renderItem}
-              keyExtractor={item => item._id}
-              onEndReached={loadMoreItem}
+              keyExtractor={item => item.po}
               ListFooterComponent={isLoading && <ActivityIndicator />}
-              onEndReachedThreshold={0}
             />
           </View>
         </View>

@@ -7,7 +7,7 @@ import AuthStack from './AuthStack';
 
 const AppNavigation = () => {
   const { authInfo } = useAppContext();
-  const { isLoading, user, token } = authInfo;
+  const { isLoading, user } = authInfo;
 
   if (isLoading) {
     return (

@@ -79,8 +79,8 @@ const Login = () => {
                 className={`border ${emailError ? 'border-red-500' : 'border-[#bcbcbc]'
                   } h-[55px] text-[#a9a9a9] rounded-[5px] px-4`}
                 placeholder="Email"
+                placeholderTextColor='#bcbcbc'
                 selectionColor="#bcbcbc"
-                inputMode="email"
                 keyboardType="email-address"
                 onChangeText={value => {
                   setEmail(value);
@@ -100,6 +100,7 @@ const Login = () => {
                 className={`border ${passwordError ? 'border-red-500' : 'border-[#bcbcbc]'
                   } h-[55px] text-[#a9a9a9] rounded-[5px] px-4`}
                 placeholder="Password"
+                placeholderTextColor='#bcbcbc'
                 selectionColor="#bcbcbc"
                 secureTextEntry={!inputType}
                 onChangeText={value => {

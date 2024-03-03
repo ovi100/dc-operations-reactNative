@@ -1,6 +1,6 @@
 import { Link } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
-import { Image, Text, View } from 'react-native';
+import { Image, Text, TouchableOpacity, View } from 'react-native';
 import { ButtonBackProfile, ButtonLogin } from '../../../../components/buttons';
 import {
   AvatarImage,
@@ -22,8 +22,6 @@ const Profile = ({ navigation }) => {
   useEffect(() => {
     getStorage('user', setAsUser, 'object');
   }, []);
-
-  console.log('Profile page', asUser);
 
   return (
     <View className="flex-1 bg-white">
@@ -65,18 +63,18 @@ const Profile = ({ navigation }) => {
               <View className="role border-b border-gray-200 flex-row items-center gap-3 py-3">
                 <Image className="w-5 h-5" source={IdIcon} />
                 <Text className="text-base text-gray-400 font-medium capitalize">
-                  {user.role}
+                  {asUser.role}
                 </Text>
               </View>
             </View>
             <View className="w-full px-4">
               <View className="password-change border-b border-gray-200 flex-row items-center gap-3 py-3">
                 <Image className="w-5 h-5" source={PasswordIcon} />
-                <Link to={{ screen: 'ChangePassword', params: { id: asUser._id } }}>
-                  <Text className="text-blue-500 text-base rounded font-medium capitalize py-2 px-3">
+                <TouchableOpacity onPress={() => navigation.push('ChangePassword', { id: asUser._id })}>
+                  <Text className="bg-blue-500 text-white text-base rounded font-medium capitalize py-2 px-3">
                     change password
                   </Text>
-                </Link>
+                </TouchableOpacity>
               </View>
             </View>
           </View>

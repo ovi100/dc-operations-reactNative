@@ -1,5 +1,4 @@
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-// import { createDrawerNavigator } from '@react-navigation/drawer';
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import React from 'react';
 // screens
 import Home from '../screens/dashboard';
@@ -25,15 +24,15 @@ import ShelvingScanner from '../screens/dashboard/shelving/scanner/Scanner';
 import PickerPackerTaskAssign from '../screens/dashboard/taskAssign/PickerPackerTaskAssign/PickerPackerTaskAssign';
 import TaskAssign from '../screens/dashboard/taskAssign/TaskAssign';
 import Profile from '../screens/dashboard/userProfile/Profile';
+import ChangePassword from '../screens/dashboard/userProfile/ChangePassword';
 
 const Stack = createNativeStackNavigator();
-
-// const Drawer = createDrawerNavigator();
 
 const AppStack = () => {
   const routes = [
     {id: 'home', name: 'Home', component: Home},
     {id: 'profile', name: 'Profile', component: Profile},
+    {id: 'change-password', name: 'ChangePassword', component: ChangePassword},
     {id: 'receiving', name: 'Receiving', component: Receiving},
     {id: 'purchase-order', name: 'PurchaseOrder', component: PurchaseOrder},
     {id: 'po-articles', name: 'PoArticles', component: PoArticles},
@@ -67,7 +66,6 @@ const AppStack = () => {
     {id: 'return-scanner', name: 'ReturnScanner', component: ReturnScanner},
     {id: 'return-details', name: 'ReturnDetails', component: ReturnDetails},
     {id: 'print', name: 'Print', component: Print},
-    {id: 'scan-barcode', name: 'ScanBarcode', component: ScanBarCode},
   ];
   return (
     <Stack.Navigator
@@ -84,16 +82,6 @@ const AppStack = () => {
         />
       ))}
     </Stack.Navigator>
-    // <Drawer.Navigator initialRouteName="Login" screenOptions={{headerShown: false}}>
-    //   {routes.map(route => (
-    //     <Drawer.Screen
-    //       key={route.id}
-    //       name={route.name}
-    //       component={route.component}
-    //       options={{headerShown: false}}
-    //     />
-    //   ))}
-    // </Drawer.Navigator>
   );
 };
 

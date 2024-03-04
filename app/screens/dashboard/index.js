@@ -1,7 +1,7 @@
-import {Link} from '@react-navigation/native';
-import React, {useEffect, useState} from 'react';
-import {Image, SafeAreaView, Text, View} from 'react-native';
-import {ButtonProfile} from '../../../components/buttons';
+import { Link } from '@react-navigation/native';
+import React, { useEffect, useState } from 'react';
+import { Image, SafeAreaView, Text, View } from 'react-native';
+import { ButtonProfile } from '../../../components/buttons';
 import {
   ChildPackingIcon,
   DeliveryNoteIcon,
@@ -15,7 +15,7 @@ import {
   ShelvingIcon,
   TaskAssignIcon,
 } from '../../../constant/icons';
-import {getStorage} from '../../../hooks/useStorage';
+import { getStorage } from '../../../hooks/useStorage';
 
 const Home = ({navigation}) => {
   const [user, setUser] = useState({});
@@ -23,6 +23,14 @@ const Home = ({navigation}) => {
   useEffect(() => {
     getStorage('user', setUser, 'object');
   }, []);
+
+  // useEffect(() => {
+  //   if (user !== null && user.site.length === 1) {
+  //     let newUser = { ...user, site: user.site[0] };
+  //     setStorage('user', newUser);
+  //   }
+  // }, [user]);
+
   const navLinks = [
     {
       name: 'Receiving',

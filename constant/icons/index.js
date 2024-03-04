@@ -28,6 +28,7 @@ import ScanIcon from './scan-icon.png';
 import ScannerIcon from './scanner-icon.png';
 import SearchIcon from './search-icon.png';
 import ShelvingIcon from './shelving-icon.png';
+import SiteIcon from './site-icon.png';
 import SuccessIcon from './success-icon.png';
 import TaskAssignIcon from './task-assign-icon.png';
 import UserIcon from './user-icon.png';
@@ -63,6 +64,7 @@ export {
   ScannerIcon,
   SearchIcon,
   ShelvingIcon,
+  SiteIcon,
   SuccessIcon,
   TaskAssignIcon,
   UserIcon

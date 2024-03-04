@@ -25,7 +25,9 @@ const Receiving = ({ navigation }) => {
   const dateFormTimeStamp = new Date(date.getTime() - 15 * 24 * 60 * 60 * 1000);
   const dateForm = dateFormTimeStamp.toISOString().split('T')[0].replaceAll('-', '');
 
-  const postData = { site: user?.site[0], from: dateForm, to: dateTo }
+  const postData = { site: user?.site, from: dateForm, to: dateTo }
+
+  console.log(postData);
 
   useEffect(() => {
     getStorage('user', setUser, 'object');

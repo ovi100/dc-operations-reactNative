@@ -1,7 +1,9 @@
-import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React from 'react';
 // screens
+import useAppContext from '../../hooks/useAppContext';
 import Home from '../screens/dashboard';
+import SiteModal from '../screens/dashboard/SiteModal';
 import ChildPacking from '../screens/dashboard/childPacking/ChildPacking';
 import QualityCheck from '../screens/dashboard/childPacking/qualityCheck/QualityCheck';
 import DeliveryNote from '../screens/dashboard/deliveryNote/DeliveryNote';
@@ -17,19 +19,23 @@ import PurchaseOrder from '../screens/dashboard/receiving/purchaseOrder/Purchase
 import Return from '../screens/dashboard/return/Return';
 import ReturnDetails from '../screens/dashboard/return/returnDetails/ReturnDetails';
 import ReturnScanner from '../screens/dashboard/return/scanner/Scanner';
-import ScanBarCode from '../screens/dashboard/scanbarcode/ScanBarCode';
 import Shelving from '../screens/dashboard/shelving/Shelving';
 import ShelveArticle from '../screens/dashboard/shelving/article/ShelveArticle';
 import ShelvingScanner from '../screens/dashboard/shelving/scanner/Scanner';
 import PickerPackerTaskAssign from '../screens/dashboard/taskAssign/PickerPackerTaskAssign/PickerPackerTaskAssign';
 import TaskAssign from '../screens/dashboard/taskAssign/TaskAssign';
-import Profile from '../screens/dashboard/userProfile/Profile';
 import ChangePassword from '../screens/dashboard/userProfile/ChangePassword';
+import Profile from '../screens/dashboard/userProfile/Profile';
 
 const Stack = createNativeStackNavigator();
 
 const AppStack = () => {
+  const {authInfo} = useAppContext();
+  const {user} = authInfo;
+
+  console.log('user app stack', user);
   const routes = [
+    // {id: 'site-modal', name: 'SiteModal', component: SiteModal},
     {id: 'home', name: 'Home', component: Home},
     {id: 'profile', name: 'Profile', component: Profile},
     {id: 'change-password', name: 'ChangePassword', component: ChangePassword},
@@ -67,20 +73,27 @@ const AppStack = () => {
     {id: 'return-details', name: 'ReturnDetails', component: ReturnDetails},
     {id: 'print', name: 'Print', component: Print},
   ];
+
   return (
-    <Stack.Navigator
-      initialRouteName="Login"
-      screenOptions={{headerShown: false}}>
-      {routes.map(route => (
-        <Stack.Screen
-          key={route.id}
-          name={route.name}
-          component={route.component}
-          options={{
-            headerShown: false,
-          }}
-        />
-      ))}
+    <Stack.Navigator initialRouteName="SiteModal">
+      {user !== null && user.site.length > 1 && (
+        <Stack.Group
+          screenOptions={{headerShown: false, presentation: 'modal'}}>
+          <Stack.Screen name="SiteModal" component={SiteModal} />
+        </Stack.Group>
+      )}
+      <Stack.Group screenOptions={{headerShown: false}}>
+        {routes.map(route => (
+          <Stack.Screen
+            key={route.id}
+            name={route.name}
+            component={route.component}
+            options={{
+              headerShown: false,
+            }}
+          />
+        ))}
+      </Stack.Group>
     </Stack.Navigator>
   );
 };

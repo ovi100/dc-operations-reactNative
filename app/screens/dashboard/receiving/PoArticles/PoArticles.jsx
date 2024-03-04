@@ -108,7 +108,7 @@ const PoArticles = ({ navigation, route }) => {
     }
   };
 
-  console.log('receiving--> PO List --> article', route.params);
+  // console.log('receiving--> PO List --> article', route.params);
 
 
   return (

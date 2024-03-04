@@ -1,15 +1,17 @@
 import { useFocusEffect } from '@react-navigation/native';
-import React, { useCallback, useState } from 'react';
-import { SafeAreaView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import { DeviceEventEmitter, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
 import ReadyForShelving from '../../../../../components/animations/ReadyForShelving';
 import SearchAnimation from '../../../../../components/animations/Search';
 import ServerError from '../../../../../components/animations/ServerError';
-import { ButtonBack } from '../../../../../components/buttons';
 import Table from '../../../../../components/table';
 import useAppContext from '../../../../../hooks/useAppContext';
 import { getStorage } from '../../../../../hooks/useStorage';
+import { toast } from '../../../../../utils';
+import SunmiScanner from '../../../../../utils/sunmi/scanner';
 
 const PurchaseOrder = ({ navigation, route }) => {
+  const { startScan, stopScan } = SunmiScanner;
   const [isLoading, setIsLoading] = useState(false);
   const [serverError, setServerError] = useState('');
   const [barcode, setBarcode] = useState('');
@@ -21,11 +23,26 @@ const PurchaseOrder = ({ navigation, route }) => {
 
   const { po_id } = route.params;
 
+  console.log(po_id)
+
   const { GRNInfo } = useAppContext();
   const { grn, setGrnPo, grnItems, setGrnItems } = GRNInfo;
 
   useEffect(() => {
     getStorage('token', setToken, 'string');
+  }, []);
+
+  useEffect(() => {
+    startScan();
+    DeviceEventEmitter.addListener('ScanDataReceived', data => {
+      console.log(data.code);
+      setBarcode(data.code);
+    });
+
+    return () => {
+      stopScan();
+      DeviceEventEmitter.removeAllListeners('ScanDataReceived');
+    };
   }, []);
 
   useFocusEffect(
@@ -93,13 +110,13 @@ const PurchaseOrder = ({ navigation, route }) => {
     }, [token, po_id]),
   );
 
-  if (barcode.length == 7) {
+  if (barcode) {
     const poItem = articles.find(item => item.barcode === barcode);
     if (poItem) {
       navigation.push('PoArticles', poItem);
       setBarcode('')
     } else {
-      alert('Items not found!')
+      toast('Item not found!')
     }
   }
 
@@ -142,7 +159,6 @@ const PurchaseOrder = ({ navigation, route }) => {
     <SafeAreaView className="flex-1 bg-white pt-8">
       <View className="flex-1 h-full px-4">
         <View className="screen-header flex-row items-center mb-4">
-          <ButtonBack navigation={navigation} />
           <Text className="flex-1 text-lg text-sh text-center font-semibold uppercase">
             po {po_id}
           </Text>
@@ -173,13 +189,6 @@ const PurchaseOrder = ({ navigation, route }) => {
                                     dataFields={dataFields}
                                     navigation={navigation}
                                   // routeName="PoArticles"
-                                  />
-                                  <TextInput
-                                    className="h-0 border-0 text-center"
-                                    caretHidden={true}
-                                    autoFocus={true}
-                                    value={barcode}
-                                    onChangeText={data => setBarcode(data)}
                                   />
                                 </>
                               )

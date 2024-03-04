@@ -86,8 +86,13 @@ const Receiving = ({ navigation }) => {
   );
 
   if (barcode) {
-    navigation.push('PurchaseOrder', { po_id: barcode });
-    setBarcode('')
+    const poItem = poList.find(item => item.po === barcode);
+    if (poItem) {
+      navigation.push('PurchaseOrder', { po_id: barcode });
+      setBarcode('')
+    } else {
+      toast('Item not found!')
+    }
   }
 
 

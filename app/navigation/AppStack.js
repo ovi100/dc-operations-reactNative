@@ -33,9 +33,7 @@ const AppStack = () => {
   const {authInfo} = useAppContext();
   const {user} = authInfo;
 
-  console.log('user app stack', user);
   const routes = [
-    // {id: 'site-modal', name: 'SiteModal', component: SiteModal},
     {id: 'home', name: 'Home', component: Home},
     {id: 'profile', name: 'Profile', component: Profile},
     {id: 'change-password', name: 'ChangePassword', component: ChangePassword},

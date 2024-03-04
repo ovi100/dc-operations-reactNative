@@ -1,7 +1,6 @@
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, DeviceEventEmitter, FlatList, Image, Keyboard, SafeAreaView, Text, TextInput, View } from 'react-native';
-// import { ButtonBack } from '../../../../components/buttons';
 import { SearchIcon } from '../../../../constant/icons';
 import { getStorage } from '../../../../hooks/useStorage';
 import { toast } from '../../../../utils';
@@ -16,7 +15,6 @@ const Receiving = ({ navigation }) => {
   const [search, setSearch] = useState('');
   const tableHeader = ['Purchase Order ID', 'SKU'];
   const API_URL = 'https://shwapnooperation.onrender.com/bapi/po/list';
-  // const API_URL = 'https://shwapnooperation.onrender.com/api/po-tracking/pending-for-grn';
   const { startScan, stopScan } = SunmiScanner;
 
   const date = new Date();
@@ -124,7 +122,6 @@ const Receiving = ({ navigation }) => {
     <SafeAreaView className="flex-1 bg-white pt-8">
       <View className="flex-1 px-4">
         <View className="screen-header flex-row items-center mb-4">
-          {/* <ButtonBack navigation={navigation} /> */}
           <Text className="text-lg flex-1 text-sh text-center font-semibold capitalize">
             receiving screen
           </Text>

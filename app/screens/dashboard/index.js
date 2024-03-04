@@ -1,7 +1,7 @@
-import { Link } from '@react-navigation/native';
-import React, { useEffect, useState } from 'react';
-import { Image, SafeAreaView, Text, View } from 'react-native';
-import { ButtonProfile } from '../../../components/buttons';
+import {Link} from '@react-navigation/native';
+import React, {useEffect, useState} from 'react';
+import {Image, SafeAreaView, Text, View} from 'react-native';
+import {ButtonProfile} from '../../../components/buttons';
 import {
   ChildPackingIcon,
   DeliveryNoteIcon,
@@ -15,21 +15,15 @@ import {
   ShelvingIcon,
   TaskAssignIcon,
 } from '../../../constant/icons';
-import { getStorage } from '../../../hooks/useStorage';
+import {getStorage} from '../../../hooks/useStorage';
 
 const Home = ({navigation}) => {
   const [user, setUser] = useState({});
+  let filteredLinks;
 
   useEffect(() => {
     getStorage('user', setUser, 'object');
   }, []);
-
-  // useEffect(() => {
-  //   if (user !== null && user.site.length === 1) {
-  //     let newUser = { ...user, site: user.site[0] };
-  //     setStorage('user', newUser);
-  //   }
-  // }, [user]);
 
   const navLinks = [
     {
@@ -91,16 +85,19 @@ const Home = ({navigation}) => {
       icon: PrinterIcon,
       screen: 'Print',
       role: 'printer',
-    },
-    {
-      name: 'Scan Barcode',
-      icon: ScannerIcon,
-      screen: 'ScanBarcode',
-      role: '',
-    },
+    }
   ];
 
-  const filteredLinks = navLinks.filter(link => link.role === user.role);
+  // console.log(
+  //   'checking user role',
+  //   user.role === 'super-admin' && user.hasPermission.includes('*'),
+  // );
+
+  if (user.role === 'super-admin' && user.hasPermission.includes('*')) {
+    filteredLinks = navLinks;
+  } else {
+    filteredLinks = navLinks.filter(link => link.role === user.role);
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">

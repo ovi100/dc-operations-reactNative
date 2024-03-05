@@ -58,12 +58,10 @@ const useAuth = () => {
         setUser(storedUser);
         setToken(storedToken);
         setIsLoading(false);
-        console.log('user is now logged in');
       } else {
         setIsLoading(false);
         setUser(null);
         setToken(null);
-        console.log('user not logged in');
       }
     } catch (error) {
       Alert.alert(error);

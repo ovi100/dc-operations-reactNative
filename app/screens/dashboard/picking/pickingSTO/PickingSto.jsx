@@ -1,6 +1,6 @@
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, DeviceEventEmitter, FlatList, SafeAreaView, Text, View } from 'react-native';
+import { ActivityIndicator, DeviceEventEmitter, FlatList, Platform, SafeAreaView, Text, View } from 'react-native';
 import { getStorage } from '../../../../../hooks/useStorage';
 import { toast } from '../../../../../utils';
 import SunmiScanner from '../../../../../utils/sunmi/scanner';
@@ -22,16 +22,21 @@ const PickingSto = ({ navigation, route }) => {
   }, []);
 
   useEffect(() => {
-    startScan();
-    DeviceEventEmitter.addListener('ScanDataReceived', data => {
-      setBarcode(data.code);
-    });
+    if (Platform.constants.Manufacturer === 'SUNMI') {
+      startScan();
+      DeviceEventEmitter.addListener('ScanDataReceived', data => {
+        console.log(data.code);
+        setBarcode(data.code);
+      });
 
-    return () => {
-      stopScan();
-      DeviceEventEmitter.removeAllListeners('ScanDataReceived');
-    };
-  }, []);
+      return () => {
+        stopScan();
+        DeviceEventEmitter.removeAllListeners('ScanDataReceived');
+      };
+    } else {
+      console.log('Device do not have scanner')
+    }
+  }, [Platform]);
 
   const fetchStoDetails = async () => {
     await fetch(API_URL + 'bapi/sto/display' + `?currentPage=${page}`, {

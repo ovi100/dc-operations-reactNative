@@ -1,21 +1,19 @@
-import {Link} from '@react-navigation/native';
-import React, {useEffect, useState} from 'react';
-import {Image, SafeAreaView, Text, View} from 'react-native';
-import {ButtonProfile} from '../../../components/buttons';
+import { Link } from '@react-navigation/native';
+import React, { useEffect, useState } from 'react';
+import { Image, SafeAreaView, Text, View } from 'react-native';
+import { ButtonProfile } from '../../../components/buttons';
 import {
   ChildPackingIcon,
   DeliveryNoteIcon,
   DeliveryPlanIcon,
-  MasterPackingIcon,
   PickingIcon,
   PrinterIcon,
   ReceivingIcon,
   ReturnIcon,
-  ScannerIcon,
   ShelvingIcon,
-  TaskAssignIcon,
+  TaskAssignIcon
 } from '../../../constant/icons';
-import {getStorage} from '../../../hooks/useStorage';
+import { getStorage } from '../../../hooks/useStorage';
 
 const Home = ({navigation}) => {
   const [user, setUser] = useState({});
@@ -62,12 +60,12 @@ const Home = ({navigation}) => {
       screen: 'ChildPacking',
       role: 'packer',
     },
-    {
-      name: 'Master Packing',
-      icon: MasterPackingIcon,
-      screen: 'MasterPacking',
-      role: 'packer',
-    },
+    // {
+    //   name: 'Master Packing',
+    //   icon: MasterPackingIcon,
+    //   screen: 'MasterPacking',
+    //   role: 'packer',
+    // },
     {
       name: 'Final Delivery Note',
       icon: DeliveryNoteIcon,
@@ -87,11 +85,6 @@ const Home = ({navigation}) => {
       role: 'printer',
     }
   ];
-
-  // console.log(
-  //   'checking user role',
-  //   user.role === 'super-admin' && user.hasPermission.includes('*'),
-  // );
 
   if (user.role === 'super-admin' && user.hasPermission.includes('*')) {
     filteredLinks = navLinks;

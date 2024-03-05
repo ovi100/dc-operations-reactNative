@@ -1,6 +1,6 @@
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, DeviceEventEmitter, FlatList, Image, Keyboard, SafeAreaView, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, DeviceEventEmitter, FlatList, Image, Keyboard, Platform, SafeAreaView, Text, TextInput, View } from 'react-native';
 import { SearchIcon } from '../../../../constant/icons';
 import { getStorage } from '../../../../hooks/useStorage';
 import { toast } from '../../../../utils';
@@ -34,17 +34,21 @@ const Receiving = ({ navigation }) => {
   }, []);
 
   useEffect(() => {
-    startScan();
-    DeviceEventEmitter.addListener('ScanDataReceived', data => {
-      console.log(data.code);
-      setBarcode(data.code);
-    });
+    if (Platform.constants.Manufacturer === 'SUNMI') {
+      startScan();
+      DeviceEventEmitter.addListener('ScanDataReceived', data => {
+        console.log(data.code);
+        setBarcode(data.code);
+      });
 
-    return () => {
-      stopScan();
-      DeviceEventEmitter.removeAllListeners('ScanDataReceived');
-    };
-  }, []);
+      return () => {
+        stopScan();
+        DeviceEventEmitter.removeAllListeners('ScanDataReceived');
+      };
+    } else {
+      console.log('Device do not have scanner')
+    }
+  }, [Platform]);
 
   const getPoList = async () => {
     setIsLoading(true);
@@ -94,7 +98,6 @@ const Receiving = ({ navigation }) => {
       toast('Item not found!')
     }
   }
-
 
   const renderItem = ({ item, index }) => (
     <View className="flex-row border border-tb rounded-lg mt-2.5 p-4" key={index}>

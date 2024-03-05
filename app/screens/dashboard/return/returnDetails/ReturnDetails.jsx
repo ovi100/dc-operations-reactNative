@@ -1,19 +1,21 @@
-import React, {useState} from 'react';
-import {Alert, Image, SafeAreaView, Text, TextInput, View} from 'react-native';
-import {ButtonBack, ButtonLg} from '../../../../../components/buttons';
-import {BoxIcon} from '../../../../../constant/icons';
+import React, { useState } from 'react';
+import { Image, SafeAreaView, Text, TextInput, View } from 'react-native';
+import { ButtonBack, ButtonLg } from '../../../../../components/buttons';
+import { BoxIcon } from '../../../../../constant/icons';
+import { toast } from '../../../../../utils';
 
-const ReturnDetails = ({navigation, route}) => {
-  const {id, name, quantity} = route.params;
+const ReturnDetails = ({ navigation, route }) => {
+  const { id, name, quantity } = route.params;
   const [newQuantity, setNewQuantity] = useState(quantity);
 
   console.log('Return--> Barcode --> article', route.params);
 
-  const shelveArticle = async () => {
+  const returnArticle = async () => {
     if (newQuantity > quantity) {
-      Alert.alert('Quantity exceed');
+      toast('Quantity exceed');
     } else {
-      console.log('returning');
+      toast('returning successfully');
+      navigation.goBack();
     }
   };
 
@@ -25,7 +27,7 @@ const ReturnDetails = ({navigation, route}) => {
           <View className="text">
             <View className="flex-row justify-end">
               <Text className="text-base text-sh font-medium capitalize">
-                Shelving article
+                Returning article
               </Text>
               <Text className="text-base text-sh font-bold capitalize">
                 {' ' + id}
@@ -42,7 +44,7 @@ const ReturnDetails = ({navigation, route}) => {
           <View className="box-header flex-row items-center justify-between">
             <View className="text">
               <Text className="text-base text-[#2E2C3B] font-medium capitalize">
-                shelved quantity
+                returned quantity
               </Text>
             </View>
             <View className="quantity flex-row items-center gap-3">
@@ -67,7 +69,7 @@ const ReturnDetails = ({navigation, route}) => {
         </View>
 
         <View className="button mt-3">
-          <ButtonLg title="Mark as Shelved" onPress={() => shelveArticle()} />
+          <ButtonLg title="Mark as Returned" onPress={() => returnArticle()} />
         </View>
       </View>
     </SafeAreaView>

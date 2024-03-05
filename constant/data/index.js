@@ -1,18 +1,20 @@
 const articles = [
   {
-    id: 3475241,
+    id: 3101680,
     bin_id: 'BIN320124',
     name: 'article name 1',
     outlet: 'outlet name 1',
     quantity: 10,
+    barcode: 3101680,
     selected: false,
   },
   {
-    id: 3475242,
+    id: 3101633,
     bin_id: 'BIN320125',
     name: 'article name 2',
     outlet: 'outlet name 2',
     quantity: 5,
+    barcode: 3101633,
     selected: false,
   },
   {
@@ -21,6 +23,7 @@ const articles = [
     name: 'article name 3',
     outlet: 'outlet name 3',
     quantity: 15,
+    barcode: 3475243,
     selected: false,
   },
   {
@@ -29,6 +32,7 @@ const articles = [
     name: 'article name 4',
     outlet: 'outlet name 4',
     quantity: 12,
+    barcode: 3475244,
     selected: false,
   },
   {
@@ -37,6 +41,7 @@ const articles = [
     name: 'article name 5',
     outlet: 'outlet name 5',
     quantity: 20,
+    barcode: 3475245,
     selected: false,
   },
 ];
@@ -103,7 +108,6 @@ const poList = [
 
 const dnList = [
   {
-
     id: 9066573,
     outlet: 'outlet 1',
     packed_quantity: 8,

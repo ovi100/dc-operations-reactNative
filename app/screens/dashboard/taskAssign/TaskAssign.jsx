@@ -21,7 +21,7 @@ const TaskAssign = ({ navigation }) => {
   const getInDnList = async () => {
     setIsLoading(true);
     try {
-      await fetch(API_URL + `?currentPage=${page}`, {
+      await fetch(API_URL + `?pageSize=30&currentPage=${page}`, {
         method: 'GET',
         headers: {
           authorization: token,
@@ -30,8 +30,9 @@ const TaskAssign = ({ navigation }) => {
         .then(response => response.json())
         .then(data => {
           if (data.status) {
+            console.log(data)
             const serverData = data.items.filter(item => item.status === 'in dn' || item.status === 'picker assigned');
-
+            console.log('from server', serverData)
             setTaskList([...taskList, ...serverData]);
             setTotalPage(data.totalPages);
             setIsLoading(false);
@@ -84,6 +85,8 @@ const TaskAssign = ({ navigation }) => {
   );
 
   taskList = [...new Set(taskList)];
+
+  console.log(taskList)
 
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">

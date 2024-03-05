@@ -1,20 +1,45 @@
+import { CommonActions } from '@react-navigation/native';
+import { useEffect, useState } from 'react';
 import {
+  DeviceEventEmitter,
   FlatList,
+  Platform,
   SafeAreaView,
   Text,
-  TouchableOpacity,
-  View,
+  View
 } from 'react-native';
-import {ButtonBack} from '../../../../components/buttons';
-import {articles} from '../../../../constant/data';
+import { articles } from '../../../../constant/data';
+import { toast } from '../../../../utils';
+import SunmiScanner from '../../../../utils/sunmi/scanner';
 
-const Return = ({navigation}) => {
+const Return = ({ navigation }) => {
+  const { startScan, stopScan } = SunmiScanner;
+  const [barcode, setBarcode] = useState('');
   const tableHeader = ['Article ID', 'Article Name', 'Outlet', 'Quantity'];
 
-  const renderItem = ({item}) => (
-    <TouchableOpacity
+  useEffect(() => {
+    if (Platform.constants.Manufacturer === 'SUNMI') {
+      startScan();
+      DeviceEventEmitter.addListener('ScanDataReceived', data => {
+        setBarcode(data.code);
+        navigation.dispatch(CommonActions.setParams({}));
+      });
+
+      return () => {
+        stopScan();
+        DeviceEventEmitter.removeAllListeners('ScanDataReceived');
+      };
+    } else {
+      console.log('Device do not have scanner')
+    }
+  }, [Platform]);
+
+  const renderItem = ({ item, index }) => (
+    <View
+      key={index}
       className="flex-row border border-tb rounded-lg mt-2.5 p-4"
-      onPress={() => navigation.push('ReturnScanner', {item})}>
+    // onPress={() => navigation.push('ReturnDetails', item)}
+    >
       <Text className="flex-1 text-black text-center" numberOfLines={1}>
         {item.id}
       </Text>
@@ -27,14 +52,24 @@ const Return = ({navigation}) => {
       <Text className="flex-1 text-black text-center" numberOfLines={1}>
         {item.quantity}
       </Text>
-    </TouchableOpacity>
+    </View>
   );
+
+  if (barcode) {
+    const article = articles.find(item => String(item.barcode) === String(barcode));
+    if (article) {
+      navigation.push('ReturnDetails', article);
+      setBarcode('');
+    } else {
+      toast('Barcode not found!');
+      setBarcode('');
+    }
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-white pt-14">
       <View className="flex-1 px-4">
         <View className="screen-header flex-row items-center mb-4">
-          <ButtonBack navigation={navigation} />
           <Text className="text-lg flex-1 text-sh text-center font-semibold capitalize">
             return
           </Text>

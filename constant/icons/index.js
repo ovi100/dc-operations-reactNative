@@ -12,6 +12,8 @@ import DeliveryPlanIcon from './delivery-plan-icon.png';
 import EmailIcon from './email-icon.png';
 import EyeInvisibleIcon from './eye-invisible-icon.png';
 import EyeVisibleIcon from './eye-visible-icon.png';
+import Dk02Icon from './icon-dk02.png';
+import Dk11Icon from './icon-dk11.png';
 import IdIcon from './id-icon.png';
 import ImageIcon from './image-icon.png';
 import InfoIcon from './info-icon.png';
@@ -28,7 +30,6 @@ import ScanIcon from './scan-icon.png';
 import ScannerIcon from './scanner-icon.png';
 import SearchIcon from './search-icon.png';
 import ShelvingIcon from './shelving-icon.png';
-import SiteIcon from './site-icon.png';
 import SuccessIcon from './success-icon.png';
 import TaskAssignIcon from './task-assign-icon.png';
 import UserIcon from './user-icon.png';
@@ -44,6 +45,8 @@ export {
   CloseIcon,
   DeliveryNoteIcon,
   DeliveryPlanIcon,
+  Dk02Icon,
+  Dk11Icon,
   EmailIcon,
   EyeInvisibleIcon,
   EyeVisibleIcon,
@@ -64,7 +67,6 @@ export {
   ScannerIcon,
   SearchIcon,
   ShelvingIcon,
-  SiteIcon,
   SuccessIcon,
   TaskAssignIcon,
   UserIcon

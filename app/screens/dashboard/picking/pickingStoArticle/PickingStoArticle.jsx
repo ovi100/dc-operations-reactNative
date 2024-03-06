@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback, useEffect, useState } from 'react';
 import { Image, SafeAreaView, Text, TextInput, View } from 'react-native';
 import { ButtonBack, ButtonLg, ButtonLoading } from '../../../../../components/buttons';
 import { BoxIcon } from '../../../../../constant/icons';
@@ -7,20 +8,63 @@ import { toast } from '../../../../../utils';
 
 const PickingStoArticle = ({ navigation, route }) => {
   const [isButtonLoading, setIsButtonLoading] = useState(false);
+  const [stoDetails, setStoDetails] = useState({});
   const [token, setToken] = useState('');
   const { sto, material, description, quantity } = route.params;
   const [pickedQuantity, setPickedQuantity] = useState(quantity);
   const API_URL = 'https://shwapnooperation.onrender.com/api/article-tracking';
 
+  console.log('sto --> article', route.params)
+
   useEffect(() => {
     getStorage('token', setToken, 'string');
   }, []);
+
+  const getSTODetails = async () => {
+    try {
+      await fetch(`https://shwapnooperation.onrender.com/api/sto-tracking?filterBy=sto&value=${Number(sto)}`, {
+        method: 'GET',
+        headers: {
+          authorization: token,
+        },
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.status) {
+            setStoDetails(data.items[0])
+          } else {
+            toast(data.message);
+          }
+        })
+        .catch(error => toast(error.message));
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      if (token) {
+        getSTODetails();
+      }
+    }, [token])
+  );
+
+  console.log('STO Details', stoDetails)
 
   const addToArticleTracking = async () => {
     if (pickedQuantity > quantity) {
       toast('Quantity exceed');
     } else {
-      let data = { sto, code: material, quantity, name: description, status: 'inbound picking', pickedQuantity }
+      let data = {
+        sto,
+        code: material,
+        quantity,
+        name: description,
+        pickedQuantity,
+        pickingEndingTime: new Date(),
+        status: 'inbound picking',
+      }
       console.log(data);
 
       try {

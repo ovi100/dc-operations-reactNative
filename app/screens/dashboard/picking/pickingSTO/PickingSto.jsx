@@ -17,6 +17,8 @@ const PickingSto = ({ navigation, route }) => {
   const API_URL = 'https://shwapnooperation.onrender.com/';
   const { startScan, stopScan } = SunmiScanner;
 
+  console.log(route.params)
+
   useEffect(() => {
     getStorage('token', setToken, 'string');
   }, []);
@@ -54,7 +56,6 @@ const PickingSto = ({ navigation, route }) => {
           setArticles([...articles, ...serverData]);
           setIsLoading(false);
           setServerError('');
-
         } else {
           setIsLoading(false);
           setServerError(result.message);
@@ -74,9 +75,10 @@ const PickingSto = ({ navigation, route }) => {
   );
 
   if (barcode) {
-    const article = articles.find(item => item.barcode === String(barcode));
+    const article = articles.find(item => item.material === String(barcode));
     if (article) {
-      navigation.push('PickingStoArticle', article);
+      let data = { ...article, pickingStartingTime: new Date() }
+      navigation.push('PickingStoArticle', data);
       setBarcode('');
     } else {
       toast('Barcode not found!');
@@ -117,6 +119,8 @@ const PickingSto = ({ navigation, route }) => {
   );
 
   articles = [...new Set(articles)];
+
+  console.log(articles)
 
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">

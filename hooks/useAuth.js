@@ -47,7 +47,6 @@ const useAuth = () => {
 
   const isLoggedIn = () => {
     try {
-      console.log('checking is logged in');
       setIsLoading(true);
 
       let storedUser = getStorage('user', setUser, 'object');

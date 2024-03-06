@@ -2,27 +2,48 @@ import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  DeviceEventEmitter,
   FlatList,
+  Platform,
   SafeAreaView,
   Text,
-  TouchableOpacity,
   View
 } from 'react-native';
 import { ButtonBack } from '../../../../components/buttons';
 import { getStorage } from '../../../../hooks/useStorage';
+import SunmiScanner from '../../../../utils/sunmi/scanner';
 
 const Shelving = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [token, setToken] = useState('');
+  const [barcode, setBarcode] = useState('');
   const [articles, setArticles] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPage, setTotalPage] = useState(0);
   const tableHeader = ['Article ID', 'BIN ID', 'Quantity'];
   const API_URL = 'https://shwapnooperation.onrender.com/api/product-shelving/';
+  const { startScan, stopScan } = SunmiScanner;
 
   useEffect(() => {
     getStorage('token', setToken, 'string');
   }, []);
+
+  useEffect(() => {
+    if (Platform.constants.Manufacturer === 'SUNMI') {
+      startScan();
+      DeviceEventEmitter.addListener('ScanDataReceived', data => {
+        console.log(data.code);
+        setBarcode(data.code);
+      });
+
+      return () => {
+        stopScan();
+        DeviceEventEmitter.removeAllListeners('ScanDataReceived');
+      };
+    } else {
+      console.log('Device do not have scanner')
+    }
+  }, [Platform]);
 
   const getShelvingReady = async () => {
     try {
@@ -65,12 +86,12 @@ const Shelving = ({ navigation }) => {
                   setIsLoading(false);
                 }
               })
-              .catch(error => console.log('Fetch catch', error));
+              .catch(error => toast(error.message));
           }
         })
-        .catch(error => console.log('Fetch catch', error));
+        .catch(error => toast(error.message));
     } catch (error) {
-      console.log(error);
+      toast(error.message);
       setIsLoading(false);
     }
   };
@@ -91,12 +112,22 @@ const Shelving = ({ navigation }) => {
     }
   };
 
+  if (barcode) {
+    const article = articles.find(item => item.code === String(barcode));
+    if (article) {
+      navigation.push('ShelveArticle', article);
+      setBarcode('');
+    } else {
+      toast('Barcode not found!');
+      setBarcode('');
+    }
+  }
+
 
   const renderItem = ({ item, index }) => (
-    <TouchableOpacity
+    <View
       key={index}
-      className="flex-row border border-tb rounded-lg mt-2.5 p-3"
-      onPress={() => navigation.push('ShelvingScanner', { item })}>
+      className="flex-row items-center border border-tb rounded-lg mt-2.5 p-3">
       <View className="flex-1">
         <Text className="text-xs text-black" numberOfLines={1}>
           {item.code}
@@ -122,7 +153,7 @@ const Shelving = ({ navigation }) => {
       <Text className="flex-1 text-black text-center" numberOfLines={1}>
         {item.receivedQuantity}
       </Text>
-    </TouchableOpacity>
+    </View>
   );
 
   return (

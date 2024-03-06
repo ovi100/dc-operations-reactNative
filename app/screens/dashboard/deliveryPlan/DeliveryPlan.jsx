@@ -20,6 +20,7 @@ import { toast } from '../../../../utils';
 const DeliveryPlan = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isButtonLoading, setIsButtonLoading] = useState(false);
+  const [refetchData, setRefetchData] = useState(false);
   const [keyboardStatus, setKeyboardStatus] = useState(false);
   const [token, setToken] = useState('');
   let [dpList, setDpList] = useState([]);
@@ -56,43 +57,20 @@ const DeliveryPlan = ({ navigation }) => {
         },
       })
         .then(response => response.json())
-        .then(async dnData => {
+        .then(dnData => {
           if (dnData.status) {
-            await fetch(API_URL + 'api/sto-tracking/in-dn', {
-              method: 'GET',
-              headers: {
-                authorization: token,
-              },
-            })
-              .then(res => res.json())
-              .then(inDnData => {
-                if (inDnData.status) {
-                  const pendingDnItems = dnData.items;
-                  const inDnItems = inDnData.items;
-                  let remainingDnItems = pendingDnItems.filter(
-                    pdnItem => !inDnItems.some(inDnItem => inDnItem.sto === pdnItem.sto)
-                  );
-                  const dpData = remainingDnItems.map(item => {
-                    return { ...item, selected: false }
-                  });
-                  setDpList([...dpList, ...dpData]);
-                  setTotalPage(dnData.totalPages);
-                } else {
-                  const pendingDnItems = dnData.items;
-                  const dpData = pendingDnItems.map(item => {
-                    return { ...item, selected: false }
-                  });
-                  setDpList([...dpList, ...dpData]);
-                  setTotalPage(dnData.totalPages);
-                }
-              })
-              .catch(error => console.log('Fetch catch', error));
+            const pendingDnItems = dnData.items;
+            const dpData = pendingDnItems.map(item => {
+              return { ...item, selected: false }
+            });
+            setDpList([...dpList, ...dpData]);
+            setTotalPage(dnData.totalPages);
           } else {
             toast(dnData.message);
             setIsLoading(false);
           }
         })
-        .catch(error => console.log('Fetch catch', error));
+        .catch(error => toast(error.message));
     } catch (error) {
       console.log(error);
     }
@@ -103,7 +81,7 @@ const DeliveryPlan = ({ navigation }) => {
       if (token) {
         getDnList();
       }
-    }, [token, page])
+    }, [token, page, refetchData])
   );
 
   const loadMoreItem = () => {
@@ -186,14 +164,17 @@ const DeliveryPlan = ({ navigation }) => {
             .then(response => response.json())
             .then(data => {
               if (data.status) {
+                uncheckAll()
                 toast(data.message)
                 setIsButtonLoading(false);
+                setRefetchData(true);
               } else {
+                uncheckAll()
                 toast(data.message);
                 setIsButtonLoading(false);
               }
             })
-            .catch(error => console.log('Fetch catch', error));
+            .catch(error => toast(error.message));
         })
       } catch (error) {
         console.log(error);

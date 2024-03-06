@@ -72,7 +72,7 @@ const Receiving = ({ navigation }) => {
           }
         })
         .catch(error => {
-          console.log('Fetch catch', error)
+          toast(error.message)
           setIsLoading(false);
         });
     } catch (error) {

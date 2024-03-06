@@ -9,10 +9,8 @@ import { toast } from '../../../../utils';
 const Picking = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [token, setToken] = useState('');
-  let [tabInfo, setTabInfo] = useState([]);
   let [notPickedData, setNotPickedData] = useState([]);
   let [pickedData, setPickedData] = useState([]);
-  const [active, setActive] = useState({});
   const [page, setPage] = useState(1);
   const [totalPage, setTotalPage] = useState(0);
   const tableHeader = ['STO', 'SKU', 'Outlet Code', 'Status'];
@@ -34,35 +32,18 @@ const Picking = ({ navigation }) => {
         .then(response => response.json())
         .then(data => {
           if (data.status) {
-            // console.log('server data', data.items)
             const notPicked = data.items.filter(item => item.status === 'picker assigned' || item.status === 'picker packer assigned');
             const picked = data.items.filter(item => item.status === 'picked');
             setNotPickedData([...notPickedData, ...notPicked]);
             setPickedData([...pickedData, ...picked]);
             setTotalPage(data.totalPages);
-            let tabInfo = [
-              {
-                id: 1,
-                name: 'not picked',
-                count: notPicked.length,
-                icon: NotPickingIcon,
-              },
-              {
-                id: 2,
-                name: 'picked',
-                count: picked.length,
-                icon: PickingIcon,
-              },
-            ]
-            setTabInfo(tabInfo);
-            setActive(tabInfo[0])
             setIsLoading(false);
           } else {
             toast(data.message);
             setIsLoading(false);
           }
         })
-        .catch(error => console.log('Fetch catch', error));
+        .catch(error => toast(error.message));
     } catch (error) {
       console.log(error);
     }
@@ -129,6 +110,23 @@ const Picking = ({ navigation }) => {
   notPickedData = [...new Set(notPickedData)];
   pickedData = [...new Set(pickedData)];
 
+  let tabInfo = [
+    {
+      id: 1,
+      name: 'not picked',
+      count: notPickedData.length,
+      icon: NotPickingIcon,
+    },
+    {
+      id: 2,
+      name: 'picked',
+      count: pickedData.length,
+      icon: PickingIcon,
+    },
+  ]
+
+  const [active, setActive] = useState(tabInfo[0]);
+
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">
       <View className="flex-1 px-4">
@@ -160,44 +158,65 @@ const Picking = ({ navigation }) => {
         </View>
 
         <View className="tab-content flex-1 justify-between py-5">
-          {active?.name === 'not picked' && notPickedData.length ? (
-            <View className="table h-full pb-2">
-              <View className="flex-row bg-th text-center mb-2 py-2">
-                {tableHeader.map(th => (
-                  <Text className="flex-1 text-white text-center font-bold" key={th}>
-                    {th}
+          {active?.name === 'not picked' ? (
+            <>
+              {notPickedData.length ? (
+                <View className="table h-full pb-2">
+                  <View className="flex-row bg-th text-center mb-2 py-2">
+                    {tableHeader.map(th => (
+                      <Text className="flex-1 text-white text-center font-bold" key={th}>
+                        {th}
+                      </Text>
+                    ))}
+                  </View>
+                  <FlatList
+                    data={notPickedData}
+                    renderItem={pickingRenderItem}
+                    keyExtractor={item => item._id}
+                    onEndReached={loadMoreItem}
+                    ListFooterComponent={isLoading && <ActivityIndicator />}
+                    onEndReachedThreshold={0}
+                  />
+                </View>
+              ) : (
+                <View className="h-full justify-center pb-2">
+                  <Text className="text-lg font-bold text-center">
+                    No item ready for picking
                   </Text>
-                ))}
-              </View>
-              <FlatList
-                data={notPickedData}
-                renderItem={pickingRenderItem}
-                keyExtractor={item => item._id}
-                onEndReached={loadMoreItem}
-                ListFooterComponent={isLoading && <ActivityIndicator />}
-                onEndReachedThreshold={0}
-              />
-            </View>
+                </View>
+              )}
+            </>
+
           ) : null}
 
-          {active?.name === 'picked' && pickedData.length ? (
-            <View className="table h-full pb-2">
-              <View className="flex-row bg-th text-center mb-2 py-2">
-                {tableHeader.map(th => (
-                  <Text className="flex-1 text-white text-center font-bold" key={th}>
-                    {th}
+          {active?.name === 'picked' ? (
+            <>
+              {pickedData.length ? (
+                <View className="table h-full pb-2">
+                  <View className="flex-row bg-th text-center mb-2 py-2">
+                    {tableHeader.map(th => (
+                      <Text className="flex-1 text-white text-center font-bold" key={th}>
+                        {th}
+                      </Text>
+                    ))}
+                  </View>
+                  <FlatList
+                    data={pickedData}
+                    renderItem={pickedRenderItem}
+                    keyExtractor={item => item._id}
+                    onEndReached={loadMoreItem}
+                    ListFooterComponent={isLoading && <ActivityIndicator />}
+                    onEndReachedThreshold={0}
+                  />
+                </View>
+              ) : (
+                <View className="h-full justify-center pb-2">
+                  <Text className="text-lg font-bold text-center">
+                    No item picked yet!
                   </Text>
-                ))}
-              </View>
-              <FlatList
-                data={pickedData}
-                renderItem={pickedRenderItem}
-                keyExtractor={item => item._id}
-                onEndReached={loadMoreItem}
-                ListFooterComponent={isLoading && <ActivityIndicator />}
-                onEndReachedThreshold={0}
-              />
-            </View>
+                </View>
+              )}
+            </>
           ) : null}
         </View>
       </View>

@@ -30,9 +30,7 @@ const TaskAssign = ({ navigation }) => {
         .then(response => response.json())
         .then(data => {
           if (data.status) {
-            console.log(data)
             const serverData = data.items.filter(item => item.status === 'in dn' || item.status === 'picker assigned');
-            console.log('from server', serverData)
             setTaskList([...taskList, ...serverData]);
             setTotalPage(data.totalPages);
             setIsLoading(false);
@@ -41,7 +39,7 @@ const TaskAssign = ({ navigation }) => {
             setIsLoading(false);
           }
         })
-        .catch(error => console.log('Fetch catch', error));
+        .catch(error => toast(error.message));
     } catch (error) {
       console.log(error);
     }

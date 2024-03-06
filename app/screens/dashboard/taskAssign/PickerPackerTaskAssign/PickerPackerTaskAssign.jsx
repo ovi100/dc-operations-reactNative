@@ -1,5 +1,6 @@
 import { Picker } from '@react-native-picker/picker';
-import { useEffect, useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback, useEffect, useState } from 'react';
 import { SafeAreaView, Text, View } from 'react-native';
 import { ButtonBack, ButtonLg } from '../../../../../components/buttons';
 import { getStorage } from '../../../../../hooks/useStorage';
@@ -7,57 +8,51 @@ import { toast } from '../../../../../utils';
 
 const PickerPackerTaskAssign = ({ navigation, route }) => {
   const { sto } = route.params;
+  const [isLoading, setIsLoading] = useState(false);
+  const [pickers, setPickers] = useState([]);
+  const [packers, setPackers] = useState([]);
   const [token, setToken] = useState('');
-  const API_URL = 'https://shwapnooperation.onrender.com/api/sto-tracking/update';
+  const API_URL = 'https://shwapnooperation.onrender.com/api/';
 
   useEffect(() => {
     getStorage('token', setToken, 'string');
   }, []);
 
-  const pickers = [
-    {
-      id: 'pi28182',
-      name: 'abu sayed',
-    },
-    {
-      id: 'pi28181',
-      name: 'eftykhar',
-    },
-    {
-      id: 'pi29601',
-      name: 'tanvir',
-    },
-    {
-      id: 'pi28180',
-      name: 'sadman',
-    },
-    {
-      id: 'pi28187',
-      name: 'munib',
-    },
-  ];
-  const packers = [
-    {
-      id: 'pa29102',
-      name: 'aquib',
-    },
-    {
-      id: 'pa28170',
-      name: 'siam',
-    },
-    {
-      id: 'pa21506',
-      name: 'majid',
-    },
-    {
-      id: 'pa17520',
-      name: 'belal',
-    },
-    {
-      id: 'pa27405',
-      name: 'sadat',
-    },
-  ];
+  const getUsers = async () => {
+    try {
+      setIsLoading(true);
+      await fetch(API_URL + 'user?pageSize=50', {
+        method: 'GET',
+        headers: {
+          authorization: token,
+        },
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.status) {
+            const users = data.items;
+            const pickers = users.filter(user => user.role === 'picker');
+            const packers = users.filter(user => user.role === 'packer');
+            setPickers(pickers);
+            setPackers(packers);
+          }
+        })
+        .catch(error => toast(error.message));
+    } catch (error) {
+      toast(error.message);
+      setIsLoading(false);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      if (token) {
+        getUsers();
+      }
+    }, [token]),
+  );
+
+
   const [selectedPicker, setSelectedPicker] = useState(null);
   const [selectedPacker, setSelectedPacker] = useState(null);
 
@@ -70,9 +65,9 @@ const PickerPackerTaskAssign = ({ navigation, route }) => {
         data = {
           sto: sto,
           picker: assignedPicker.name,
-          pickerId: assignedPicker.id,
+          pickerId: assignedPicker._id,
           packer: assignedPacker.name,
-          packerId: assignedPacker.id,
+          packerId: assignedPacker._id,
           status: 'picker packer assigned'
         };
       }
@@ -80,14 +75,14 @@ const PickerPackerTaskAssign = ({ navigation, route }) => {
         data = {
           sto: sto,
           picker: assignedPicker.name,
-          pickerId: assignedPicker.id,
+          pickerId: assignedPicker._id,
           status: 'picker assigned'
         };
       } else if (assignedPacker) {
         data = {
           sto: sto,
           packer: assignedPacker.name,
-          packerId: assignedPacker.id,
+          packerId: assignedPacker._id,
           status: 'picker packer assigned'
         };
       }
@@ -104,7 +99,7 @@ const PickerPackerTaskAssign = ({ navigation, route }) => {
     console.log('task data', data);
 
     try {
-      await fetch(API_URL, {
+      await fetch(API_URL + 'sto-tracking/update', {
         method: 'PATCH',
         headers: {
           authorization: token,
@@ -123,11 +118,9 @@ const PickerPackerTaskAssign = ({ navigation, route }) => {
             toast(data.message);
           }
         })
-        .catch(error => {
-          console.log('Fetch Error', error);
-        });
+        .catch(error => toast(error.message));
     } catch (error) {
-      console.log(error);
+      toast(error.message);
     }
   };
 

@@ -1,4 +1,3 @@
-import { Link } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
 import { Image, Text, TouchableOpacity, View } from 'react-native';
 import { ButtonBackProfile, ButtonLogin } from '../../../../components/buttons';
@@ -9,6 +8,7 @@ import {
   LoginBGImage,
   PasswordIcon,
   ProfileIcon,
+  WarehouseIcon,
 } from '../../../../constant/icons';
 import useAppContext from '../../../../hooks/useAppContext';
 import { getStorage } from '../../../../hooks/useStorage';
@@ -73,6 +73,16 @@ const Profile = ({ navigation }) => {
                 <TouchableOpacity onPress={() => navigation.push('ChangePassword', { id: asUser._id })}>
                   <Text className="bg-blue-500 text-white text-base rounded font-medium capitalize py-2 px-3">
                     change password
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+            <View className="w-full px-4">
+              <View className="site-change border-b border-gray-200 flex-row items-center gap-3 py-3">
+                <Image className="w-6 h-6" source={WarehouseIcon} />
+                <TouchableOpacity onPress={() => navigation.push('SiteModal')}>
+                  <Text className="bg-blue-500 text-white text-base rounded font-medium capitalize py-2 px-3">
+                    change site
                   </Text>
                 </TouchableOpacity>
               </View>

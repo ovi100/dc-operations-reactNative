@@ -21,7 +21,6 @@ import Return from '../screens/dashboard/return/Return';
 import ReturnDetails from '../screens/dashboard/return/returnDetails/ReturnDetails';
 import Shelving from '../screens/dashboard/shelving/Shelving';
 import ShelveArticle from '../screens/dashboard/shelving/article/ShelveArticle';
-import ShelvingScanner from '../screens/dashboard/shelving/scanner/Scanner';
 import PickerPackerTaskAssign from '../screens/dashboard/taskAssign/PickerPackerTaskAssign/PickerPackerTaskAssign';
 import TaskAssign from '../screens/dashboard/taskAssign/TaskAssign';
 import ChangePassword from '../screens/dashboard/userProfile/ChangePassword';
@@ -41,11 +40,6 @@ const AppStack = () => {
     {id: 'purchase-order', name: 'PurchaseOrder', component: PurchaseOrder},
     {id: 'po-articles', name: 'PoArticles', component: PoArticles},
     {id: 'shelving', name: 'Shelving', component: Shelving},
-    {
-      id: 'shelving-scanner',
-      name: 'ShelvingScanner',
-      component: ShelvingScanner,
-    },
     {id: 'shelve-article', name: 'ShelveArticle', component: ShelveArticle},
     {id: 'delivery-plan', name: 'DeliveryPlan', component: DeliveryPlan},
     {id: 'task-assign', name: 'TaskAssign', component: TaskAssign},

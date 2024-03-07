@@ -1,6 +1,6 @@
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
-import { DeviceEventEmitter, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
+import { DeviceEventEmitter, Platform, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
 import ReadyForShelving from '../../../../../components/animations/ReadyForShelving';
 import SearchAnimation from '../../../../../components/animations/Search';
 import ServerError from '../../../../../components/animations/ServerError';
@@ -26,24 +26,28 @@ const PurchaseOrder = ({ navigation, route }) => {
   console.log(po_id)
 
   const { GRNInfo } = useAppContext();
-  const { grn, setGrnPo, grnItems, setGrnItems } = GRNInfo;
+  const { grnItems, setGrnItems } = GRNInfo;
 
   useEffect(() => {
     getStorage('token', setToken, 'string');
   }, []);
 
   useEffect(() => {
-    startScan();
-    DeviceEventEmitter.addListener('ScanDataReceived', data => {
-      console.log(data.code);
-      setBarcode(data.code);
-    });
+    if (Platform.constants.Manufacturer === 'SUNMI') {
+      startScan();
+      DeviceEventEmitter.addListener('ScanDataReceived', data => {
+        console.log(data.code);
+        setBarcode(data.code);
+      });
 
-    return () => {
-      stopScan();
-      DeviceEventEmitter.removeAllListeners('ScanDataReceived');
-    };
-  }, []);
+      return () => {
+        stopScan();
+        DeviceEventEmitter.removeAllListeners('ScanDataReceived');
+      };
+    } else {
+      console.log('Device do not have scanner')
+    }
+  }, [Platform]);
 
   useFocusEffect(
     useCallback(() => {
@@ -122,25 +126,24 @@ const PurchaseOrder = ({ navigation, route }) => {
 
   const GRNByPo = grnItems.filter(grnItem => grnItem.PO_NUMBER == po_id);
 
-  // console.log('PO Articles', articles);
+  console.log('grn items', grnItems)
+
 
   const createGRN = async () => {
     console.log('GRNByPo', GRNByPo);
-    console.log('GRN', grn);
     try {
-      await fetch(API_URL + 'bapi/grn/create', {
+      await fetch(API_URL + 'bapi/grn/from-po/create', {
         method: 'POST',
         headers: {
           authorization: token,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(grn),
+        body: JSON.stringify(grnItems),
       })
         .then(response => response.json())
         .then(data => {
           console.log(data);
           if (data.status) {
-            setGrnPo('');
             setGrnItems([])
             setTimeout(() => {
               navigation.goBack();
@@ -155,6 +158,8 @@ const PurchaseOrder = ({ navigation, route }) => {
     }
   }
 
+  console.log('po articles', articles)
+
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">
       <View className="flex-1 h-full px-4">
@@ -162,8 +167,8 @@ const PurchaseOrder = ({ navigation, route }) => {
           <Text className="flex-1 text-lg text-sh text-center font-semibold uppercase">
             po {po_id}
           </Text>
-          {GRNByPo.length ? (<TouchableOpacity className="bg-theme rounded-md p-2.5" onPress={() => createGRN()}>
-            <Text className="text-white text-sm text-center font-medium">Create GRN</Text>
+          {grnItems.length ? (<TouchableOpacity className="bg-theme rounded-md p-2.5" onPress={() => createGRN()}>
+            <Text className="text-white text-base text-center font-medium">Create GRN</Text>
           </TouchableOpacity>) : null}
 
         </View>

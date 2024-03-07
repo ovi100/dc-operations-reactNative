@@ -1,28 +1,9 @@
-import { useEffect, useState } from 'react';
-import { ToastAndroid } from 'react-native';
+import { useState } from 'react';
+import { toast } from '../utils';
 
 const useGRN = () => {
-  const [grnPo, setGrnPo] = useState('');
-  const [grn, setGrn] = useState({});
   const [grnItems, setGrnItems] = useState([]);
 
-  useEffect(() => {
-    const finalGRN = {
-      GRNHeader: [
-        {
-          REF_DOC_NO: grnPo,
-        },
-      ],
-      GRNData: grnItems,
-      AuthData: [
-        {
-          UserID: 'rupom',
-          Password: 'bd1975',
-        },
-      ],
-    };
-    setGrn(finalGRN);
-  }, [grnPo, setGrnItems]);
 
   const addToGRN = poItem => {
     const index = grnItems.findIndex(
@@ -32,31 +13,20 @@ const useGRN = () => {
     if (index === -1) {
       let message = 'Item added successfully';
 
-      ToastAndroid.showWithGravity(
-        message,
-        ToastAndroid.SHORT,
-        ToastAndroid.TOP,
-      );
+      toast(message);
       setGrnItems([...grnItems, poItem]);
     } else {
       let message = 'Item updated successfully';
-      ToastAndroid.showWithGravity(
-        message,
-        ToastAndroid.SHORT,
-        ToastAndroid.TOP,
-      );
+      toast(message);
       const newItems = [...grnItems];
       newItems[index] = {...poItem};
       setGrnItems(newItems);
     }
   };
 
-  // console.log('From GRN Hook', grn);
-  // console.log('From GRN Hook', grnItems);
+  console.log('GRN items', grnItems, grnItems.length);
 
   const GRNInfo = {
-    setGrnPo,
-    grn,
     grnItems,
     setGrnItems,
     addToGRN,

@@ -22,7 +22,6 @@ const SiteModal = ({ navigation }) => {
     }
   ];
 
-  console.log('user from site modal', user);
 
   if (!Array.isArray(user.site)) {
     navigation.navigate('Home');
@@ -32,8 +31,6 @@ const SiteModal = ({ navigation }) => {
   if (Array.isArray(user.site)) {
     sites = user.site.map(item => siteIcons.find(elm => elm.code === item));
   }
-
-  console.log('Sites', sites)
 
   const updateUser = (site) => {
     let newUser = { ...user, site: site };

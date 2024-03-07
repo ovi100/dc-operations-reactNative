@@ -33,6 +33,7 @@ import ShelvingIcon from './shelving-icon.png';
 import SuccessIcon from './success-icon.png';
 import TaskAssignIcon from './task-assign-icon.png';
 import UserIcon from './user-icon.png';
+import WarehouseIcon from './warehouse-icon.png';
 
 export {
   ArrowLeftIcon,
@@ -69,6 +70,7 @@ export {
   ShelvingIcon,
   SuccessIcon,
   TaskAssignIcon,
-  UserIcon
+  UserIcon,
+  WarehouseIcon
 };
 

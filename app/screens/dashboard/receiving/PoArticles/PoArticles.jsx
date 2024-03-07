@@ -7,7 +7,7 @@ import { getStorage } from '../../../../../hooks/useStorage';
 import { toast } from '../../../../../utils';
 
 const PoArticles = ({ navigation, route }) => {
-  const { description, material, po, poItem, quantity, receivingPlant, storeLocation, unit } = route.params;
+  const { description, material, po, poItem, quantity, receivingPlant, storageLocation, unit } = route.params;
   const [bins, setBins] = useState([]);
   const [newQuantity, setNewQuantity] = useState(quantity);
   const [user, setUser] = useState({});
@@ -16,11 +16,11 @@ const PoArticles = ({ navigation, route }) => {
   const API_URL2 = 'https://shelves-backend.onrender.com/api/';
 
   const { GRNInfo } = useAppContext();
-  const { setGrnPo, addToGRN } = GRNInfo
+  const { addToGRN } = GRNInfo
 
   useEffect(() => {
     const getBins = async code => {
-      fetch(API_URL2 + `bins/product/${code}`)
+      await fetch(API_URL2 + `bins/product/${code}`)
         .then(res => res.json())
         .then(results => {
           let binsData = results.map(result => {
@@ -43,23 +43,25 @@ const PoArticles = ({ navigation, route }) => {
       toast('Quantity exceed')
     } else {
       const grnItem = {
-        MOVE_TYPE: '101',
-        MVT_IND: 'B',
-        PO_NUMBER: po,
-        PO_ITEM: Number(poItem).toString(),
-        MATERIAL: material,
-        PLANT: receivingPlant,
-        STGE_LOC: storeLocation,
-        ENTRY_QNT: Number(newQuantity),
-        ENTRY_UOM: unit,
-        ENTRY_UOM_ISO: unit,
+        movementType: '101',
+        movementIndicator: 'B',
+        po: po,
+        poItem: Number(poItem).toString(),
+        material: material,
+        plant: receivingPlant,
+        storageLocation: storageLocation,
+        quantity: Number(newQuantity),
+        uom: unit,
+        uomIso: unit,
       };
-      console.log('GRM Item', grnItem)
+
+      // console.log('GRM Item', grnItem)
       // setGrnPo(po);
       // addToGRN(grnItem);
       // setTimeout(() => {
       //   navigation.goBack();
       // }, 1000);
+
       const shelvingObject = {
         po: po,
         code: material,
@@ -72,7 +74,7 @@ const PoArticles = ({ navigation, route }) => {
         receivedBy: user.name,
         bins,
       };
-      console.log(shelvingObject);
+
       try {
         await fetch(API_URL + 'product-shelving/ready/', {
           method: 'POST',
@@ -87,7 +89,6 @@ const PoArticles = ({ navigation, route }) => {
             console.log(data);
             if (data.status) {
               toast(data.message);
-              setGrnPo(po);
               addToGRN(grnItem);
               setTimeout(() => {
                 navigation.goBack();
@@ -107,8 +108,6 @@ const PoArticles = ({ navigation, route }) => {
       }
     }
   };
-
-  // console.log('receiving--> PO List --> article', route.params);
 
 
   return (

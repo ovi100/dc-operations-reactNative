@@ -1,6 +1,6 @@
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, DeviceEventEmitter, FlatList, Image, Keyboard, Platform, SafeAreaView, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, DeviceEventEmitter, FlatList, Image, Platform, SafeAreaView, Text, TextInput, View } from 'react-native';
 import { SearchIcon } from '../../../../constant/icons';
 import { getStorage } from '../../../../hooks/useStorage';
 import { toast } from '../../../../utils';
@@ -30,7 +30,6 @@ const Receiving = ({ navigation }) => {
   useEffect(() => {
     getStorage('user', setUser, 'object');
     getStorage('token', setToken,);
-    Keyboard.dismiss();
   }, []);
 
   useEffect(() => {
@@ -93,7 +92,7 @@ const Receiving = ({ navigation }) => {
     const poItem = poList.find(item => item.po === barcode);
     if (poItem) {
       navigation.push('PurchaseOrder', { po_id: barcode });
-      setBarcode('')
+      setBarcode('');
     } else {
       toast('Item not found!')
     }
@@ -120,6 +119,8 @@ const Receiving = ({ navigation }) => {
 
   poList = [...new Set(poList)]
 
+  console.log(poList.length);
+  console.log(token);
 
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">

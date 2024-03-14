@@ -1,16 +1,15 @@
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
-import { DeviceEventEmitter, Platform, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
-import ReadyForShelving from '../../../../../components/animations/ReadyForShelving';
+import { ActivityIndicator, DeviceEventEmitter, FlatList, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
 import SearchAnimation from '../../../../../components/animations/Search';
 import ServerError from '../../../../../components/animations/ServerError';
-import Table from '../../../../../components/table';
 import useAppContext from '../../../../../hooks/useAppContext';
 import { getStorage } from '../../../../../hooks/useStorage';
 import { toast } from '../../../../../utils';
 import SunmiScanner from '../../../../../utils/sunmi/scanner';
 
 const PurchaseOrder = ({ navigation, route }) => {
+  const isFocused = useIsFocused();
   const { startScan, stopScan } = SunmiScanner;
   const [isLoading, setIsLoading] = useState(false);
   const [serverError, setServerError] = useState('');
@@ -18,13 +17,8 @@ const PurchaseOrder = ({ navigation, route }) => {
   const [token, setToken] = useState('');
   const [articles, setArticles] = useState([]);
   const tableHeader = ['Article ID', 'Article Name', 'Quantity'];
-  const dataFields = ['material', 'description', 'quantity'];
   const API_URL = 'https://shwapnooperation.onrender.com/';
-
   const { po_id } = route.params;
-
-  console.log(po_id)
-
   const { GRNInfo } = useAppContext();
   const { grnItems, setGrnItems } = GRNInfo;
 
@@ -33,21 +27,17 @@ const PurchaseOrder = ({ navigation, route }) => {
   }, []);
 
   useEffect(() => {
-    if (Platform.constants.Manufacturer === 'SUNMI') {
-      startScan();
-      DeviceEventEmitter.addListener('ScanDataReceived', data => {
-        console.log(data.code);
-        setBarcode(data.code);
-      });
+    startScan();
+    DeviceEventEmitter.addListener('ScanDataReceived', data => {
+      console.log(data.code);
+      setBarcode(data.code);
+    });
 
-      return () => {
-        stopScan();
-        DeviceEventEmitter.removeAllListeners('ScanDataReceived');
-      };
-    } else {
-      console.log('Device do not have scanner')
-    }
-  }, [Platform]);
+    return () => {
+      stopScan();
+      DeviceEventEmitter.removeAllListeners('ScanDataReceived');
+    };
+  }, [isFocused]);
 
   useFocusEffect(
     useCallback(() => {
@@ -63,7 +53,6 @@ const PurchaseOrder = ({ navigation, route }) => {
         })
           .then(response => response.json())
           .then(async result => {
-            // console.log('po display', result)
             if (result.status) {
               await fetch(API_URL + 'api/product-shelving/ready',
                 {
@@ -74,12 +63,11 @@ const PurchaseOrder = ({ navigation, route }) => {
                 },
               )
                 .then(res => res.json())
-                .then(async shelveData => {
+                .then(shelveData => {
                   if (shelveData.status) {
-                    // console.log('shelve data', shelveData)
                     const poItems = result.data.items;
                     const shItems = shelveData.items;
-                    let remainingPoItems = await poItems.filter(
+                    let remainingPoItems = poItems.filter(
                       poItem =>
                         !shItems.some(
                           shItem =>
@@ -97,7 +85,7 @@ const PurchaseOrder = ({ navigation, route }) => {
                     setIsLoading(false);
                   }
                 })
-                .catch(error => console.log('Fetch catch', error));
+                .catch(error => toast(error.message));
             } else {
               setIsLoading(false);
               setServerError(result.message);
@@ -107,11 +95,31 @@ const PurchaseOrder = ({ navigation, route }) => {
             console.log(error);
           });
       };
-      if (token) {
+      if (token && po_id) {
         fetchPO();
         return
       }
     }, [token, po_id]),
+  );
+
+  const renderItem = ({ item, index }) => (
+    <View className="flex-row border border-tb rounded-lg mt-2.5 p-4" key={index}>
+      <Text
+        className="flex-1 text-black text-center"
+        numberOfLines={1}>
+        {item.material}
+      </Text>
+      <Text
+        className="flex-1 text-black text-center"
+        numberOfLines={1}>
+        {item.description}
+      </Text>
+      <Text
+        className="flex-1 text-black text-center"
+        numberOfLines={1}>
+        {item.quantity}
+      </Text>
+    </View>
   );
 
   if (barcode) {
@@ -126,11 +134,8 @@ const PurchaseOrder = ({ navigation, route }) => {
 
   const GRNByPo = grnItems.filter(grnItem => grnItem.PO_NUMBER == po_id);
 
-  console.log('grn items', grnItems)
-
 
   const createGRN = async () => {
-    console.log('GRNByPo', GRNByPo);
     try {
       await fetch(API_URL + 'bapi/grn/from-po/create', {
         method: 'POST',
@@ -138,27 +143,23 @@ const PurchaseOrder = ({ navigation, route }) => {
           authorization: token,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(grnItems),
+        body: JSON.stringify(GRNByPo),
       })
         .then(response => response.json())
         .then(data => {
-          console.log(data);
-          if (data.status) {
-            setGrnItems([])
-            setTimeout(() => {
-              navigation.goBack();
-            }, 1000);
-          }
+          setGrnItems([]);
+          setServerError(data.message);
+          setTimeout(() => {
+            navigation.goBack();
+          }, 1000);
         })
         .catch(error => {
-          console.log(error);
+          toast(error.message);
         });
     } catch (error) {
-      console.log(error);
+      toast(error.message);
     }
   }
-
-  console.log('po articles', articles)
 
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">
@@ -187,19 +188,27 @@ const PurchaseOrder = ({ navigation, route }) => {
                           {
                             articles.length ?
                               (
-                                <>
-                                  <Table
-                                    header={tableHeader}
+                                <View className="table h-full pb-2">
+                                  <View className="flex-row bg-th text-center mb-2 py-2">
+                                    {tableHeader.map(th => (
+                                      <Text className="flex-1 text-white text-center font-bold" key={th}>
+                                        {th}
+                                      </Text>
+                                    ))}
+                                  </View>
+                                  <FlatList
                                     data={articles}
-                                    dataFields={dataFields}
-                                    navigation={navigation}
-                                  // routeName="PoArticles"
+                                    renderItem={renderItem}
+                                    keyExtractor={item => item.material}
+                                    ListFooterComponent={isLoading && <ActivityIndicator />}
                                   />
-                                </>
+                                </View>
                               )
                               : (
                                 <View className="h-[90%] justify-center">
-                                  <ReadyForShelving />
+                                  <Text className="text-blue-800 text-lg text-center font-semibold font-mono mt-5">
+                                    PO {po_id} is waiting for release
+                                  </Text>
                                 </View>
                               )}
                         </>

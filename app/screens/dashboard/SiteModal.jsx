@@ -4,10 +4,11 @@ import { ButtonProfile } from '../../../components/buttons';
 import { Dk02Icon, Dk11Icon } from '../../../constant/icons';
 import useAppContext from '../../../hooks/useAppContext';
 import { setStorage } from '../../../hooks/useStorage';
+import { toast } from '../../../utils';
 
 const SiteModal = ({ navigation }) => {
   const { authInfo } = useAppContext();
-  const { user } = authInfo;
+  const { user, setUser, logout } = authInfo;
   let sites;
   const siteIcons = [
     {
@@ -22,20 +23,27 @@ const SiteModal = ({ navigation }) => {
     }
   ];
 
+  if (user.site.length === 0) {
+    toast("You don't have any site");
+    logout();
+    return;
+  }
 
   if (!Array.isArray(user.site)) {
+    console.log('navigating to home from site');
     navigation.navigate('Home');
     return;
   }
 
-  if (Array.isArray(user.site)) {
+  if (user.site.length > 0) {
     sites = user.site.map(item => siteIcons.find(elm => elm.code === item));
   }
 
   const updateUser = (site) => {
     let newUser = { ...user, site: site };
-    console.log('updated user', newUser);
+    setUser(newUser);
     setStorage("user", newUser);
+    console.log('navigating to home');
     navigation.navigate('Home');
   };
 
@@ -52,7 +60,7 @@ const SiteModal = ({ navigation }) => {
           {sites.map(item => (
             <TouchableOpacity
               className="site-box items-center w-1/3 mt-8"
-              onPress={() => updateUser(item)}
+              onPress={() => updateUser(item.code)}
               key={item.code}>
               <View className="flex-col items-center">
                 <View className="icon">

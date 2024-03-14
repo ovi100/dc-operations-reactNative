@@ -5,21 +5,21 @@ const useGRN = () => {
   const [grnItems, setGrnItems] = useState([]);
 
 
-  const addToGRN = poItem => {
+  const addToGRN = article => {
     const index = grnItems.findIndex(
-      item => item.po && item.material === poItem.po && poItem.material,
+      item => item.po && item.material === article.po && article.material,
     );
 
     if (index === -1) {
       let message = 'Item added successfully';
 
       toast(message);
-      setGrnItems([...grnItems, poItem]);
+      setGrnItems([...grnItems, article]);
     } else {
       let message = 'Item updated successfully';
       toast(message);
       const newItems = [...grnItems];
-      newItems[index] = {...poItem};
+      newItems[index] = {...article};
       setGrnItems(newItems);
     }
   };

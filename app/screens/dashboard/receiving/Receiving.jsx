@@ -1,12 +1,13 @@
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, DeviceEventEmitter, FlatList, Image, Platform, SafeAreaView, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, DeviceEventEmitter, FlatList, Image, SafeAreaView, Text, TextInput, View } from 'react-native';
 import { SearchIcon } from '../../../../constant/icons';
 import { getStorage } from '../../../../hooks/useStorage';
 import { toast } from '../../../../utils';
 import SunmiScanner from '../../../../utils/sunmi/scanner';
 
 const Receiving = ({ navigation }) => {
+  const isFocused = useIsFocused();
   const [isLoading, setIsLoading] = useState(false);
   const [user, setUser] = useState(null);
   const [token, setToken] = useState('');
@@ -14,18 +15,16 @@ const Receiving = ({ navigation }) => {
   let [poList, setPoList] = useState([]);
   const [search, setSearch] = useState('');
   const tableHeader = ['Purchase Order ID', 'SKU'];
-  const API_URL = 'https://shwapnooperation.onrender.com/bapi/po/list';
+  const API_URL = 'https://shwapnooperation.onrender.com/';
   const { startScan, stopScan } = SunmiScanner;
 
   const date = new Date();
   const dateTo = date.toISOString().split('T')[0].replaceAll('-', '')
 
-  const dateFormTimeStamp = new Date(date.getTime() - 15 * 24 * 60 * 60 * 1000);
+  const dateFormTimeStamp = new Date(date.getTime() - 7 * 24 * 60 * 60 * 1000);
   const dateForm = dateFormTimeStamp.toISOString().split('T')[0].replaceAll('-', '');
 
-  const postData = { site: user?.site.code, from: dateForm, to: dateTo }
-
-  console.log(postData);
+  const postData = { site: user?.site, from: dateForm, to: dateTo }
 
   useEffect(() => {
     getStorage('user', setUser, 'object');
@@ -33,26 +32,22 @@ const Receiving = ({ navigation }) => {
   }, []);
 
   useEffect(() => {
-    if (Platform.constants.Manufacturer === 'SUNMI') {
-      startScan();
-      DeviceEventEmitter.addListener('ScanDataReceived', data => {
-        console.log(data.code);
-        setBarcode(data.code);
-      });
+    startScan();
+    DeviceEventEmitter.addListener('ScanDataReceived', data => {
+      console.log(data.code);
+      setBarcode(data.code);
+    });
 
-      return () => {
-        stopScan();
-        DeviceEventEmitter.removeAllListeners('ScanDataReceived');
-      };
-    } else {
-      console.log('Device do not have scanner')
-    }
-  }, [Platform]);
+    return () => {
+      stopScan();
+      DeviceEventEmitter.removeAllListeners('ScanDataReceived');
+    };
+  }, [isFocused]);
 
   const getPoList = async () => {
     setIsLoading(true);
     try {
-      await fetch(API_URL, {
+      await fetch(API_URL + 'bapi/po/list', {
         method: 'POST',
         headers: {
           authorization: token,
@@ -61,10 +56,29 @@ const Receiving = ({ navigation }) => {
         body: JSON.stringify(postData),
       })
         .then(response => response.json())
-        .then(result => {
+        .then(async result => {
           if (result.status) {
-            setPoList([...poList, ...result.data.po]);
-            setIsLoading(false);
+            await fetch(API_URL + 'api/po-tracking/in-grn', {
+              method: 'GET',
+              headers: {
+                authorization: token,
+              },
+            })
+              .then(res => res.json())
+              .then(inGRNData => {
+                if (inGRNData.status) {
+                  const poList = result.data.po;
+                  const inGrnItems = inGRNData.items;
+                  let remainingPoItems = poList.filter(poItem => !inGrnItems.some(inGrnItem => inGrnItem.po === poItem.po));
+                  setPoList(remainingPoItems);
+                  setIsLoading(false);
+                } else {
+                  setPoList(result.data.po);
+                  setIsLoading(false);
+                }
+              })
+              .catch(error => toast(error.message));
+
           } else {
             toast(data.message);
             setIsLoading(false);
@@ -75,7 +89,7 @@ const Receiving = ({ navigation }) => {
           setIsLoading(false);
         });
     } catch (error) {
-      console.log(error);
+      toast(error.message);
       setIsLoading(false);
     }
   };
@@ -117,10 +131,8 @@ const Receiving = ({ navigation }) => {
     poList = poList.filter(item => item.po.includes(search.toLowerCase()));
   }
 
-  poList = [...new Set(poList)]
 
   console.log(poList.length);
-  console.log(token);
 
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">
@@ -137,7 +149,7 @@ const Receiving = ({ navigation }) => {
             <TextInput
               className="bg-[#F5F6FA] h-[50px] text-black rounded-lg pl-12 pr-4"
               placeholder="Search by purchase order"
-              inputMode='text'
+              keyboardType="phone-pad"
               placeholderTextColor="#CBC9D9"
               selectionColor="#CBC9D9"
               onChangeText={value => setSearch(value)}

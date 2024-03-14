@@ -48,7 +48,6 @@ const useAuth = () => {
   const isLoggedIn = () => {
     try {
       setIsLoading(true);
-
       let storedUser = getStorage('user', setUser, 'object');
       let storedToken = getStorage('token', setToken);
 
@@ -78,6 +77,7 @@ const useAuth = () => {
     logout,
     isLoading,
     user,
+    setUser,
     token,
   };
 

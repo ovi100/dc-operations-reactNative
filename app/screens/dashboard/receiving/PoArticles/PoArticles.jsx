@@ -10,33 +10,36 @@ const PoArticles = ({ navigation, route }) => {
   const { description, material, po, poItem, quantity, receivingPlant, storageLocation, unit } = route.params;
   const [bins, setBins] = useState([]);
   const [newQuantity, setNewQuantity] = useState(quantity);
-  const [user, setUser] = useState({});
   const [token, setToken] = useState('');
   const API_URL = 'https://shwapnooperation.onrender.com/api/';
-  const API_URL2 = 'https://shelves-backend.onrender.com/api/';
 
-  const { GRNInfo } = useAppContext();
-  const { addToGRN } = GRNInfo
+  const { GRNInfo, authInfo } = useAppContext();
+  const { user } = authInfo;
+  const { addToGRN } = GRNInfo;
 
   useEffect(() => {
-    const getBins = async code => {
-      await fetch(API_URL2 + `bins/product/${code}`)
+    getStorage('token', setToken, 'string');
+  }, []);
+
+  useEffect(() => {
+    const getBins = async (code, site) => {
+      await fetch(`https://shelves-backend.onrender.com/api/bins/product/${code}/${site}`)
         .then(res => res.json())
-        .then(results => {
-          let binsData = results.map(result => {
-            return { bin_id: result.bin_ID, gondola_id: result.gondola_ID };
-          });
-          setBins(binsData);
+        .then(result => {
+          if (result.status) {
+            let binsData = result.bins.map(result => {
+              return { bin_id: result.bin_ID, gondola_id: result.gondola_ID };
+            });
+            setBins(binsData);
+          }
         });
     };
-    const subscribe = navigation.addListener('focus', () => {
-      getStorage('user', setUser, 'object');
-      getStorage('token', setToken, 'string');
-      getBins(material);
-    });
 
-    return subscribe;
-  }, [navigation, material]);
+    if (material && user.site) {
+      getBins(material, user.site);
+    }
+
+  }, [material, user.site]);
 
   const updateQuantity = async () => {
     if (newQuantity > quantity) {
@@ -55,13 +58,6 @@ const PoArticles = ({ navigation, route }) => {
         uomIso: unit,
       };
 
-      // console.log('GRM Item', grnItem)
-      // setGrnPo(po);
-      // addToGRN(grnItem);
-      // setTimeout(() => {
-      //   navigation.goBack();
-      // }, 1000);
-
       const shelvingObject = {
         po: po,
         code: material,
@@ -75,8 +71,10 @@ const PoArticles = ({ navigation, route }) => {
         bins,
       };
 
+      console.log(shelvingObject);
+
       try {
-        await fetch(API_URL + 'product-shelving/ready/', {
+        await fetch(API_URL + 'product-shelving/ready', {
           method: 'POST',
           headers: {
             authorization: token,
@@ -86,25 +84,20 @@ const PoArticles = ({ navigation, route }) => {
         })
           .then(response => response.json())
           .then(data => {
-            console.log(data);
             if (data.status) {
               toast(data.message);
               addToGRN(grnItem);
-              setTimeout(() => {
-                navigation.goBack();
-              }, 1000);
+              navigation.goBack();
             } else {
               toast(data.message);
-              setTimeout(() => {
-                navigation.goBack();
-              }, 2000);
+              navigation.goBack();
             }
           })
           .catch(error => {
-            console.log(error);
+            toast(error.message);
           });
       } catch (error) {
-        console.log(error);
+        toast(error.message);
       }
     }
   };

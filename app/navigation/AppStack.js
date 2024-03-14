@@ -19,6 +19,7 @@ import Receiving from '../screens/dashboard/receiving/Receiving';
 import PurchaseOrder from '../screens/dashboard/receiving/purchaseOrder/PurchaseOrder';
 import Return from '../screens/dashboard/return/Return';
 import ReturnDetails from '../screens/dashboard/return/returnDetails/ReturnDetails';
+import BinDetails from '../screens/dashboard/shelving/BinDetails';
 import Shelving from '../screens/dashboard/shelving/Shelving';
 import ShelveArticle from '../screens/dashboard/shelving/article/ShelveArticle';
 import PickerPackerTaskAssign from '../screens/dashboard/taskAssign/PickerPackerTaskAssign/PickerPackerTaskAssign';
@@ -40,11 +41,12 @@ const AppStack = () => {
     {id: 'purchase-order', name: 'PurchaseOrder', component: PurchaseOrder},
     {id: 'po-articles', name: 'PoArticles', component: PoArticles},
     {id: 'shelving', name: 'Shelving', component: Shelving},
+    {id: 'bin-details', name: 'BinDetails', component: BinDetails},
     {id: 'shelve-article', name: 'ShelveArticle', component: ShelveArticle},
     {id: 'delivery-plan', name: 'DeliveryPlan', component: DeliveryPlan},
     {id: 'task-assign', name: 'TaskAssign', component: TaskAssign},
     {
-      id: 'picker-packer-task-assign',
+      id: 'picker-packer-assign',
       name: 'PickerPackerTaskAssign',
       component: PickerPackerTaskAssign,
     },
@@ -65,9 +67,11 @@ const AppStack = () => {
     {id: 'print', name: 'Print', component: Print},
   ];
 
+  console.log('user from app stack', user);
+
   return (
     <Stack.Navigator initialRouteName="SiteModal">
-      {user !== null && user.site.length > 1 && (
+      {user && typeof user.site !== 'string' && (
         <Stack.Group
           screenOptions={{headerShown: false, presentation: 'modal'}}>
           <Stack.Screen name="SiteModal" component={SiteModal} />

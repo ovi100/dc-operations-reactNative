@@ -1,19 +1,19 @@
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   DeviceEventEmitter,
   FlatList,
-  Platform,
   SafeAreaView,
   Text,
   View
 } from 'react-native';
-import { ButtonBack } from '../../../../components/buttons';
 import { getStorage } from '../../../../hooks/useStorage';
+import { toast } from '../../../../utils';
 import SunmiScanner from '../../../../utils/sunmi/scanner';
 
 const Shelving = ({ navigation }) => {
+  const isFocused = useIsFocused();
   const [isLoading, setIsLoading] = useState(false);
   const [token, setToken] = useState('');
   const [barcode, setBarcode] = useState('');
@@ -29,21 +29,17 @@ const Shelving = ({ navigation }) => {
   }, []);
 
   useEffect(() => {
-    if (Platform.constants.Manufacturer === 'SUNMI') {
-      startScan();
-      DeviceEventEmitter.addListener('ScanDataReceived', data => {
-        console.log(data.code);
-        setBarcode(data.code);
-      });
+    startScan();
+    DeviceEventEmitter.addListener('ScanDataReceived', data => {
+      console.log(data.code);
+      setBarcode(data.code);
+    });
 
-      return () => {
-        stopScan();
-        DeviceEventEmitter.removeAllListeners('ScanDataReceived');
-      };
-    } else {
-      console.log('Device do not have scanner')
-    }
-  }, [Platform]);
+    return () => {
+      stopScan();
+      DeviceEventEmitter.removeAllListeners('ScanDataReceived');
+    };
+  }, [isFocused]);
 
   const getShelvingReady = async () => {
     try {
@@ -113,16 +109,15 @@ const Shelving = ({ navigation }) => {
   };
 
   if (barcode) {
-    const article = articles.find(item => item.code === String(barcode));
+    const article = articles.find(item => item.code === barcode);
     if (article) {
-      navigation.push('ShelveArticle', article);
+      navigation.push('BinDetails', article);
+      // navigation.push('ShelveArticle', article);
       setBarcode('');
     } else {
-      toast('Barcode not found!');
-      setBarcode('');
+      toast('Item not found!');
     }
   }
-
 
   const renderItem = ({ item, index }) => (
     <View
@@ -160,41 +155,40 @@ const Shelving = ({ navigation }) => {
     <SafeAreaView className="flex-1 bg-white pt-8">
       <View className="flex-1 h-full px-4">
         <View className="screen-header flex-row items-center mb-4">
-          <ButtonBack navigation={navigation} />
           <Text className="flex-1 text-lg text-sh text-center font-semibold capitalize">
             Shelving
           </Text>
         </View>
 
         <View className="content flex-1">
-          {articles.length ? (
-            <View className="h-full pb-2">
-              <View className="flex-row bg-th mb-2 py-2">
-                {tableHeader.map(th => (
-                  <Text
-                    className="flex-1 text-white text-center font-bold"
-                    key={th}>
-                    {th}
-                  </Text>
-                ))}
-              </View>
+          <View className="h-full pb-2">
+            <View className="flex-row bg-th mb-2 py-2">
+              {tableHeader.map(th => (
+                <Text
+                  className="flex-1 text-white text-center font-bold"
+                  key={th}>
+                  {th}
+                </Text>
+              ))}
+            </View>
 
-              <FlatList
-                data={articles}
-                renderItem={renderItem}
-                keyExtractor={item => item._id}
-                onEndReached={loadMoreItem}
-                ListFooterComponent={isLoading && <ActivityIndicator />}
-                onEndReachedThreshold={0}
-              />
-            </View>
-          ) : (
-            <View className="h-full justify-center pb-2">
-              <Text className="text-base font-bold text-center">
-                No product is ready for shelving!
-              </Text>
-            </View>
-          )}
+            <FlatList
+              data={articles}
+              renderItem={renderItem}
+              keyExtractor={item => item._id}
+              onEndReached={loadMoreItem}
+              ListFooterComponent={isLoading ?
+                <ActivityIndicator />
+                : articles.length ? null : (
+                  <View className="h-full justify-center pb-2">
+                    <Text className="text-base font-bold text-center">
+                      No product is ready for shelving!
+                    </Text>
+                  </View>)
+              }
+              onEndReachedThreshold={0}
+            />
+          </View>
         </View>
       </View>
     </SafeAreaView>

@@ -8,7 +8,6 @@ import {
   DeliveryPlanIcon,
   PickingIcon,
   ReceivingIcon,
-  ReturnIcon,
   ShelvingIcon,
   TaskAssignIcon
 } from '../../../constant/icons';
@@ -71,12 +70,12 @@ const Home = ({navigation}) => {
       screen: 'DeliveryNote',
       role: 'DN charge',
     },
-    {
-      name: 'Return',
-      icon: ReturnIcon,
-      screen: 'Return',
-      role: 'returner',
-    },
+    // {
+    //   name: 'Return',
+    //   icon: ReturnIcon,
+    //   screen: 'Return',
+    //   role: 'returner',
+    // },
     // {
     //   name: 'Print',
     //   icon: PrinterIcon,
@@ -85,7 +84,7 @@ const Home = ({navigation}) => {
     // }
   ];
 
-  if (user.role === 'super-admin' && user.hasPermission.includes('*')) {
+  if (user.role === 'super-admin') {
     filteredLinks = navLinks;
   } else {
     filteredLinks = navLinks.filter(link => link.role === user.role);

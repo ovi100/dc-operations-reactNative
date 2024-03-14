@@ -33,7 +33,7 @@ const DeliveryPlan = ({ navigation }) => {
   const API_URL = 'https://shwapnooperation.onrender.com/';
 
   useEffect(() => {
-    getStorage('token', setToken, 'string');
+    getStorage('token', setToken);
     const showKeyboard = Keyboard.addListener('keyboardDidShow', () => {
       setKeyboardStatus(true);
     });

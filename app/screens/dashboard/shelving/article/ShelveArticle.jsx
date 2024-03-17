@@ -1,13 +1,15 @@
-import {useFocusEffect} from '@react-navigation/native';
-import React, {useCallback, useState} from 'react';
-import {Alert, Image, SafeAreaView, Text, TextInput, View} from 'react-native';
-import {ButtonBack, ButtonLg} from '../../../../../components/buttons';
-import {BoxIcon} from '../../../../../constant/icons';
-import {getStorage} from '../../../../../hooks/useStorage';
+import { useFocusEffect } from '@react-navigation/native';
+import React, { useCallback, useState } from 'react';
+import { Alert, Image, SafeAreaView, Text, TextInput, View } from 'react-native';
+import { ButtonBack, ButtonLg } from '../../../../../components/buttons';
+import { BoxIcon } from '../../../../../constant/icons';
+import { getStorage } from '../../../../../hooks/useStorage';
+import { toast } from '../../../../../utils';
 
-const ShelveArticle = ({navigation, route}) => {
-  const {item} = route.params;
-  const [newQuantity, setNewQuantity] = useState(item.quantity);
+const ShelveArticle = ({ navigation, route }) => {
+  const { bins, code, description, quantity } = route.params;
+  console.log('shelving--> Barcode --> article', route.params);
+  const [newQuantity, setNewQuantity] = useState(quantity);
   const [token, setToken] = useState('');
   const API_URL = 'https://shwapnooperation.onrender.com/api/product-shelving/';
 
@@ -17,15 +19,13 @@ const ShelveArticle = ({navigation, route}) => {
     }, []),
   );
 
-  console.log('shelving--> Barcode --> article', route.params);
-
   const shelveArticle = async () => {
-    if (newQuantity > item.quantity) {
-      Alert.alert('Quantity exceed');
+    if (newQuantity > quantity) {
+      toast('Quantity exceed');
     } else {
       const assignToShelveObject = {
-        gondola: item.bins.length ? item.bins[0].gondola_id : '',
-        bin: item.bins.length ? item.bins[0].bin_id : '',
+        gondola: bins[0].gondola_id,
+        bin: bins[0].bin_id,
         quantity: newQuantity,
       };
       console.log(assignToShelveObject);
@@ -47,14 +47,14 @@ const ShelveArticle = ({navigation, route}) => {
                 navigation.navigate('Shelving');
               }, 2000);
             } else {
-              Alert.alert(data.message);
+              toast(data.message);
             }
           })
           .catch(error => {
-            console.log('Fetch Error', error);
+            toast(error.message);
           });
       } catch (error) {
-        console.log(error);
+        toast(error.message);
       }
     }
   };
@@ -70,11 +70,11 @@ const ShelveArticle = ({navigation, route}) => {
                 Shelving article
               </Text>
               <Text className="text-base text-sh font-bold capitalize">
-                {' ' + item.code}{' '}
+                {' ' + code}
               </Text>
             </View>
             <Text className="text-sm text-sh text-right font-medium capitalize">
-              {item.description}
+              {description}
             </Text>
           </View>
         </View>
@@ -89,7 +89,7 @@ const ShelveArticle = ({navigation, route}) => {
             </View>
             <View className="quantity flex-row items-center gap-3">
               <Image source={BoxIcon} />
-              <Text className="font-bold text-black">{item.quantity}</Text>
+              <Text className="font-bold text-black">{quantity}</Text>
             </View>
           </View>
           <View className="input-box mt-6">

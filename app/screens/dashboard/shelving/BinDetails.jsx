@@ -1,20 +1,77 @@
-import { useFocusEffect } from '@react-navigation/native';
-import React, { useCallback, useState } from 'react';
-import { FlatList, SafeAreaView, Text, View } from 'react-native';
-// import { ButtonLg } from '../../../../components/buttons';
+import { useFocusEffect, useIsFocused } from '@react-navigation/native';
+import React, { useCallback, useEffect, useState } from 'react';
+import { ActivityIndicator, DeviceEventEmitter, FlatList, SafeAreaView, Text, View } from 'react-native';
 import { getStorage } from '../../../../hooks/useStorage';
+import SunmiScanner from '../../../../utils/sunmi/scanner';
+import { toast } from '../../../../utils';
+import useAppContext from '../../../../hooks/useAppContext';
 
 const BinDetails = ({ navigation, route }) => {
-  console.log(route.params);
-  const { code, description, bins } = route.params;
+  const { code, description } = route.params;
+  const { authInfo } = useAppContext();
+  const { user } = authInfo;
+  const isFocused = useIsFocused();
+  const [isLoading, setIsLoading] = useState(false);
   const tableHeader = ['Bin ID', 'Gondola ID'];
+  const [barcode, setBarcode] = useState('');
+  const [bins, setBins] = useState('');
+  const [isBinsFound, setIsBinsFound] = useState(null);
   const [token, setToken] = useState('');
-  // const API_URL = 'https://shelves-backend.onrender.com/api/bins/product/2401040/DK11';
+  const { startScan, stopScan } = SunmiScanner;
+  const API_URL = 'https://shelves-backend.onrender.com/api/bins/product/';
+
+  useEffect(() => {
+    getStorage('token', setToken);
+  }, [])
+
+  useEffect(() => {
+    startScan();
+    DeviceEventEmitter.addListener('ScanDataReceived', data => {
+      console.log(data.code);
+      setBarcode(data.code);
+    });
+
+    return () => {
+      stopScan();
+      DeviceEventEmitter.removeAllListeners('ScanDataReceived');
+    };
+  }, []);
+
+  const getBins = async (code, site) => {
+    try {
+      setIsLoading(true);
+      await fetch(API_URL + `${code}/${site}`, {
+        method: 'GET',
+        headers: {
+          authorization: token,
+        },
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.status) {
+            console.log(data);
+            setBins(data.bins);
+            setIsBinsFound(true);
+            setIsLoading(false);
+          } else {
+            toast('No bins found');
+            setIsBinsFound(false);
+            setIsLoading(false);
+          }
+        })
+        .catch(error => toast(error.message));
+    } catch (error) {
+      toast(error.message);
+      setIsLoading(false);
+    }
+  };
 
   useFocusEffect(
     useCallback(() => {
-      getStorage('token', setToken);
-    }, []),
+      if (token && user.site) {
+        getBins(code, user.site);
+      }
+    }, [token, user.site]),
   );
 
   const renderItem = ({ item, index }) => (
@@ -22,15 +79,26 @@ const BinDetails = ({ navigation, route }) => {
       <Text
         className="flex-1 text-black text-center"
         numberOfLines={1}>
-        {item.bin_id}
+        {item.bin_ID}
       </Text>
       <Text
         className="flex-1 text-black text-center"
         numberOfLines={1}>
-        {item.gondola_id}
+        {item.gondola_ID}
       </Text>
     </View>
   );
+
+  if (barcode) {
+    const binItem = bins.find(item => item.bin_ID === barcode);
+    if (binItem) {
+      navigation.push('ShelveArticle', route.params);
+      setBarcode('');
+    } else {
+      toast('Item not found!');
+      setIsBinsFound(false);
+    }
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">
@@ -64,6 +132,8 @@ const BinDetails = ({ navigation, route }) => {
               data={bins}
               renderItem={renderItem}
               keyExtractor={item => item._id}
+              ListFooterComponent={isLoading && <ActivityIndicator />}
+              onEndReachedThreshold={0}
             />
           </View>
         </View>

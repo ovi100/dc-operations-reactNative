@@ -67,8 +67,6 @@ const AppStack = () => {
     {id: 'print', name: 'Print', component: Print},
   ];
 
-  console.log('user from app stack', user);
-
   return (
     <Stack.Navigator initialRouteName="SiteModal">
       {user && typeof user.site !== 'string' && (

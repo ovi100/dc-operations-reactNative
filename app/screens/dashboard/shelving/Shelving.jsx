@@ -151,6 +151,8 @@ const Shelving = ({ navigation }) => {
     </View>
   );
 
+  console.log(articles)
+
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">
       <View className="flex-1 h-full px-4">

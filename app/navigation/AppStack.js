@@ -27,6 +27,7 @@ import PickerPackerTaskAssign from '../screens/dashboard/taskAssign/PickerPacker
 import TaskAssign from '../screens/dashboard/taskAssign/TaskAssign';
 import ChangePassword from '../screens/dashboard/userProfile/ChangePassword';
 import Profile from '../screens/dashboard/userProfile/Profile';
+import ChooseOutlet from '../screens/dashboard/deliveryPlan/ChooseOutlet';
 
 const Stack = createNativeStackNavigator();
 
@@ -46,6 +47,7 @@ const AppStack = () => {
     {id: 'assign-bin', name: 'AssignToBin', component: AssignToBin},
     {id: 'shelve-article', name: 'ShelveArticle', component: ShelveArticle},
     {id: 'delivery-plan', name: 'DeliveryPlan', component: DeliveryPlan},
+    {id: 'choose-outlet', name: 'ChooseOutlet', component: ChooseOutlet},
     {id: 'task-assign', name: 'TaskAssign', component: TaskAssign},
     {
       id: 'picker-packer-assign',

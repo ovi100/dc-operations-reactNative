@@ -37,7 +37,7 @@ const Home = ({navigation}) => {
     {
       name: 'Delivery Plan',
       icon: DeliveryPlanIcon,
-      screen: 'DeliveryPlan',
+      screen: 'ChooseOutlet',
       role: 'delivery-planner',
     },
     {

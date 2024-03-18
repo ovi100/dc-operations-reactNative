@@ -17,7 +17,7 @@ const Shelving = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [token, setToken] = useState('');
   const [barcode, setBarcode] = useState('');
-  const [articles, setArticles] = useState([]);
+  let [articles, setArticles] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPage, setTotalPage] = useState(0);
   const tableHeader = ['Article ID', 'BIN ID', 'Quantity'];
@@ -40,6 +40,8 @@ const Shelving = ({ navigation }) => {
       DeviceEventEmitter.removeAllListeners('ScanDataReceived');
     };
   }, [isFocused]);
+
+
 
   const getShelvingReady = async () => {
     try {
@@ -112,10 +114,10 @@ const Shelving = ({ navigation }) => {
     const article = articles.find(item => item.code === barcode);
     if (article) {
       navigation.push('BinDetails', article);
-      // navigation.push('ShelveArticle', article);
       setBarcode('');
     } else {
-      toast('Item not found!');
+      toast('Article not found!');
+      setBarcode('');
     }
   }
 
@@ -151,7 +153,6 @@ const Shelving = ({ navigation }) => {
     </View>
   );
 
-  console.log(articles)
 
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">

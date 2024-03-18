@@ -1,13 +1,13 @@
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useState } from 'react';
-import { Alert, Image, SafeAreaView, Text, TextInput, View } from 'react-native';
+import { Image, SafeAreaView, Text, TextInput, View } from 'react-native';
 import { ButtonBack, ButtonLg } from '../../../../../components/buttons';
 import { BoxIcon } from '../../../../../constant/icons';
 import { getStorage } from '../../../../../hooks/useStorage';
 import { toast } from '../../../../../utils';
 
 const ShelveArticle = ({ navigation, route }) => {
-  const { bins, code, description, quantity } = route.params;
+  const { _id, bins, code, description, quantity } = route.params;
   console.log('shelving--> Barcode --> article', route.params);
   const [newQuantity, setNewQuantity] = useState(quantity);
   const [token, setToken] = useState('');
@@ -24,13 +24,13 @@ const ShelveArticle = ({ navigation, route }) => {
       toast('Quantity exceed');
     } else {
       const assignToShelveObject = {
-        gondola: bins[0].gondola_id,
-        bin: bins[0].bin_id,
+        gondola: bins.gondola_id,
+        bin: bins.bin_id,
         quantity: newQuantity,
       };
       console.log(assignToShelveObject);
       try {
-        await fetch(API_URL + `in-shelf/${item._id}`, {
+        await fetch(API_URL + `in-shelf/${_id}`, {
           method: 'POST',
           headers: {
             authorization: token,
@@ -42,7 +42,7 @@ const ShelveArticle = ({ navigation, route }) => {
           .then(data => {
             console.log(data);
             if (data.status) {
-              Alert.alert(data.message);
+              toast(data.message);
               setTimeout(() => {
                 navigation.navigate('Shelving');
               }, 2000);

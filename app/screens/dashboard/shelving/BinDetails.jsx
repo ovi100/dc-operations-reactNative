@@ -1,24 +1,22 @@
-import { useFocusEffect, useIsFocused } from '@react-navigation/native';
-import React, { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, DeviceEventEmitter, FlatList, SafeAreaView, Text, View } from 'react-native';
+import { useIsFocused } from '@react-navigation/native';
+import React, { useEffect, useState } from 'react';
+import { DeviceEventEmitter, FlatList, SafeAreaView, Text, View } from 'react-native';
+import EmptyBox from '../../../../components/animations/EmptyBox';
+import { ButtonLg } from '../../../../components/buttons';
 import { getStorage } from '../../../../hooks/useStorage';
-import SunmiScanner from '../../../../utils/sunmi/scanner';
 import { toast } from '../../../../utils';
-import useAppContext from '../../../../hooks/useAppContext';
+import SunmiScanner from '../../../../utils/sunmi/scanner';
 
 const BinDetails = ({ navigation, route }) => {
-  const { code, description } = route.params;
-  const { authInfo } = useAppContext();
-  const { user } = authInfo;
   const isFocused = useIsFocused();
-  const [isLoading, setIsLoading] = useState(false);
+  const { bins, code, description, quantity } = route.params;
   const tableHeader = ['Bin ID', 'Gondola ID'];
   const [barcode, setBarcode] = useState('');
-  const [bins, setBins] = useState('');
-  const [isBinsFound, setIsBinsFound] = useState(null);
+  const isBinsFound = Boolean(bins.length);
   const [token, setToken] = useState('');
   const { startScan, stopScan } = SunmiScanner;
-  const API_URL = 'https://shelves-backend.onrender.com/api/bins/product/';
+
+  console.log(isBinsFound)
 
   useEffect(() => {
     getStorage('token', setToken);
@@ -27,78 +25,44 @@ const BinDetails = ({ navigation, route }) => {
   useEffect(() => {
     startScan();
     DeviceEventEmitter.addListener('ScanDataReceived', data => {
-      console.log(data.code);
       setBarcode(data.code);
     });
+
 
     return () => {
       stopScan();
       DeviceEventEmitter.removeAllListeners('ScanDataReceived');
     };
-  }, []);
+  }, [isFocused, !isBinsFound]);
 
-  const getBins = async (code, site) => {
-    try {
-      setIsLoading(true);
-      await fetch(API_URL + `${code}/${site}`, {
-        method: 'GET',
-        headers: {
-          authorization: token,
-        },
-      })
-        .then(response => response.json())
-        .then(data => {
-          if (data.status) {
-            console.log(data);
-            setBins(data.bins);
-            setIsBinsFound(true);
-            setIsLoading(false);
-          } else {
-            toast('No bins found');
-            setIsBinsFound(false);
-            setIsLoading(false);
-          }
-        })
-        .catch(error => toast(error.message));
-    } catch (error) {
-      toast(error.message);
-      setIsLoading(false);
-    }
-  };
-
-  useFocusEffect(
-    useCallback(() => {
-      if (token && user.site) {
-        getBins(code, user.site);
-      }
-    }, [token, user.site]),
-  );
 
   const renderItem = ({ item, index }) => (
     <View className="flex-row border border-tb rounded-lg mt-2.5 p-4" key={index}>
       <Text
         className="flex-1 text-black text-center"
         numberOfLines={1}>
-        {item.bin_ID}
+        {item.bin_id}
       </Text>
       <Text
         className="flex-1 text-black text-center"
         numberOfLines={1}>
-        {item.gondola_ID}
+        {item.gondola_id}
       </Text>
     </View>
   );
 
-  if (barcode) {
-    const binItem = bins.find(item => item.bin_ID === barcode);
+  if (barcode && Boolean(bins)) {
+    const binItem = bins.find(item => item.bin_id === barcode);
     if (binItem) {
-      navigation.push('ShelveArticle', route.params);
+      navigation.push('ShelveArticle', { ...route.params, bins: { bin_id: binItem.bin_id, gondola_id: binItem.gondola_id } });
       setBarcode('');
     } else {
-      toast('Item not found!');
-      setIsBinsFound(false);
+      toast('Bin not found!');
+      setBarcode('');
     }
   }
+
+  console.log('Bin details screen');
 
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">
@@ -120,27 +84,37 @@ const BinDetails = ({ navigation, route }) => {
         </View>
 
         <View className="content flex-1 justify-between py-5">
-          <View className="table h-full pb-2">
-            <View className="flex-row bg-th text-center mb-2 py-2">
-              {tableHeader.map(th => (
-                <Text className="flex-1 text-white text-center font-bold" key={th}>
-                  {th}
-                </Text>
-              ))}
+          {isBinsFound ?
+            (<View className="table h-full pb-2">
+              <View className="flex-row bg-th text-center mb-2 py-2">
+                {tableHeader.map(th => (
+                  <Text className="flex-1 text-white text-center font-bold" key={th}>
+                    {th}
+                  </Text>
+                ))}
+              </View>
+              <FlatList
+                data={bins}
+                renderItem={renderItem}
+                keyExtractor={item => item._id}
+              />
             </View>
-            <FlatList
-              data={bins}
-              renderItem={renderItem}
-              keyExtractor={item => item._id}
-              ListFooterComponent={isLoading && <ActivityIndicator />}
-              onEndReachedThreshold={0}
-            />
-          </View>
+            )
+            : (
+              <View className="h-full justify-center pb-2">
+                <EmptyBox />
+                <Text className="text-xl font-bold text-center mb-5">
+                  No bins found for this product
+                </Text>
+                <View className="button mb-20">
+                  <ButtonLg title="Assign to bin" onPress={() => navigation.push('AssignToBin', { code, description, quantity })} />
+                </View>
+              </View>
+            )
+          }
         </View>
 
-        {/* <View className="button mb-3">
-          <ButtonLg title="Assign to bin" onPress={() => null} />
-        </View> */}
+
       </View>
     </SafeAreaView>
   );

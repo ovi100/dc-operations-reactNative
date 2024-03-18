@@ -19,6 +19,7 @@ import Receiving from '../screens/dashboard/receiving/Receiving';
 import PurchaseOrder from '../screens/dashboard/receiving/purchaseOrder/PurchaseOrder';
 import Return from '../screens/dashboard/return/Return';
 import ReturnDetails from '../screens/dashboard/return/returnDetails/ReturnDetails';
+import AssignToBin from '../screens/dashboard/shelving/AssignToBin';
 import BinDetails from '../screens/dashboard/shelving/BinDetails';
 import Shelving from '../screens/dashboard/shelving/Shelving';
 import ShelveArticle from '../screens/dashboard/shelving/article/ShelveArticle';
@@ -42,6 +43,7 @@ const AppStack = () => {
     {id: 'po-articles', name: 'PoArticles', component: PoArticles},
     {id: 'shelving', name: 'Shelving', component: Shelving},
     {id: 'bin-details', name: 'BinDetails', component: BinDetails},
+    {id: 'assign-bin', name: 'AssignToBin', component: AssignToBin},
     {id: 'shelve-article', name: 'ShelveArticle', component: ShelveArticle},
     {id: 'delivery-plan', name: 'DeliveryPlan', component: DeliveryPlan},
     {id: 'task-assign', name: 'TaskAssign', component: TaskAssign},

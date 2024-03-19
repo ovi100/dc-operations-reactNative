@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import {ButtonBack, ButtonLg, ButtonXs} from '../../../../components/buttons';
 import {articles} from '../../../../constant/data';
+import { toast } from '../../../../utils';
 
 const ChildPacking = ({navigation}) => {
   const [isAllChecked, setIsAllChecked] = useState(false);
@@ -71,7 +72,7 @@ const ChildPacking = ({navigation}) => {
       navigation.push('QualityCheck');
       return;
     } else {
-      Alert.alert('please select an item');
+      toast('please select an item');
     }
   };
 

@@ -3,8 +3,9 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, DeviceEventEmitter, FlatList, Image, SafeAreaView, Text, TextInput, View } from 'react-native';
 import { SearchIcon } from '../../../../constant/icons';
 import { getStorage } from '../../../../hooks/useStorage';
-import { toast } from '../../../../utils';
+import { dateRange, toast } from '../../../../utils';
 import SunmiScanner from '../../../../utils/sunmi/scanner';
+import ServerError from '../../../../components/animations/ServerError';
 
 const Receiving = ({ navigation }) => {
   const isFocused = useIsFocused();
@@ -17,14 +18,8 @@ const Receiving = ({ navigation }) => {
   const tableHeader = ['Purchase Order ID', 'SKU'];
   const API_URL = 'https://shwapnooperation.onrender.com/';
   const { startScan, stopScan } = SunmiScanner;
-
-  const date = new Date();
-  const dateTo = date.toISOString().split('T')[0].replaceAll('-', '')
-
-  const dateFormTimeStamp = new Date(date.getTime() - 7 * 24 * 60 * 60 * 1000);
-  const dateForm = dateFormTimeStamp.toISOString().split('T')[0].replaceAll('-', '');
-
-  const postData = { site: user?.site, from: dateForm, to: dateTo }
+  const dateObject = dateRange(7);
+  const postObject = { ...dateObject, site: user?.site };
 
   useEffect(() => {
     getStorage('user', setUser, 'object');
@@ -53,7 +48,7 @@ const Receiving = ({ navigation }) => {
           authorization: token,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(postData),
+        body: JSON.stringify(postObject),
       })
         .then(response => response.json())
         .then(async result => {
@@ -77,7 +72,10 @@ const Receiving = ({ navigation }) => {
                   setIsLoading(false);
                 }
               })
-              .catch(error => toast(error.message));
+              .catch(error => {
+                toast(error.message)
+                setIsLoading(false);
+              });
 
           } else {
             toast(data.message);
@@ -142,38 +140,48 @@ const Receiving = ({ navigation }) => {
             receiving screen
           </Text>
         </View>
-        {/* Search and Button */}
-        <View className="search-button flex-row items-center gap-3">
-          <View className="input-box relative flex-1">
-            <Image className="absolute top-3 left-3 z-10" source={SearchIcon} />
-            <TextInput
-              className="bg-[#F5F6FA] h-[50px] text-black rounded-lg pl-12 pr-4"
-              placeholder="Search by purchase order"
-              keyboardType="phone-pad"
-              placeholderTextColor="#CBC9D9"
-              selectionColor="#CBC9D9"
-              onChangeText={value => setSearch(value)}
-              value={search}
-            />
-          </View>
-        </View>
-        <View className="content flex-1 justify-between py-5">
-          <View className="table h-full pb-2">
-            <View className="flex-row bg-th text-center mb-2 py-2">
-              {tableHeader.map(th => (
-                <Text className="flex-1 text-white text-center font-bold" key={th}>
-                  {th}
-                </Text>
-              ))}
+
+        {!isLoading && poList.length ? (
+          <>
+            {/* Search and Button */}
+            <View className="search-button flex-row items-center gap-3">
+              <View className="input-box relative flex-1">
+                <Image className="absolute top-3 left-3 z-10" source={SearchIcon} />
+                <TextInput
+                  className="bg-[#F5F6FA] h-[50px] text-black rounded-lg pl-12 pr-4"
+                  placeholder="Search by purchase order"
+                  keyboardType="phone-pad"
+                  placeholderTextColor="#CBC9D9"
+                  selectionColor="#CBC9D9"
+                  onChangeText={value => setSearch(value)}
+                  value={search}
+                />
+              </View>
             </View>
-            <FlatList
-              data={poList}
-              renderItem={renderItem}
-              keyExtractor={item => item.po}
-              ListFooterComponent={isLoading && <ActivityIndicator />}
-            />
+            <View className="content flex-1 justify-between py-5">
+              <View className="table h-full pb-2">
+                <View className="flex-row bg-th text-center mb-2 py-2">
+                  {tableHeader.map(th => (
+                    <Text className="flex-1 text-white text-center font-bold" key={th}>
+                      {th}
+                    </Text>
+                  ))}
+                </View>
+                <FlatList
+                  data={poList}
+                  renderItem={renderItem}
+                  keyExtractor={item => item.po}
+                  ListFooterComponent={isLoading && <ActivityIndicator />}
+                />
+              </View>
+            </View>
+          </>
+        ) : (
+          <View className="h-3/4 justify-center">
+            <ServerError message="No data found!" />
           </View>
-        </View>
+        )}
+
       </View>
     </SafeAreaView>
   );

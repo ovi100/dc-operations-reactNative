@@ -1,4 +1,4 @@
-import { Alert, ToastAndroid } from 'react-native';
+import {Alert, ToastAndroid} from 'react-native';
 
 const validateInput = (type, value) => {
   if (!value) {
@@ -57,19 +57,34 @@ const toast = message => {
 const formatDateYYYYMMDD = value => {
   const date = new Date(value);
   const year = date.getFullYear();
-  const month = (date.getMonth() + 1).toString().padStart(2, '0'); // Months are zero-based
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
   const day = date.getDate().toString().padStart(2, '0');
 
   return `${year}${month}${day}`;
 };
 
+const dateRange = range => {
+  const current_date = new Date();
+  const ens_date = current_date.toISOString().split('T')[0].replaceAll('-', '');
+
+  const timeStamp = new Date(
+    current_date.getTime() - range * 24 * 60 * 60 * 1000,
+  );
+  const start_date = timeStamp.toISOString().split('T')[0].replaceAll('-', '');
+
+  return {
+    from: start_date,
+    to: ens_date,
+  };
+};
+
 export {
+  dateRange,
   formatDateYYYYMMDD,
   groupBy,
   toast,
   uniqueArray,
   uniqueArrayOfObjects,
   validateFile,
-  validateInput
+  validateInput,
 };
-

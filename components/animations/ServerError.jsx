@@ -5,10 +5,10 @@ import lottieServer from '../../assets/lottie/server.json';
 
 const ServerError = ({ message }) => {
   return (
-    <View className="w-full h-[90%] justify-center">
+    <View className="w-full">
       <LottieView
         source={lottieServer}
-        className="w-72 h-72 mx-auto"
+        className="w-64 h-64 mx-auto"
         autoPlay
         loop
       />

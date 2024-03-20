@@ -100,7 +100,7 @@ const Receiving = ({ navigation }) => {
     }, [token])
   );
 
-  if (barcode) {
+  if (barcode !== '') {
     const poItem = poList.find(item => item.po === barcode);
     if (poItem) {
       navigation.push('PurchaseOrder', { po_id: barcode });

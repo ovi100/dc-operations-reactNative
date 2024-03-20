@@ -7,7 +7,7 @@ import { getStorage } from '../../../../../hooks/useStorage';
 import { toast } from '../../../../../utils';
 
 const PoArticles = ({ navigation, route }) => {
-  const { description, material, po, poItem, quantity, receivingPlant, storageLocation, unit } = route.params;
+  const { description, material, barcode, po, poItem, quantity, receivingPlant, storageLocation, unit } = route.params;
   const [bins, setBins] = useState([]);
   const [newQuantity, setNewQuantity] = useState(quantity);
   const [token, setToken] = useState('');
@@ -51,6 +51,7 @@ const PoArticles = ({ navigation, route }) => {
         po: po,
         poItem: Number(poItem).toString(),
         material: material,
+        barcode: barcode,
         plant: receivingPlant,
         storageLocation: storageLocation,
         quantity: Number(newQuantity),

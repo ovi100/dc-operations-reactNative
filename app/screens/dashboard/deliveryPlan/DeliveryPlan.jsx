@@ -1,12 +1,11 @@
 import CheckBox from '@react-native-community/checkbox';
-import { useFocusEffect, useIsFocused } from '@react-navigation/native';
+import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
   Image,
   Keyboard,
-  RefreshControl,
   SafeAreaView,
   Text,
   TextInput,
@@ -19,10 +18,8 @@ import { getStorage } from '../../../../hooks/useStorage';
 import { dateRange, toast } from '../../../../utils';
 
 const DeliveryPlan = ({ navigation, route }) => {
-  const isFocused = useIsFocused();
   const [isLoading, setIsLoading] = useState(false);
   const [isButtonLoading, setIsButtonLoading] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
   const [keyboardStatus, setKeyboardStatus] = useState(false);
   const [token, setToken] = useState('');
   let [dpList, setDpList] = useState([]);
@@ -37,10 +34,7 @@ const DeliveryPlan = ({ navigation, route }) => {
   console.log(postObject);
 
   useEffect(() => {
-    getStorage('token', setToken);
-  }, []);
-
-  useEffect(() => {
+    getStorage('token', setToken, 'string');
     const showKeyboard = Keyboard.addListener('keyboardDidShow', () => {
       setKeyboardStatus(true);
     });
@@ -52,7 +46,7 @@ const DeliveryPlan = ({ navigation, route }) => {
       showKeyboard.remove();
       hideKeyboard.remove();
     };
-  }, [isFocused]);
+  }, []);
 
   const getDnList = async () => {
     setIsLoading(true);
@@ -75,48 +69,44 @@ const DeliveryPlan = ({ navigation, route }) => {
             });
             setDpList(dpData);
             setIsLoading(false);
-            setRefreshing(false);
+            // setRefreshing(false);
           } else {
             toast(data.message);
             setIsLoading(false);
-            setRefreshing(false);
+            // setRefreshing(false);
           }
         })
         .catch(error => {
           toast(error.message)
           setIsLoading(false);
-          setRefreshing(false);
+          // setRefreshing(false);
         });
     } catch (error) {
       toast(error.message);
       setIsLoading(false);
-      setRefreshing(false);
+      // setRefreshing(false);
     }
   };
+
 
   useFocusEffect(
     useCallback(() => {
       if (token) {
         getDnList();
       }
-    }, [token, refreshing])
+    }, [token])
   );
 
-  const onRefresh = () => {
-    setRefreshing(true);
-  };
 
-  const renderItem = useCallback(({ item, index }) => (
+  const renderItem = ({ item, index }) => (
     <TouchableOpacity
-      key={index}
       className="flex-row items-center border border-tb rounded-lg mt-2.5 p-4"
-      onPress={() => handelCheckbox(item)}
-    >
+      onPress={() => handelCheckbox(item)} key={index}>
       <View className="flex-1 flex-row items-center">
         <CheckBox
           tintColors={item.selected ? '#56D342' : '#f5f5f5'}
           value={item.selected}
-        // onValueChange={() => handelCheckbox(item)}
+          onValueChange={() => handelCheckbox(item)}
         />
         <Text className="text-black" numberOfLines={1}>
           {item.sto}
@@ -129,46 +119,26 @@ const DeliveryPlan = ({ navigation, route }) => {
         {item.receivingPlant}
       </Text>
     </TouchableOpacity>
-  ), []);
+  );
 
-  const handelCheckbox = stoItem => {
+  const handelCheckbox = sto => {
     let newItems = dpList.map(item =>
-      stoItem.sto === item.sto ? { ...item, selected: !item.selected } : item,
+      sto.sto === item.sto ? { ...item, selected: !item.selected } : item,
     );
     setSelectedList(newItems.filter(item => item.selected));
     setDpList(newItems);
     Keyboard.dismiss();
   };
 
-  const checkAll = () => {
-    const checkAllData = dpList.map(item => {
-      return { ...item, selected: true };
+  const toggleCheckAll = () => {
+    const data = dpList.map(item => {
+      return { ...item, selected: !item.selected };
     });
-    setDpList(checkAllData);
-    setSelectedList(checkAllData);
+    setDpList(data);
+    setSelectedList(data.filter(item => item.selected));
     setIsAllChecked(current => !current);
     Keyboard.dismiss();
   };
-
-  const uncheckAll = () => {
-    const checkAllData = dpList.map(item => {
-      return { ...item, selected: false };
-    });
-    setDpList(checkAllData);
-    setSelectedList([]);
-    setIsAllChecked(current => !current);
-    Keyboard.dismiss();
-  };
-
-  // const toggleCheckAll = () => {
-  //   const data = dpList.map(item => {
-  //     return { ...item, selected: !item.selected };
-  //   });
-  //   setDpList(data);
-  //   setSelectedList(data.filter(item => item.selected));
-  //   setIsAllChecked(current => !current);
-  //   Keyboard.dismiss();
-  // };
 
   const createDN = () => {
     console.log(selectedList.length);
@@ -187,12 +157,12 @@ const DeliveryPlan = ({ navigation, route }) => {
             .then(response => response.json())
             .then(data => {
               if (data.status) {
-                uncheckAll()
-                toast(data.message)
+                toggleCheckAll();
+                toast(data.message);
                 setIsButtonLoading(false);
-                setRefreshing(true);
+                setRefetchData(true);
               } else {
-                uncheckAll()
+                toggleCheckAll();
                 toast(data.message);
                 setIsButtonLoading(false);
               }
@@ -210,11 +180,11 @@ const DeliveryPlan = ({ navigation, route }) => {
   if (search !== '') {
     dpList = dpList.filter(
       dp =>
-        dp.sto.toLowerCase().includes(search.toLowerCase())
+        dp.sto.trim().toLowerCase().includes(search.toLowerCase()) ||
+        dp.receivingPlant.trim().toLowerCase().includes(search.toLowerCase())
     );
   }
 
-  console.log('sto list', dpList)
   console.log('selected list', selectedList.length)
 
   return (
@@ -228,12 +198,12 @@ const DeliveryPlan = ({ navigation, route }) => {
         </View>
 
         {/* Search filter */}
-        <View className="search flex-row">
+        <View className="search-button flex-row">
           <View className="input-box relative flex-1">
             <Image className="absolute top-3 left-3 z-10" source={SearchIcon} />
             <TextInput
               className="bg-[#F5F6FA] h-[50px] text-black rounded-lg pl-12 pr-4"
-              placeholder="Search for STO"
+              placeholder="Search by sto or outlet code"
               inputMode='text'
               placeholderTextColor="#CBC9D9"
               selectionColor="#CBC9D9"
@@ -246,17 +216,18 @@ const DeliveryPlan = ({ navigation, route }) => {
           {/* Table data */}
           <View className="table h-[90%] pb-2">
             <View className="flex-row bg-th text-center mb-2 py-2">
-              {tableHeader.map((th) => (
+              {tableHeader.map((th, i) => (
                 <>
                   {th.split(' ')[1] === 'ID' ? (
                     <TouchableOpacity
                       key={th}
                       className="flex-1 flex-row items-center justify-center"
-                      onPress={() => isAllChecked ? uncheckAll() : checkAll()}
+                      onPress={() => toggleCheckAll()}
                     >
                       <CheckBox
                         tintColors={isAllChecked ? '#56D342' : '#ffffff'}
                         value={isAllChecked}
+                        onValueChange={() => toggleCheckAll()}
                       />
                       <Text className="text-white text-center font-bold ml-2.5" numberOfLines={1}>
                         {th}
@@ -274,15 +245,11 @@ const DeliveryPlan = ({ navigation, route }) => {
               ))}
             </View>
             {isLoading ? <ActivityIndicator /> : (
-
               <FlatList
                 data={dpList}
                 renderItem={renderItem}
                 keyExtractor={item => item.sto}
                 initialNumToRender={15}
-                refreshControl={
-                  <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-                }
               />
             )}
           </View>

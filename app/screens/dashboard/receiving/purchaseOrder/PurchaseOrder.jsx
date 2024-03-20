@@ -122,7 +122,7 @@ const PurchaseOrder = ({ navigation, route }) => {
     </View>
   );
 
-  if (barcode) {
+  if (barcode !== '') {
     const poItem = articles.find(item => item.barcode === barcode);
     if (poItem) {
       navigation.push('PoArticles', poItem);

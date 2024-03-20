@@ -98,7 +98,9 @@ const ChooseOutlet = ({ navigation }) => {
 
 
   if (search !== '') {
-    outlets = outlets.filter(outlet => outlet.code.toLowerCase().includes(search.toLowerCase()));
+    outlets = outlets.filter(outlet =>
+      outlet.code.toLowerCase().includes(search.trim().toLowerCase())
+    );
   }
 
 
@@ -111,57 +113,49 @@ const ChooseOutlet = ({ navigation }) => {
             choose outlet
           </Text>
         </View>
-        {!isLoading && outlets.length ? (
-          <>
-            {/* Search and Button */}
-            <View className="search-button flex-row">
-              <View className="input-box relative flex-1">
-                <Image className="absolute top-3 left-3 z-10" source={SearchIcon} />
-                <TextInput
-                  className="bg-[#F5F6FA] h-[50px] text-black rounded-lg pl-12 pr-4"
-                  placeholder="Search by outlets code"
-                  inputMode='text'
-                  placeholderTextColor="#CBC9D9"
-                  selectionColor="#CBC9D9"
-                  onChangeText={value => setSearch(value)}
-                  value={search}
-                />
-              </View>
-            </View>
-            <View className="content flex-1 justify-around my-6">
-              {/* Table data */}
-              <View className="table h-[90%] pb-2">
-                <View className="flex-row bg-th text-center mb-2 py-2">
-                  {tableHeader.map((th, i) => (
-                    <Text
-                      className="flex-1 text-white text-center font-bold"
-                      key={i}>
-                      {th}
-                    </Text>
-                  ))}
-                </View>
-                {isLoading ? <ActivityIndicator /> : outlets.length ? (
-
-                  <FlatList
-                    data={outlets}
-                    renderItem={renderItem}
-                    keyExtractor={item => item.code}
-                    initialNumToRender={15}
-                    refreshControl={
-                      <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-                    }
-                  />
-                ) : (
-                  <ServerError message="No data found!" />
-                )}
-              </View>
-            </View>
-          </>
-        ) : (
-          <View className="h-3/4 justify-center">
-            <ServerError message="No data found!" />
+        {/* Search and Button */}
+        <View className="search-button flex-row">
+          <View className="input-box relative flex-1">
+            <Image className="absolute top-3 left-3 z-10" source={SearchIcon} />
+            <TextInput
+              className="bg-[#F5F6FA] h-[50px] text-black rounded-lg pl-12 pr-4"
+              placeholder="Search by outlets code"
+              inputMode='text'
+              placeholderTextColor="#CBC9D9"
+              selectionColor="#CBC9D9"
+              onChangeText={value => setSearch(value)}
+              value={search}
+            />
           </View>
-        )}
+        </View>
+        <View className="content flex-1 justify-around my-6">
+          {/* Table data */}
+          <View className="table h-[90%] pb-2">
+            <View className="flex-row bg-th text-center mb-2 py-2">
+              {tableHeader.map((th, i) => (
+                <Text
+                  className="flex-1 text-white text-center font-bold"
+                  key={i}>
+                  {th}
+                </Text>
+              ))}
+            </View>
+            {isLoading ? <ActivityIndicator /> : outlets.length ? (
+
+              <FlatList
+                data={outlets}
+                renderItem={renderItem}
+                keyExtractor={item => item.code}
+                initialNumToRender={15}
+                refreshControl={
+                  <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                }
+              />
+            ) : (
+              <ServerError message="No data found!" />
+            )}
+          </View>
+        </View>
       </View>
     </SafeAreaView>
   );

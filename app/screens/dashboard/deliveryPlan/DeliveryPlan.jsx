@@ -6,13 +6,14 @@ import {
   FlatList,
   Image,
   Keyboard,
+  RefreshControl,
   SafeAreaView,
   Text,
   TextInput,
   TouchableOpacity,
   View
 } from 'react-native';
-import { ButtonBack, ButtonLg, ButtonLoading, ButtonXs } from '../../../../components/buttons';
+import { ButtonBack, ButtonLg, ButtonLoading } from '../../../../components/buttons';
 import { SearchIcon } from '../../../../constant/icons';
 import { getStorage } from '../../../../hooks/useStorage';
 import { dateRange, toast } from '../../../../utils';
@@ -20,7 +21,7 @@ import { dateRange, toast } from '../../../../utils';
 const DeliveryPlan = ({ navigation, route }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isButtonLoading, setIsButtonLoading] = useState(false);
-  const [keyboardStatus, setKeyboardStatus] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [token, setToken] = useState('');
   let [dpList, setDpList] = useState([]);
   const [selectedList, setSelectedList] = useState([]);
@@ -34,18 +35,8 @@ const DeliveryPlan = ({ navigation, route }) => {
   console.log(postObject);
 
   useEffect(() => {
-    getStorage('token', setToken, 'string');
-    const showKeyboard = Keyboard.addListener('keyboardDidShow', () => {
-      setKeyboardStatus(true);
-    });
-    const hideKeyboard = Keyboard.addListener('keyboardDidHide', () => {
-      setKeyboardStatus(false);
-    });
-
-    return () => {
-      showKeyboard.remove();
-      hideKeyboard.remove();
-    };
+    getStorage('token', setToken);
+    setSelectedList([]);
   }, []);
 
   const getDnList = async () => {
@@ -61,41 +52,66 @@ const DeliveryPlan = ({ navigation, route }) => {
       })
         .then(response => response.json())
         .then(async result => {
-          // console.log('sto response', result)
           if (result.status) {
-            const stoData = result.data.sto;
-            const dpData = stoData.map(item => {
-              return { ...item, selected: false }
-            });
-            setDpList(dpData);
-            setIsLoading(false);
-            // setRefreshing(false);
+            await fetch(API_URL + 'api/sto-tracking/in-dn', {
+              method: 'GET',
+              headers: {
+                authorization: token,
+              },
+            })
+              .then(res => res.json())
+              .then(inDnData => {
+                if (inDnData.status) {
+                  const dnItems = result.data.sto;
+                  const inDnItems = inDnData.items;
+                  let remainingDnItems = dnItems.filter(
+                    dnItem => !inDnItems.some(inDnItem => inDnItem.sto === dnItem.sto)
+                  );
+                  const finalDnList = remainingDnItems.map(item => {
+                    return { ...item, selected: false };
+                  });
+                  setDpList(finalDnList);
+                  setIsLoading(false);
+                  setRefreshing(false);
+                } else {
+                  const stoData = result.data.sto;
+                  const dpData = stoData.map(item => {
+                    return { ...item, selected: false }
+                  });
+                  setDpList(dpData);
+                  setIsLoading(false);
+                  setRefreshing(false);
+                }
+              })
           } else {
             toast(data.message);
             setIsLoading(false);
-            // setRefreshing(false);
+            setRefreshing(false);
           }
         })
         .catch(error => {
-          toast(error.message)
+          toast(error.message);
           setIsLoading(false);
-          // setRefreshing(false);
+          setRefreshing(false);
         });
     } catch (error) {
       toast(error.message);
       setIsLoading(false);
-      // setRefreshing(false);
+      setRefreshing(false);
     }
   };
-
 
   useFocusEffect(
     useCallback(() => {
       if (token) {
         getDnList();
       }
-    }, [token])
+    }, [token, refreshing])
   );
+
+  const onRefresh = () => {
+    setRefreshing(true);
+  };
 
 
   const renderItem = ({ item, index }) => (
@@ -104,7 +120,7 @@ const DeliveryPlan = ({ navigation, route }) => {
       onPress={() => handelCheckbox(item)} key={index}>
       <View className="flex-1 flex-row items-center">
         <CheckBox
-          tintColors={item.selected ? '#56D342' : '#f5f5f5'}
+          tintColors={item.selected ? '#56D342' : '#ffffff'}
           value={item.selected}
           onValueChange={() => handelCheckbox(item)}
         />
@@ -140,8 +156,16 @@ const DeliveryPlan = ({ navigation, route }) => {
     Keyboard.dismiss();
   };
 
+  const uncheckAll = () => {
+    const checkAllData = dpList.map(item => {
+      return { ...item, selected: false };
+    });
+    setDpList(checkAllData);
+    setSelectedList([]);
+    Keyboard.dismiss();
+  };
+
   const createDN = () => {
-    console.log(selectedList.length);
     if (selectedList.length > 0) {
       setIsButtonLoading(true);
       try {
@@ -157,20 +181,21 @@ const DeliveryPlan = ({ navigation, route }) => {
             .then(response => response.json())
             .then(data => {
               if (data.status) {
-                toggleCheckAll();
+                uncheckAll();
                 toast(data.message);
                 setIsButtonLoading(false);
-                setRefetchData(true);
+                setRefreshing(true);
               } else {
-                toggleCheckAll();
+                uncheckAll();
                 toast(data.message);
                 setIsButtonLoading(false);
+                setRefreshing(true);
               }
             })
             .catch(error => toast(error.message));
         })
       } catch (error) {
-        console.log(error);
+        toast(error.message)
       }
     } else {
       toast('No item selected!');
@@ -185,10 +210,11 @@ const DeliveryPlan = ({ navigation, route }) => {
     );
   }
 
-  console.log('selected list', selectedList.length)
+  console.log('selected list', selectedList, selectedList.length);
+  console.log('is checked all', isAllChecked);
 
   return (
-    <SafeAreaView className="flex-1 bg-white pt-14">
+    <SafeAreaView className="flex-1 bg-white pt-8">
       <View className="flex-1 h-full px-4">
         <View className="screen-header flex-row items-center mb-4">
           <ButtonBack navigation={navigation} />
@@ -198,7 +224,7 @@ const DeliveryPlan = ({ navigation, route }) => {
         </View>
 
         {/* Search filter */}
-        <View className="search-button flex-row">
+        <View className="search flex-row">
           <View className="input-box relative flex-1">
             <Image className="absolute top-3 left-3 z-10" source={SearchIcon} />
             <TextInput
@@ -212,11 +238,11 @@ const DeliveryPlan = ({ navigation, route }) => {
             />
           </View>
         </View>
-        <View className="content flex-1 justify-around my-6">
+        <View className="content flex-1 mt-3">
           {/* Table data */}
           <View className="table h-[90%] pb-2">
             <View className="flex-row bg-th text-center mb-2 py-2">
-              {tableHeader.map((th, i) => (
+              {tableHeader.map((th) => (
                 <>
                   {th.split(' ')[1] === 'ID' ? (
                     <TouchableOpacity
@@ -250,12 +276,15 @@ const DeliveryPlan = ({ navigation, route }) => {
                 renderItem={renderItem}
                 keyExtractor={item => item.sto}
                 initialNumToRender={15}
+                refreshControl={
+                  <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                }
               />
             )}
           </View>
 
-          {!keyboardStatus && (
-            <View className="button mt-4">
+          {selectedList.length > 0 && (
+            <View className="button -mt-6">
               {isButtonLoading ? <ButtonLoading styles='bg-theme rounded-md p-5' /> :
                 <ButtonLg
                   title="Mark as delivery ready"

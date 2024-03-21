@@ -43,7 +43,6 @@ const SiteModal = ({ navigation }) => {
     let newUser = { ...user, site: site };
     setUser(newUser);
     setStorage("user", newUser);
-    console.log('navigating to home');
     navigation.navigate('Home');
   };
 

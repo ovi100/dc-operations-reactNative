@@ -1,4 +1,4 @@
-import {Alert, ToastAndroid} from 'react-native';
+import { Alert, ToastAndroid } from 'react-native';
 
 const validateInput = (type, value) => {
   if (!value) {
@@ -65,7 +65,7 @@ const formatDateYYYYMMDD = value => {
 
 const dateRange = range => {
   const current_date = new Date();
-  const ens_date = current_date.toISOString().split('T')[0].replaceAll('-', '');
+  const end_date = current_date.toISOString().split('T')[0].replaceAll('-', '');
 
   const timeStamp = new Date(
     current_date.getTime() - range * 24 * 60 * 60 * 1000,
@@ -74,7 +74,7 @@ const dateRange = range => {
 
   return {
     from: start_date,
-    to: ens_date,
+    to: end_date,
   };
 };
 
@@ -86,5 +86,6 @@ export {
   uniqueArray,
   uniqueArrayOfObjects,
   validateFile,
-  validateInput,
+  validateInput
 };
+

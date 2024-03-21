@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Image, SafeAreaView, Text, TextInput, View } from 'react-native';
-import { ButtonBack, ButtonLg } from '../../../../../components/buttons';
+import { ButtonLg } from '../../../../../components/buttons';
 import { BoxIcon } from '../../../../../constant/icons';
 import useAppContext from '../../../../../hooks/useAppContext';
 import { getStorage } from '../../../../../hooks/useStorage';
@@ -51,7 +51,6 @@ const PoArticles = ({ navigation, route }) => {
         po: po,
         poItem: Number(poItem).toString(),
         material: material,
-        barcode: barcode,
         plant: receivingPlant,
         storageLocation: storageLocation,
         quantity: Number(newQuantity),
@@ -62,6 +61,7 @@ const PoArticles = ({ navigation, route }) => {
       const shelvingObject = {
         po: po,
         code: material,
+        barcode: barcode,
         description: description,
         userId: user._id,
         site: receivingPlant,
@@ -105,12 +105,11 @@ const PoArticles = ({ navigation, route }) => {
 
 
   return (
-    <SafeAreaView className="flex-1 bg-white pt-14">
+    <SafeAreaView className="flex-1 bg-white pt-8">
       <View className="flex-1 px-4">
-        <View className="screen-header flex-row items-start justify-between mb-4">
-          <ButtonBack navigation={navigation} />
-          <View className="text">
-            <View className="flex-row justify-end">
+        <View className="screen-header mb-4">
+          <View className="text items-center">
+            <View className="flex-row">
               <Text className="text-base text-sh font-medium capitalize">
                 receiving article
               </Text>
@@ -125,7 +124,7 @@ const PoArticles = ({ navigation, route }) => {
         </View>
 
         {/* Quantity Box */}
-        <View className="quantity-box bg-[#FEFBFB] border border-[#F2EFEF] p-5">
+        <View className="quantity-box bg-[#FEFBFB] border border-[#F2EFEF] rounded p-5">
           <View className="box-header flex-row items-center justify-between">
             <View className="text">
               <Text className="text-base text-[#2E2C3B] font-medium capitalize">

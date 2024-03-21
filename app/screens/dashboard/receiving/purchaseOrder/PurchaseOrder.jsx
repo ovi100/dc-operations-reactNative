@@ -1,8 +1,9 @@
 import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, DeviceEventEmitter, FlatList, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, DeviceEventEmitter, FlatList, SafeAreaView, Text, View } from 'react-native';
 import SearchAnimation from '../../../../../components/animations/Search';
 import ServerError from '../../../../../components/animations/ServerError';
+import { ButtonLg, ButtonLoading } from '../../../../../components/buttons';
 import useAppContext from '../../../../../hooks/useAppContext';
 import { getStorage } from '../../../../../hooks/useStorage';
 import { toast } from '../../../../../utils';
@@ -12,6 +13,7 @@ const PurchaseOrder = ({ navigation, route }) => {
   const isFocused = useIsFocused();
   const { startScan, stopScan } = SunmiScanner;
   const [isLoading, setIsLoading] = useState(false);
+  const [isButtonLoading, setIsButtonLoading] = useState(false);
   const [serverError, setServerError] = useState('');
   const [barcode, setBarcode] = useState('');
   const [token, setToken] = useState('');
@@ -24,6 +26,21 @@ const PurchaseOrder = ({ navigation, route }) => {
 
   useEffect(() => {
     getStorage('token', setToken, 'string');
+    const updatedGrnItems = articles.map(article => {
+      return {
+        movementType: '101',
+        movementIndicator: 'B',
+        po: po_id,
+        poItem: Number(article.poItem).toString(),
+        material: article.material,
+        plant: article.receivingPlant,
+        storageLocation: article.storageLocation,
+        quantity: 0,
+        uom: article.unit,
+        uomIso: article.unit,
+      }
+    });
+    setGrnItems(updatedGrnItems);
   }, []);
 
   useEffect(() => {
@@ -67,13 +84,13 @@ const PurchaseOrder = ({ navigation, route }) => {
                   if (shelveData.status) {
                     const poItems = result.data.items;
                     const shItems = shelveData.items;
+                    // console.log('po list: ', poItems);
+                    // console.log('sh list: ', shItems);
                     let remainingPoItems = poItems.filter(
                       poItem =>
                         !shItems.some(
-                          shItem =>
-                            shItem.po === poItem.po &&
-                            shItem.code === poItem.material,
-                        ),
+                          shItem => shItem.po === poItem.po && shItem.code === poItem.material
+                        )
                     );
                     setArticles(remainingPoItems);
                     setIsLoading(false);
@@ -126,16 +143,16 @@ const PurchaseOrder = ({ navigation, route }) => {
     const poItem = articles.find(item => item.barcode === barcode);
     if (poItem) {
       navigation.push('PoArticles', poItem);
-      setBarcode('')
+      setBarcode('');
     } else {
-      toast('Item not found!')
+      toast('Article not found!');
     }
   }
 
-  const GRNByPo = grnItems.filter(grnItem => grnItem.PO_NUMBER == po_id);
-
+  const GRNByPo = grnItems.filter(grnItem => grnItem.po === po_id);
 
   const createGRN = async () => {
+    setIsButtonLoading(true);
     try {
       await fetch(API_URL + 'bapi/grn/from-po/create', {
         method: 'POST',
@@ -149,17 +166,33 @@ const PurchaseOrder = ({ navigation, route }) => {
         .then(data => {
           setGrnItems([]);
           setServerError(data.message);
+          setIsButtonLoading(false);
           setTimeout(() => {
             navigation.goBack();
           }, 1000);
         })
         .catch(error => {
           toast(error.message);
+          setIsButtonLoading(false);
         });
     } catch (error) {
       toast(error.message);
+      setIsButtonLoading(false);
     }
   }
+
+  const postGRN = () => {
+    Alert.alert('Are you sure?', 'GRN will be created', [
+      {
+        text: 'Cancel',
+        onPress: () => null,
+        style: 'cancel',
+      },
+      { text: 'OK', onPress: () => createGRN() },
+    ]);
+  }
+
+  console.log('GRN list', grnItems, grnItems.length)
 
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">
@@ -168,10 +201,6 @@ const PurchaseOrder = ({ navigation, route }) => {
           <Text className="flex-1 text-lg text-sh text-center font-semibold uppercase">
             po {po_id}
           </Text>
-          {grnItems.length ? (<TouchableOpacity className="bg-theme rounded-md p-2.5" onPress={() => createGRN()}>
-            <Text className="text-white text-base text-center font-medium">Create GRN</Text>
-          </TouchableOpacity>) : null}
-
         </View>
         <View className="content flex-1 justify-between py-5">
           {
@@ -188,21 +217,33 @@ const PurchaseOrder = ({ navigation, route }) => {
                           {
                             articles.length ?
                               (
-                                <View className="table h-full pb-2">
-                                  <View className="flex-row bg-th text-center mb-2 py-2">
-                                    {tableHeader.map(th => (
-                                      <Text className="flex-1 text-white text-center font-bold" key={th}>
-                                        {th}
-                                      </Text>
-                                    ))}
+                                <>
+                                  <View className="table h-4/5 pb-2">
+                                    <View className="flex-row bg-th text-center mb-2 py-2">
+                                      {tableHeader.map(th => (
+                                        <Text className="flex-1 text-white text-center font-bold" key={th}>
+                                          {th}
+                                        </Text>
+                                      ))}
+                                    </View>
+                                    <FlatList
+                                      data={articles}
+                                      renderItem={renderItem}
+                                      keyExtractor={item => item.material}
+                                      ListFooterComponent={isLoading && <ActivityIndicator />}
+                                    />
                                   </View>
-                                  <FlatList
-                                    data={articles}
-                                    renderItem={renderItem}
-                                    keyExtractor={item => item.material}
-                                    ListFooterComponent={isLoading && <ActivityIndicator />}
-                                  />
-                                </View>
+                                  {grnItems.length && (
+                                    <View className="button">
+                                      {isButtonLoading ? <ButtonLoading styles='bg-theme rounded-md p-5' /> :
+                                        <ButtonLg
+                                          title="Create GRN"
+                                          onPress={() => postGRN()}
+                                        />
+                                      }
+                                    </View>
+                                  )}
+                                </>
                               )
                               : (
                                 <View className="h-[90%] justify-center">

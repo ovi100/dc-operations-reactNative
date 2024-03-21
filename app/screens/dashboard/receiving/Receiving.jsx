@@ -1,15 +1,16 @@
 import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, DeviceEventEmitter, FlatList, Image, SafeAreaView, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, DeviceEventEmitter, FlatList, Image, RefreshControl, SafeAreaView, Text, TextInput, View } from 'react-native';
+import ServerError from '../../../../components/animations/ServerError';
 import { SearchIcon } from '../../../../constant/icons';
 import { getStorage } from '../../../../hooks/useStorage';
 import { dateRange, toast } from '../../../../utils';
 import SunmiScanner from '../../../../utils/sunmi/scanner';
-import ServerError from '../../../../components/animations/ServerError';
 
 const Receiving = ({ navigation }) => {
   const isFocused = useIsFocused();
   const [isLoading, setIsLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [user, setUser] = useState(null);
   const [token, setToken] = useState('');
   const [barcode, setBarcode] = useState('');
@@ -67,19 +68,22 @@ const Receiving = ({ navigation }) => {
                   let remainingPoItems = poList.filter(poItem => !inGrnItems.some(inGrnItem => inGrnItem.po === poItem.po));
                   setPoList(remainingPoItems);
                   setIsLoading(false);
+                  setRefreshing(false);
                 } else {
                   setPoList(result.data.po);
                   setIsLoading(false);
+                  setRefreshing(false);
                 }
               })
               .catch(error => {
                 toast(error.message)
                 setIsLoading(false);
+                setRefreshing(false);
               });
-
           } else {
             toast(data.message);
             setIsLoading(false);
+            setRefreshing(false);
           }
         })
         .catch(error => {
@@ -97,8 +101,12 @@ const Receiving = ({ navigation }) => {
       if (token) {
         getPoList();
       }
-    }, [token])
+    }, [token, refreshing])
   );
+
+  const onRefresh = () => {
+    setRefreshing(true);
+  };
 
   if (barcode !== '') {
     const poItem = poList.find(item => item.po === barcode);
@@ -106,7 +114,8 @@ const Receiving = ({ navigation }) => {
       navigation.push('PurchaseOrder', { po_id: barcode });
       setBarcode('');
     } else {
-      toast('Item not found!')
+      toast('Item not found!');
+      setBarcode('');
     }
   }
 
@@ -141,46 +150,46 @@ const Receiving = ({ navigation }) => {
           </Text>
         </View>
 
-        {!isLoading && poList.length ? (
-          <>
-            {/* Search and Button */}
-            <View className="search-button flex-row items-center gap-3">
-              <View className="input-box relative flex-1">
-                <Image className="absolute top-3 left-3 z-10" source={SearchIcon} />
-                <TextInput
-                  className="bg-[#F5F6FA] h-[50px] text-black rounded-lg pl-12 pr-4"
-                  placeholder="Search by purchase order"
-                  keyboardType="phone-pad"
-                  placeholderTextColor="#CBC9D9"
-                  selectionColor="#CBC9D9"
-                  onChangeText={value => setSearch(value)}
-                  value={search}
-                />
-              </View>
-            </View>
-            <View className="content flex-1 justify-between py-5">
-              <View className="table h-full pb-2">
-                <View className="flex-row bg-th text-center mb-2 py-2">
-                  {tableHeader.map(th => (
-                    <Text className="flex-1 text-white text-center font-bold" key={th}>
-                      {th}
-                    </Text>
-                  ))}
-                </View>
-                <FlatList
-                  data={poList}
-                  renderItem={renderItem}
-                  keyExtractor={item => item.po}
-                  ListFooterComponent={isLoading && <ActivityIndicator />}
-                />
-              </View>
-            </View>
-          </>
-        ) : (
-          <View className="h-3/4 justify-center">
-            <ServerError message="No data found!" />
+        {/* Search filter */}
+        <View className="search flex-row">
+          <View className="input-box relative flex-1">
+            <Image className="absolute top-3 left-3 z-10" source={SearchIcon} />
+            <TextInput
+              className="bg-[#F5F6FA] h-[50px] text-black rounded-lg pl-12 pr-4"
+              placeholder="Search by purchase order"
+              keyboardType="phone-pad"
+              placeholderTextColor="#CBC9D9"
+              selectionColor="#CBC9D9"
+              onChangeText={value => setSearch(value)}
+              value={search}
+            />
           </View>
-        )}
+        </View>
+        <View className="content flex-1 justify-between py-5">
+          <View className="table h-full pb-2">
+            <View className="flex-row bg-th text-center mb-2 py-2">
+              {tableHeader.map(th => (
+                <Text className="flex-1 text-white text-center font-bold" key={th}>
+                  {th}
+                </Text>
+              ))}
+            </View>
+            {isLoading ? <ActivityIndicator /> : poList.length ? (
+
+              <FlatList
+                data={poList}
+                renderItem={renderItem}
+                keyExtractor={item => item.code}
+                initialNumToRender={15}
+                refreshControl={
+                  <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                }
+              />
+            ) : (
+              <ServerError message="No data found!" />
+            )}
+          </View>
+        </View>
 
       </View>
     </SafeAreaView>

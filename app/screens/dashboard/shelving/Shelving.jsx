@@ -41,8 +41,6 @@ const Shelving = ({ navigation }) => {
     };
   }, [isFocused]);
 
-
-
   const getShelvingReady = async () => {
     try {
       setIsLoading(true);

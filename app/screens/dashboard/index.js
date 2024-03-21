@@ -8,8 +8,9 @@ import {
   DeliveryPlanIcon,
   PickingIcon,
   ReceivingIcon,
+  ReturnIcon,
   ShelvingIcon,
-  TaskAssignIcon
+  TaskAssignIcon,
 } from '../../../constant/icons';
 import { getStorage } from '../../../hooks/useStorage';
 
@@ -69,6 +70,12 @@ const Home = ({navigation}) => {
       icon: DeliveryNoteIcon,
       screen: 'DeliveryNote',
       role: 'DN charge',
+    },
+    {
+      name: 'Audit',
+      icon: ReturnIcon,
+      screen: 'Audit',
+      role: 'audit',
     },
     // {
     //   name: 'Return',

@@ -4,9 +4,11 @@ import React from 'react';
 import useAppContext from '../../hooks/useAppContext';
 import Home from '../screens/dashboard';
 import SiteModal from '../screens/dashboard/SiteModal';
+import Audit from '../screens/dashboard/audit/Audit';
 import ChildPacking from '../screens/dashboard/childPacking/ChildPacking';
 import QualityCheck from '../screens/dashboard/childPacking/qualityCheck/QualityCheck';
 import DeliveryNote from '../screens/dashboard/deliveryNote/DeliveryNote';
+import ChooseOutlet from '../screens/dashboard/deliveryPlan/ChooseOutlet';
 import DeliveryPlan from '../screens/dashboard/deliveryPlan/DeliveryPlan';
 import MasterPacking from '../screens/dashboard/masterPacking/MasterPacking';
 import Picking from '../screens/dashboard/picking/Picking';
@@ -27,7 +29,6 @@ import PickerPackerTaskAssign from '../screens/dashboard/taskAssign/PickerPacker
 import TaskAssign from '../screens/dashboard/taskAssign/TaskAssign';
 import ChangePassword from '../screens/dashboard/userProfile/ChangePassword';
 import Profile from '../screens/dashboard/userProfile/Profile';
-import ChooseOutlet from '../screens/dashboard/deliveryPlan/ChooseOutlet';
 
 const Stack = createNativeStackNavigator();
 
@@ -37,6 +38,7 @@ const AppStack = () => {
 
   const routes = [
     {id: 'home', name: 'Home', component: Home},
+    {id: 'audit', name: 'Audit', component: Audit},
     {id: 'profile', name: 'Profile', component: Profile},
     {id: 'change-password', name: 'ChangePassword', component: ChangePassword},
     {id: 'receiving', name: 'Receiving', component: Receiving},

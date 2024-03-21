@@ -12,11 +12,11 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
+import ServerError from '../../../../components/animations/ServerError';
 import { ButtonBack } from '../../../../components/buttons';
 import { SearchIcon } from '../../../../constant/icons';
 import { getStorage } from '../../../../hooks/useStorage';
 import { toast } from '../../../../utils';
-import ServerError from '../../../../components/animations/ServerError';
 
 const ChooseOutlet = ({ navigation }) => {
   const isFocused = useIsFocused();
@@ -74,9 +74,9 @@ const ChooseOutlet = ({ navigation }) => {
 
   const renderItem = useCallback(({ item, index }) => (
     <TouchableOpacity
-      className="flex-row items-center border border-tb rounded-lg mt-2.5 p-4"
+      className="flex-row border border-tb rounded-lg mt-2.5 p-4"
       onPress={() => selectOutlet(item)} key={index}>
-      <Text className="text-black" numberOfLines={1}>
+      <Text className="text-black flex-1" numberOfLines={1}>
         {item.code}
       </Text>
       <Text className="flex-1 text-black text-center" numberOfLines={1}>
@@ -113,7 +113,7 @@ const ChooseOutlet = ({ navigation }) => {
             choose outlet
           </Text>
         </View>
-        {/* Search and Button */}
+        {/* Search filter */}
         <View className="search-button flex-row">
           <View className="input-box relative flex-1">
             <Image className="absolute top-3 left-3 z-10" source={SearchIcon} />
@@ -128,7 +128,7 @@ const ChooseOutlet = ({ navigation }) => {
             />
           </View>
         </View>
-        <View className="content flex-1 justify-around my-6">
+        <View className="content mt-3">
           {/* Table data */}
           <View className="table h-[90%] pb-2">
             <View className="flex-row bg-th text-center mb-2 py-2">

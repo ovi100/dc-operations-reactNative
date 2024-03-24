@@ -1,6 +1,6 @@
 import { useIsFocused } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
-import { Alert, DeviceEventEmitter, SafeAreaView, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, DeviceEventEmitter, SafeAreaView, Text, View } from 'react-native';
 import Ready from '../../../../components/animations/Ready';
 import Scan from '../../../../components/animations/Scan';
 import { ButtonLg } from '../../../../components/buttons';
@@ -11,7 +11,7 @@ import SunmiScanner from '../../../../utils/sunmi/scanner';
 const AssignToBin = ({ navigation, route }) => {
   const isFocused = useIsFocused();
   const { code, description } = route.params;
-  const [barcode, setBarcode] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const [bin, setBin] = useState(null);
   const [isBinExist, setIsBinExist] = useState(false);
   const [token, setToken] = useState('');
@@ -23,6 +23,7 @@ const AssignToBin = ({ navigation, route }) => {
   }, []);
 
   const getBin = async (code) => {
+    setIsLoading(true);
     await fetch(API_URL + `${code}`)
       .then(res => res.json())
       .then(result => {
@@ -30,11 +31,11 @@ const AssignToBin = ({ navigation, route }) => {
         if (result.status) {
           setBin(result.bin);
           setIsBinExist(result.status);
-          setBarcode('');
+          setIsLoading(false);
         } else {
           setIsBinExist(result.status);
           toast('Bin not exist!');
-          setBarcode('');
+          setIsLoading(false);
         }
       });
   }
@@ -42,17 +43,19 @@ const AssignToBin = ({ navigation, route }) => {
   useEffect(() => {
     startScan();
     DeviceEventEmitter.addListener('ScanDataReceived', data => {
-      console.log(data.code)
-      setBarcode(data.code);
-      getBin(data.code);
+      console.log('Barcode', data.code)
+      if (data.code) {
+        getBin(data.code);
+      }
     });
 
     return () => {
       stopScan();
       DeviceEventEmitter.removeAllListeners('ScanDataReceived');
     };
-  }, [isFocused, !isBinExist]);
+  }, [isFocused]);
 
+  console.log('assign routes', route.params)
 
   const postArticleToBin = async () => {
     const assignToBinObject = {
@@ -97,6 +100,16 @@ const AssignToBin = ({ navigation, route }) => {
       { text: 'OK', onPress: () => postArticleToBin() },
     ]);
   }
+
+  if (isLoading) {
+    return (
+      <View className="w-full h-4/5 justify-center px-3">
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    )
+  }
+
+  console.log('Bin assign screen')
 
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">

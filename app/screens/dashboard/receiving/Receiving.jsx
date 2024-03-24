@@ -19,8 +19,10 @@ const Receiving = ({ navigation }) => {
   const tableHeader = ['Purchase Order ID', 'SKU'];
   const API_URL = 'https://shwapnooperation.onrender.com/';
   const { startScan, stopScan } = SunmiScanner;
-  const dateObject = dateRange(7);
+  const dateObject = dateRange(15);
   const postObject = { ...dateObject, site: user?.site };
+
+  // console.log(postObject);
 
   useEffect(() => {
     getStorage('user', setUser, 'object');
@@ -114,7 +116,7 @@ const Receiving = ({ navigation }) => {
       navigation.push('PurchaseOrder', { po_id: barcode });
       setBarcode('');
     } else {
-      toast('Item not found!');
+      toast('PO not found!');
       setBarcode('');
     }
   }
@@ -138,8 +140,21 @@ const Receiving = ({ navigation }) => {
     poList = poList.filter(item => item.po.includes(search.toLowerCase()));
   }
 
+  if (isLoading) {
+    return (
+      <View className="w-full h-4/5 justify-center px-3">
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    )
+  }
 
-  console.log(poList.length);
+  if (poList.length === 0) {
+    return (
+      <View className="w-full h-4/5 justify-center px-3">
+        <ServerError message="No data found!" />
+      </View>
+    )
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">
@@ -174,20 +189,15 @@ const Receiving = ({ navigation }) => {
                 </Text>
               ))}
             </View>
-            {isLoading ? <ActivityIndicator /> : poList.length ? (
-
-              <FlatList
-                data={poList}
-                renderItem={renderItem}
-                keyExtractor={item => item.code}
-                initialNumToRender={15}
-                refreshControl={
-                  <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-                }
-              />
-            ) : (
-              <ServerError message="No data found!" />
-            )}
+            <FlatList
+              data={poList}
+              renderItem={renderItem}
+              keyExtractor={item => item.po}
+              initialNumToRender={15}
+              refreshControl={
+                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+              }
+            />
           </View>
         </View>
 

@@ -7,9 +7,9 @@ import { getStorage } from '../../../../../hooks/useStorage';
 import { toast } from '../../../../../utils';
 
 const PoArticles = ({ navigation, route }) => {
-  const { description, material, barcode, po, poItem, quantity, receivingPlant, storageLocation, unit } = route.params;
+  const { description, material, barcode, po, poItem, updatedQuantity, receivingPlant, storageLocation, unit } = route.params;
   const [bins, setBins] = useState([]);
-  const [newQuantity, setNewQuantity] = useState(quantity);
+  const [newQuantity, setNewQuantity] = useState(updatedQuantity);
   const [token, setToken] = useState('');
   const API_URL = 'https://shwapnooperation.onrender.com/api/';
 
@@ -42,7 +42,7 @@ const PoArticles = ({ navigation, route }) => {
   }, [material, user.site]);
 
   const updateQuantity = async () => {
-    if (newQuantity > quantity) {
+    if (newQuantity > updatedQuantity) {
       toast('Quantity exceed')
     } else {
       const grnItem = {
@@ -66,7 +66,7 @@ const PoArticles = ({ navigation, route }) => {
         userId: user._id,
         site: receivingPlant,
         name: '',
-        quantity: quantity,
+        quantity: updatedQuantity,
         receivedQuantity: newQuantity,
         receivedBy: user.name,
         bins,
@@ -133,7 +133,7 @@ const PoArticles = ({ navigation, route }) => {
             </View>
             <View className="quantity flex-row items-center gap-3">
               <Image source={BoxIcon} />
-              <Text className="font-bold text-black">{quantity}</Text>
+              <Text className="font-bold text-black">{updatedQuantity}</Text>
             </View>
           </View>
           <View className="input-box mt-6">

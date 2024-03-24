@@ -16,8 +16,6 @@ const BinDetails = ({ navigation, route }) => {
   const [token, setToken] = useState('');
   const { startScan, stopScan } = SunmiScanner;
 
-  console.log(isBinsFound)
-
   useEffect(() => {
     getStorage('token', setToken);
   }, [])
@@ -27,7 +25,6 @@ const BinDetails = ({ navigation, route }) => {
     DeviceEventEmitter.addListener('ScanDataReceived', data => {
       setBarcode(data.code);
     });
-
 
     return () => {
       stopScan();
@@ -51,7 +48,7 @@ const BinDetails = ({ navigation, route }) => {
     </View>
   );
 
-  if (barcode && Boolean(bins)) {
+  if (barcode !== '' && Boolean(bins)) {
     const binItem = bins.find(item => item.bin_id === barcode);
     if (binItem) {
       navigation.push('ShelveArticle', { ...route.params, bins: { bin_id: binItem.bin_id, gondola_id: binItem.gondola_id } });
@@ -62,14 +59,14 @@ const BinDetails = ({ navigation, route }) => {
     }
   }
 
-  console.log('Bin details screen');
+  console.log('Bin details screen', route.params)
 
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">
       <View className="flex-1 px-4">
-        <View className="screen-header flex-row items-center justify-end mb-4">
+        <View className="screen-header flex-row items-center justify-center mb-4">
           <View className="text">
-            <View className="flex-row justify-end">
+            <View className="flex-row">
               <Text className="text-base text-sh font-medium capitalize">
                 Bins for article
               </Text>
@@ -107,7 +104,7 @@ const BinDetails = ({ navigation, route }) => {
                   No bins found for this product
                 </Text>
                 <View className="button mb-20">
-                  <ButtonLg title="Assign to bin" onPress={() => navigation.push('AssignToBin', { code, description, quantity })} />
+                  <ButtonLg title="Assign to bin" onPress={() => navigation.push('AssignToBin', { ...route.params })} />
                 </View>
               </View>
             )

@@ -108,8 +108,8 @@ const Shelving = ({ navigation }) => {
     }
   };
 
-  if (barcode) {
-    const article = articles.find(item => item.code === barcode);
+  if (barcode !== '') {
+    const article = articles.find(item => item.barcode === barcode);
     if (article) {
       navigation.push('BinDetails', article);
       setBarcode('');

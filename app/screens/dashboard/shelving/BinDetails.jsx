@@ -4,7 +4,6 @@ import { DeviceEventEmitter, FlatList, SafeAreaView, Text, View } from 'react-na
 import EmptyBox from '../../../../components/animations/EmptyBox';
 import { ButtonLg } from '../../../../components/buttons';
 import { getStorage } from '../../../../hooks/useStorage';
-import { toast } from '../../../../utils';
 import SunmiScanner from '../../../../utils/sunmi/scanner';
 
 const BinDetails = ({ navigation, route }) => {
@@ -23,6 +22,7 @@ const BinDetails = ({ navigation, route }) => {
   useEffect(() => {
     startScan();
     DeviceEventEmitter.addListener('ScanDataReceived', data => {
+      console.log(data.code)
       setBarcode(data.code);
     });
 
@@ -48,18 +48,18 @@ const BinDetails = ({ navigation, route }) => {
     </View>
   );
 
-  if (barcode !== '' && Boolean(bins)) {
+  if (barcode !== '') {
     const binItem = bins.find(item => item.bin_id === barcode);
     if (binItem) {
-      navigation.push('ShelveArticle', { ...route.params, bins: { bin_id: binItem.bin_id, gondola_id: binItem.gondola_id } });
+      navigation.navigate('ShelveArticle', { ...route.params, bins: { bin_id: binItem.bin_id, gondola_id: binItem.gondola_id } });
       setBarcode('');
     } else {
-      toast('Bin not found!');
+      navigation.replace('AssignToBin', { ...route.params });
       setBarcode('');
     }
   }
 
-  console.log('Bin details screen', route.params)
+  console.log('Bin details screen')
 
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">
@@ -104,7 +104,7 @@ const BinDetails = ({ navigation, route }) => {
                   No bins found for this product
                 </Text>
                 <View className="button mb-20">
-                  <ButtonLg title="Assign to bin" onPress={() => navigation.push('AssignToBin', { ...route.params })} />
+                  <ButtonLg title="Assign to bin" onPress={() => navigation.replace('AssignToBin', { ...route.params })} />
                 </View>
               </View>
             )

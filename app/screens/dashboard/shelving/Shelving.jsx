@@ -111,7 +111,7 @@ const Shelving = ({ navigation }) => {
   if (barcode !== '') {
     const article = articles.find(item => item.barcode === barcode);
     if (article) {
-      navigation.push('BinDetails', article);
+      navigation.navigate('BinDetails', article);
       setBarcode('');
     } else {
       toast('Article not found!');
@@ -151,6 +151,23 @@ const Shelving = ({ navigation }) => {
     </View>
   );
 
+  if (isLoading && articles.length === 0) {
+    return (
+      <View className="w-full h-4/5 justify-center px-3">
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    )
+  }
+
+  if (articles.length === 0) {
+    return (
+      <View className="h-full justify-center pb-2">
+        <Text className="text-base font-bold text-center">
+          No product is ready for shelving!
+        </Text>
+      </View>
+    )
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">
@@ -178,15 +195,7 @@ const Shelving = ({ navigation }) => {
               renderItem={renderItem}
               keyExtractor={item => item._id}
               onEndReached={loadMoreItem}
-              ListFooterComponent={isLoading ?
-                <ActivityIndicator />
-                : articles.length ? null : (
-                  <View className="h-full justify-center pb-2">
-                    <Text className="text-base font-bold text-center">
-                      No product is ready for shelving!
-                    </Text>
-                  </View>)
-              }
+              ListFooterComponent={isLoading && <ActivityIndicator />}
               onEndReachedThreshold={0}
             />
           </View>

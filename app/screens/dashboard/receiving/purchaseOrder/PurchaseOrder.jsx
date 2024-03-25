@@ -64,9 +64,6 @@ const PurchaseOrder = ({ navigation, route }) => {
               if (shelveData.status) {
                 const poItems = result.data.items;
                 const shItems = shelveData.items;
-                // console.log('po list: ', poItems);
-                // console.log('sh list: ', shItems);
-
                 let remainingPoItems = poItems.filter(
                   poItem =>
                     !shItems.some(
@@ -76,44 +73,43 @@ const PurchaseOrder = ({ navigation, route }) => {
 
                 let remainingQuantityPoItems = shItems.filter(shItem => shItem.quantity > shItem.receivedQuantity && shItem.po === po_id);
 
-                console.log('remaining quantity items: ', remainingQuantityPoItems);
-
-                remainingQuantityPoItems = remainingQuantityPoItems.reduce((acc, curr) => {
-                  const existingItem = acc.find(item => item.material === curr.material);
-                  if (existingItem) {
-                    existingItem.quantity += curr.quantity;
-                  } else {
-                    acc.push({ ...curr });
-                  }
-                  return acc;
-                }, []);
-
                 if (remainingQuantityPoItems.length > 0) {
-                  // Create a map for easier lookup of remaining quantity
-                  const remainingQuantityPoItemsMap = new Map(
-                    remainingQuantityPoItems.map(item => [item.code, item.receivedQuantity])
-                  );
-
-                  // Update poList items
-                  remainingPoItems.forEach(item => {
-                    const receivedQuantity = remainingQuantityPoItemsMap.get(item.material);
-                    if (receivedQuantity !== undefined) {
-                      item.updatedQuantity = item.quantity - receivedQuantity;
-                    } else {
-                      item.updatedQuantity = item.quantity;
-                    }
-                  });
-                  // console.log(remainingPoItems)
-                  setArticles(remainingPoItems);
-                } else {
-                  remainingPoItems = remainingPoItems.map(item => {
+                  const remainingQuantity = remainingQuantityPoItems.map((item) => {
                     return {
-                      ...item,
-                      updatedQuantity: item.quantity
+                      code: item.code,
+                      quantity: item.quantity,
+                      receivedQuantity: item.receivedQuantity,
+                      remainingQuantity: item.quantity - item.receivedQuantity,
+                    };
+                  });
+
+                  const adjustedItems = remainingQuantity.reduce((acc, curr) => {
+                    const existingItem = acc.find((item) => item.code === curr.code);
+                    if (existingItem) {
+                      existingItem.receivedQuantity += curr.receivedQuantity;
+                      existingItem.remainingQuantity =
+                        curr.quantity - existingItem.receivedQuantity;
+                    } else {
+                      acc.push({
+                        code: curr.code,
+                        quantity: curr.quantity,
+                        receivedQuantity: curr.receivedQuantity,
+                        remainingQuantity: curr.quantity - curr.receivedQuantity,
+                      });
+                    }
+                    return acc;
+                  }, []);
+
+                  remainingPoItems.forEach(poItem => {
+                    const adjustedItem = adjustedItems.find(item => item.code === poItem.material);
+                    if (adjustedItem) {
+                      poItem.remainingQuantity = adjustedItem.remainingQuantity;
+                    } else {
+                      poItem.remainingQuantity = poItem.quantity;
                     }
                   });
-                  setArticles(remainingPoItems);
                 }
+                setArticles(remainingPoItems);
                 setIsLoading(false);
               }
               else {
@@ -173,7 +169,7 @@ const PurchaseOrder = ({ navigation, route }) => {
       <Text
         className="flex-1 text-black text-center"
         numberOfLines={1}>
-        {item.updatedQuantity}
+        {item.remainingQuantity}
       </Text>
     </View>
   );
@@ -184,13 +180,12 @@ const PurchaseOrder = ({ navigation, route }) => {
       navigation.push('PoArticles', poItem);
       setBarcode('');
     } else {
-      toast('Item not found!');
+      toast('Article not found!');
       setBarcode('');
     }
   }
 
   const GRNByPo = grnItems.filter(grnItem => grnItem.po == po_id);
-
 
   const createGRN = async (grnList) => {
     setIsButtonLoading(true);
@@ -233,7 +228,7 @@ const PurchaseOrder = ({ navigation, route }) => {
       }
       return acc;
     }, []);
-    console.log('Final GrnList: ', uniqueGrnList, uniqueGrnList.length);
+
     Alert.alert('Are you sure?', 'GRN will be created', [
       {
         text: 'Cancel',
@@ -262,9 +257,8 @@ const PurchaseOrder = ({ navigation, route }) => {
     )
   }
 
-  console.log('Initial GRN list', initialGrnItems, initialGrnItems.length);
-  console.log('Actual GRN list', grnItems, grnItems.length);
-
+  // console.log('Initial GRN list', initialGrnItems, initialGrnItems.length);
+  // console.log('Actual GRN list', grnItems, grnItems.length);
 
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">

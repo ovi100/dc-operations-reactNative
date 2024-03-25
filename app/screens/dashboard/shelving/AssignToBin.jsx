@@ -43,8 +43,8 @@ const AssignToBin = ({ navigation, route }) => {
   useEffect(() => {
     startScan();
     DeviceEventEmitter.addListener('ScanDataReceived', data => {
-      console.log('Barcode', data.code)
       if (data.code) {
+        console.log('Barcode', data.code);
         getBin(data.code);
       }
     });
@@ -54,8 +54,6 @@ const AssignToBin = ({ navigation, route }) => {
       DeviceEventEmitter.removeAllListeners('ScanDataReceived');
     };
   }, [isFocused]);
-
-  console.log('assign routes', route.params)
 
   const postArticleToBin = async () => {
     const assignToBinObject = {
@@ -80,7 +78,7 @@ const AssignToBin = ({ navigation, route }) => {
       .then(data => {
         if (data.status) {
           toast(data.message);
-          navigation.push('ShelveArticle', { ...route.params, bins: { bin_id: bin.bin_ID, gondola_id: bin.gondola_ID } })
+          navigation.replace('ShelveArticle', { ...route.params, bins: { bin_id: bin.bin_ID, gondola_id: bin.gondola_ID } })
         } else {
           toast(data.message);
         }
@@ -109,7 +107,7 @@ const AssignToBin = ({ navigation, route }) => {
     )
   }
 
-  console.log('Bin assign screen')
+  console.log('Bin assign screen');
 
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">
@@ -141,8 +139,6 @@ const AssignToBin = ({ navigation, route }) => {
             )
           }
         </View>
-
-
       </View>
     </SafeAreaView>
   )

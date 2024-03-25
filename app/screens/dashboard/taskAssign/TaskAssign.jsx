@@ -84,8 +84,6 @@ const TaskAssign = ({ navigation }) => {
 
   taskList = [...new Set(taskList)];
 
-  console.log(taskList)
-
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">
       <View className="flex-1 px-4">

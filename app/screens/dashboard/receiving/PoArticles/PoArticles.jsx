@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Image, SafeAreaView, Text, TextInput, View } from 'react-native';
+import { Image, SafeAreaView, Text, TextInput, TouchableWithoutFeedback, View } from 'react-native';
 import { ButtonLg } from '../../../../../components/buttons';
 import { BoxIcon } from '../../../../../constant/icons';
 import useAppContext from '../../../../../hooks/useAppContext';
@@ -7,12 +7,15 @@ import { getStorage } from '../../../../../hooks/useStorage';
 import { toast } from '../../../../../utils';
 
 const PoArticles = ({ navigation, route }) => {
-  const { description, material, barcode, po, poItem, updatedQuantity, receivingPlant, storageLocation, unit } = route.params;
+  const {
+    description, material, barcode, po, poItem,
+    quantity, remainingQuantity, receivingPlant,
+    storageLocation, unit
+  } = route.params;
   const [bins, setBins] = useState([]);
-  const [newQuantity, setNewQuantity] = useState(updatedQuantity);
+  const [newQuantity, setNewQuantity] = useState(remainingQuantity);
   const [token, setToken] = useState('');
   const API_URL = 'https://shwapnooperation.onrender.com/api/';
-
   const { GRNInfo, authInfo } = useAppContext();
   const { user } = authInfo;
   const { addToGRN } = GRNInfo;
@@ -42,7 +45,7 @@ const PoArticles = ({ navigation, route }) => {
   }, [material, user.site]);
 
   const updateQuantity = async () => {
-    if (newQuantity > updatedQuantity) {
+    if (newQuantity > remainingQuantity) {
       toast('Quantity exceed')
     } else {
       const grnItem = {
@@ -66,7 +69,7 @@ const PoArticles = ({ navigation, route }) => {
         userId: user._id,
         site: receivingPlant,
         name: '',
-        quantity: updatedQuantity,
+        quantity: quantity,
         receivedQuantity: newQuantity,
         receivedBy: user.name,
         bins,
@@ -88,7 +91,7 @@ const PoArticles = ({ navigation, route }) => {
             if (data.status) {
               toast(data.message);
               addToGRN(grnItem);
-              navigation.goBack();
+              navigation.replace('PurchaseOrder', { po_id: po });
             } else {
               toast(data.message);
               navigation.goBack();
@@ -109,14 +112,16 @@ const PoArticles = ({ navigation, route }) => {
       <View className="flex-1 px-4">
         <View className="screen-header mb-4">
           <View className="text items-center">
-            <View className="flex-row">
-              <Text className="text-base text-sh font-medium capitalize">
-                receiving article
-              </Text>
-              <Text className="text-base text-sh font-bold capitalize">
-                {' ' + material}
-              </Text>
-            </View>
+            <TouchableWithoutFeedback>
+              <View className="flex-row">
+                <Text className="text-base text-sh font-medium capitalize">
+                  receiving article
+                </Text>
+                <Text className="text-base text-sh font-bold capitalize">
+                  {' ' + material}
+                </Text>
+              </View>
+            </TouchableWithoutFeedback>
             <Text className="text-sm text-sh text-right font-medium capitalize">
               {description}
             </Text>
@@ -133,7 +138,7 @@ const PoArticles = ({ navigation, route }) => {
             </View>
             <View className="quantity flex-row items-center gap-3">
               <Image source={BoxIcon} />
-              <Text className="font-bold text-black">{updatedQuantity}</Text>
+              <Text className="font-bold text-black">{remainingQuantity}</Text>
             </View>
           </View>
           <View className="input-box mt-6">

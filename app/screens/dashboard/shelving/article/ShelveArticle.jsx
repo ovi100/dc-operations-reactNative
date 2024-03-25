@@ -40,7 +40,6 @@ const ShelveArticle = ({ navigation, route }) => {
         })
           .then(response => response.json())
           .then(data => {
-            console.log(data);
             if (data.status) {
               toast(data.message);
               setTimeout(() => {

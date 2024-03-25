@@ -108,6 +108,10 @@ const PurchaseOrder = ({ navigation, route }) => {
                       poItem.remainingQuantity = poItem.quantity;
                     }
                   });
+                } else {
+                  remainingPoItems.forEach(poItem => {
+                    poItem.remainingQuantity = poItem.quantity;
+                  });
                 }
                 setArticles(remainingPoItems);
                 setIsLoading(false);
@@ -177,7 +181,7 @@ const PurchaseOrder = ({ navigation, route }) => {
   if (barcode !== '') {
     const poItem = articles.find(item => item.barcode === barcode);
     if (poItem) {
-      navigation.push('PoArticles', poItem);
+      navigation.replace('PoArticles', poItem);
       setBarcode('');
     } else {
       toast('Article not found!');
@@ -204,7 +208,7 @@ const PurchaseOrder = ({ navigation, route }) => {
           toast(data.message);
           setIsButtonLoading(false);
           setTimeout(() => {
-            navigation.goBack();
+            navigation.replace('Receiving');
           }, 1000);
         })
         .catch(error => {

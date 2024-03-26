@@ -11,6 +11,7 @@ import {
 import { getStorage } from '../../../../hooks/useStorage';
 import { toast } from '../../../../utils';
 import SunmiScanner from '../../../../utils/sunmi/scanner';
+import LoadingData from '../../../../components/LoadingData';
 
 const Shelving = ({ navigation }) => {
   const isFocused = useIsFocused();
@@ -52,6 +53,7 @@ const Shelving = ({ navigation }) => {
       })
         .then(response => response.json())
         .then(async readyData => {
+          // console.log(readyData)
           if (readyData.status) {
             await fetch(API_URL + 'in-shelf', {
               method: 'GET',
@@ -152,17 +154,13 @@ const Shelving = ({ navigation }) => {
   );
 
   if (isLoading && articles.length === 0) {
-    return (
-      <View className="w-full h-4/5 justify-center px-3">
-        <ActivityIndicator size="large" color="#0000ff" />
-      </View>
-    )
+    <LoadingData text="Loading shelving data. Please wait......" />
   }
 
-  if (articles.length === 0) {
+  if (!isLoading && articles.length === 0) {
     return (
       <View className="h-full justify-center pb-2">
-        <Text className="text-base font-bold text-center">
+        <Text className="text-sh text-base font-bold text-center">
           No product is ready for shelving!
         </Text>
       </View>

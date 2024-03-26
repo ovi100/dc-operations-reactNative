@@ -17,6 +17,7 @@ import { ButtonBack, ButtonLg, ButtonLoading } from '../../../../components/butt
 import { SearchIcon } from '../../../../constant/icons';
 import { getStorage } from '../../../../hooks/useStorage';
 import { dateRange, toast } from '../../../../utils';
+import ServerError from '../../../../components/animations/ServerError';
 
 const DeliveryPlan = ({ navigation, route }) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -29,29 +30,31 @@ const DeliveryPlan = ({ navigation, route }) => {
   const [search, setSearch] = useState('');
   const tableHeader = ['STO ID', 'SKU', 'Outlet Code'];
   const API_URL = 'https://shwapnooperation.onrender.com/';
-  const dateObject = dateRange(15);
-  const postObject = { ...dateObject, ...route.params };
+  const dateObject = dateRange(30);
+  const { from, to } = dateObject;
 
-  console.log(postObject);
+  console.log(route.params);
 
   useEffect(() => {
     getStorage('token', setToken);
     setSelectedList([]);
   }, []);
 
+  console.log('URL: ', API_URL + `bapi/sto/list?from=${from}&to=${to}&site=${route.params}`)
+
   const getDnList = async () => {
     setIsLoading(true);
     try {
-      await fetch(API_URL + 'bapi/sto/list', {
-        method: 'POST',
+      await fetch(API_URL + `bapi/sto/list?from=${from}&to=${to}&site=${route.params}`, {
+        method: 'GET',
         headers: {
           authorization: token,
           'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(postObject),
+        }
       })
         .then(response => response.json())
         .then(async result => {
+          console.log(result)
           if (result.status) {
             await fetch(API_URL + 'api/sto-tracking/in-dn', {
               method: 'GET',
@@ -132,7 +135,7 @@ const DeliveryPlan = ({ navigation, route }) => {
         {item.sku}
       </Text>
       <Text className="flex-1 text-black text-center" numberOfLines={1}>
-        {item.receivingPlant}
+        {item.supplyingPlant}
       </Text>
     </TouchableOpacity>
   );
@@ -210,8 +213,22 @@ const DeliveryPlan = ({ navigation, route }) => {
     );
   }
 
-  console.log('selected list', selectedList, selectedList.length);
-  console.log('is checked all', isAllChecked);
+  if (isLoading) {
+    return (
+      <View className="w-full h-screen justify-center px-3">
+        <ActivityIndicator size="large" color="#EB4B50" />
+        <Text className="mt-4 text-gray-400 text-base text-center">Loading delivery note. Please wait......</Text>
+      </View>
+    )
+  }
+
+  if (!isLoading && !search && dpList.length === 0) {
+    return (
+      <View className="w-full h-4/5 justify-center px-3">
+        <ServerError message="No data found!" />
+      </View>
+    )
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">

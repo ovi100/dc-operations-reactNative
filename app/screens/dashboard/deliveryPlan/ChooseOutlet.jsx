@@ -1,10 +1,11 @@
-
+import CheckBox from '@react-native-community/checkbox';
 import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
   Image,
+  Keyboard,
   RefreshControl,
   SafeAreaView,
   Text,
@@ -13,23 +14,30 @@ import {
   View
 } from 'react-native';
 import ServerError from '../../../../components/animations/ServerError';
-import { ButtonBack } from '../../../../components/buttons';
+import { ButtonBack, ButtonLg, ButtonLoading } from '../../../../components/buttons';
 import { SearchIcon } from '../../../../constant/icons';
 import { getStorage } from '../../../../hooks/useStorage';
 import { toast } from '../../../../utils';
+import Loading from '../../../../components/animations/Loading';
+import LoadingData from '../../../../components/LoadingData';
 
 const ChooseOutlet = ({ navigation }) => {
   const isFocused = useIsFocused();
   const [isLoading, setIsLoading] = useState(false);
+  const [isButtonLoading, setIsButtonLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [token, setToken] = useState('');
   let [outlets, setOutlets] = useState([]);
+  const [selectedList, setSelectedList] = useState('');
+  const [isAllChecked, setIsAllChecked] = useState(false);
   const [search, setSearch] = useState('');
   const tableHeader = ['Code', 'Name', 'District'];
   const API_URL = 'https://shwapnooperation.onrender.com/bapi/outlet';
 
   useEffect(() => {
     getStorage('token', setToken);
+    setSelectedList([]);
+    setSearch('');
   }, [isFocused]);
 
   const getOutlets = async () => {
@@ -43,6 +51,7 @@ const ChooseOutlet = ({ navigation }) => {
       })
         .then(response => response.json())
         .then(data => {
+          console.log(data);
           if (data.status) {
             const serverData = data.outlets;
             setOutlets(serverData);
@@ -72,13 +81,20 @@ const ChooseOutlet = ({ navigation }) => {
     setRefreshing(true);
   };
 
-  const renderItem = useCallback(({ item, index }) => (
+  const renderItem = ({ item, index }) => (
     <TouchableOpacity
       className="flex-row border border-tb rounded-lg mt-2.5 p-4"
-      onPress={() => selectOutlet(item)} key={index}>
-      <Text className="text-black flex-1" numberOfLines={1}>
-        {item.code}
-      </Text>
+      onPress={() => handelCheckbox(item)} key={index}>
+      <View className="flex-1 flex-row items-center">
+        <CheckBox
+          tintColors={item.selected ? '#56D342' : '#ffffff'}
+          value={item.selected}
+          onValueChange={() => handelCheckbox(item)}
+        />
+        <Text className="text-black" numberOfLines={1}>
+          {item.code}
+        </Text>
+      </View>
       <Text className="flex-1 text-black text-center" numberOfLines={1}>
         {item.name}
       </Text>
@@ -86,23 +102,64 @@ const ChooseOutlet = ({ navigation }) => {
         {item.district}
       </Text>
     </TouchableOpacity>
-  ), []);
+  );
 
+  const handelCheckbox = outlet => {
+    let selectedOutlets = outlets.map(item =>
+      outlet.code === item.code ? { ...item, selected: !item.selected } : item,
+    );
+    let selectedOutletCode = selectedOutlets.filter(item => item.selected).map(item => item.code).join(',');
+    setSelectedList(selectedOutletCode);
+    setOutlets(selectedOutlets);
+    setSearch('');
+    Keyboard.dismiss();
+  };
 
-  const selectOutlet = (item) => {
-    if (item) {
-      navigation.navigate('DeliveryPlan', { site: item.code });
-      setSearch('');
-    }
+  const uncheckAll = () => {
+    const checkAllData = outlets.map(item => {
+      return { ...item, selected: false };
+    });
+    setOutlets(checkAllData);
+    setSelectedList([]);
+    Keyboard.dismiss();
   };
 
 
-  if (search !== '') {
-    outlets = outlets.filter(outlet =>
+  const getDeliveryNote = () => {
+    setIsButtonLoading(true);
+    setTimeout(() => {
+      navigation.navigate('DeliveryPlan', selectedList);
+      uncheckAll();
+      setSearch('');
+      setIsButtonLoading(false);
+    }, 1500);
+  };
+
+  useEffect(() => {
+    setOutlets(prevData => prevData.filter(outlet =>
       outlet.code.toLowerCase().includes(search.trim().toLowerCase())
-    );
+    ));
+  }, [search]);
+
+
+  // outlets = outlets.filter(outlet =>
+  //   outlet.code.toLowerCase().includes(search.trim().toLowerCase())
+  // );
+
+  console.log('search', search);
+  console.log('outlets', outlets);
+
+  if (isLoading) {
+    <LoadingData text="Loading outlets. Please wait......" />
   }
 
+  if (!isLoading && !search && outlets.length === 0) {
+    return (
+      <View className="w-full h-screen justify-center px-3">
+        <ServerError message="No data found!" />
+      </View>
+    )
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-white pt-14">
@@ -114,7 +171,7 @@ const ChooseOutlet = ({ navigation }) => {
           </Text>
         </View>
         {/* Search filter */}
-        <View className="search-button flex-row">
+        <View className="search flex-row">
           <View className="input-box relative flex-1">
             <Image className="absolute top-3 left-3 z-10" source={SearchIcon} />
             <TextInput
@@ -130,7 +187,7 @@ const ChooseOutlet = ({ navigation }) => {
         </View>
         <View className="content mt-3">
           {/* Table data */}
-          <View className="table h-[90%] pb-2">
+          <View className={`table ${selectedList.length > 0 ? 'h-[70vh]' : 'h-[78vh]'}`}>
             <View className="flex-row bg-th text-center mb-2 py-2">
               {tableHeader.map((th, i) => (
                 <Text
@@ -140,21 +197,26 @@ const ChooseOutlet = ({ navigation }) => {
                 </Text>
               ))}
             </View>
-            {isLoading ? <ActivityIndicator /> : outlets.length ? (
-
-              <FlatList
-                data={outlets}
-                renderItem={renderItem}
-                keyExtractor={item => item.code}
-                initialNumToRender={15}
-                refreshControl={
-                  <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-                }
-              />
-            ) : (
-              <ServerError message="No data found!" />
-            )}
+            <FlatList
+              data={outlets}
+              renderItem={renderItem}
+              keyExtractor={item => item.code}
+              initialNumToRender={15}
+              refreshControl={
+                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+              }
+            />
           </View>
+          {selectedList.length > 0 && (
+            <View className="button">
+              {isButtonLoading ? <ButtonLoading styles='bg-theme rounded-md p-5' /> :
+                <ButtonLg
+                  title="Confirm"
+                  onPress={() => getDeliveryNote()}
+                />
+              }
+            </View>
+          )}
         </View>
       </View>
     </SafeAreaView>

@@ -1,27 +1,30 @@
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, FlatList, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
-import { ButtonBack } from '../../../../components/buttons';
+import { ActivityIndicator, FlatList, RefreshControl, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
+import ServerError from '../../../../components/animations/ServerError';
 import { getStorage } from '../../../../hooks/useStorage';
 import { toast } from '../../../../utils';
 
 const TaskAssign = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [token, setToken] = useState('');
   let [taskList, setTaskList] = useState([]);
-  const [page, setPage] = useState(1);
-  const [totalPage, setTotalPage] = useState(0);
   const tableHeader = ['STO ID', 'SKU', 'Outlet Code', 'Status'];
-  const API_URL = 'https://shwapnooperation.onrender.com/api/sto-tracking';
+  const API_URL = 'https://shwapnooperation.onrender.com/api/sto-tracking?pageSize=200';
 
   useEffect(() => {
     getStorage('token', setToken, 'string');
   }, []);
 
   const getInDnList = async () => {
-    setIsLoading(true);
+    if (!refreshing) {
+      setIsLoading(true);
+    } else {
+      setRefreshing(true);
+    }
     try {
-      await fetch(API_URL + `?pageSize=30&currentPage=${page}`, {
+      await fetch(API_URL, {
         method: 'GET',
         headers: {
           authorization: token,
@@ -31,17 +34,18 @@ const TaskAssign = ({ navigation }) => {
         .then(data => {
           if (data.status) {
             const serverData = data.items.filter(item => item.status === 'in dn' || item.status === 'picker assigned');
-            setTaskList([...taskList, ...serverData]);
-            setTotalPage(data.totalPages);
+            setTaskList(serverData);
             setIsLoading(false);
+            setRefreshing(false);
           } else {
             toast(data.message);
             setIsLoading(false);
+            setRefreshing(false);
           }
         })
         .catch(error => toast(error.message));
     } catch (error) {
-      console.log(error);
+      toast(error.message);
     }
   };
 
@@ -50,15 +54,11 @@ const TaskAssign = ({ navigation }) => {
       if (token) {
         getInDnList();
       }
-    }, [token, page])
+    }, [token, refreshing])
   );
 
-  const loadMoreItem = () => {
-    if (totalPage >= page) {
-      setPage(prev => prev + 1);
-    } else {
-      setIsLoading(false);
-    }
+  const onRefresh = () => {
+    setRefreshing(true);
   };
 
   const renderItem = ({ item, index }) => (
@@ -82,13 +82,29 @@ const TaskAssign = ({ navigation }) => {
     </TouchableOpacity>
   );
 
-  taskList = [...new Set(taskList)];
+  if (isLoading) {
+    return (
+      <View className="w-full h-screen justify-center px-3">
+        <ActivityIndicator size="large" color="#EB4B50" />
+        <Text className="mt-4 text-gray-400 text-base text-center">
+          Loading task list. Please wait......
+        </Text>
+      </View>
+    )
+  }
+
+  if (taskList.length === 0) {
+    return (
+      <View className="w-full h-screen justify-center px-3">
+        <ServerError message="No data found!" />
+      </View>
+    )
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">
       <View className="flex-1 px-4">
         <View className="screen-header flex-row items-center mb-4">
-          <ButtonBack navigation={navigation} />
           <Text className="flex-1 text-lg text-sh text-center font-semibold capitalize">
             task assign
           </Text>
@@ -106,9 +122,9 @@ const TaskAssign = ({ navigation }) => {
               data={taskList}
               renderItem={renderItem}
               keyExtractor={item => item._id}
-              onEndReached={loadMoreItem}
-              ListFooterComponent={isLoading && <ActivityIndicator />}
-              onEndReachedThreshold={0}
+              refreshControl={
+                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+              }
             />
           </View>
         </View>

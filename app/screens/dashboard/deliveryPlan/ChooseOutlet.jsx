@@ -18,8 +18,6 @@ import { ButtonBack, ButtonLg, ButtonLoading } from '../../../../components/butt
 import { SearchIcon } from '../../../../constant/icons';
 import { getStorage } from '../../../../hooks/useStorage';
 import { toast } from '../../../../utils';
-import Loading from '../../../../components/animations/Loading';
-import LoadingData from '../../../../components/LoadingData';
 
 const ChooseOutlet = ({ navigation }) => {
   const isFocused = useIsFocused();
@@ -29,7 +27,6 @@ const ChooseOutlet = ({ navigation }) => {
   const [token, setToken] = useState('');
   let [outlets, setOutlets] = useState([]);
   const [selectedList, setSelectedList] = useState('');
-  const [isAllChecked, setIsAllChecked] = useState(false);
   const [search, setSearch] = useState('');
   const tableHeader = ['Code', 'Name', 'District'];
   const API_URL = 'https://shwapnooperation.onrender.com/bapi/outlet';
@@ -51,7 +48,6 @@ const ChooseOutlet = ({ navigation }) => {
       })
         .then(response => response.json())
         .then(data => {
-          console.log(data);
           if (data.status) {
             const serverData = data.outlets;
             setOutlets(serverData);
@@ -83,7 +79,7 @@ const ChooseOutlet = ({ navigation }) => {
 
   const renderItem = ({ item, index }) => (
     <TouchableOpacity
-      className="flex-row border border-tb rounded-lg mt-2.5 p-4"
+      className="flex-row items-center border border-tb rounded-lg mt-2.5 p-4"
       onPress={() => handelCheckbox(item)} key={index}>
       <View className="flex-1 flex-row items-center">
         <CheckBox
@@ -127,30 +123,31 @@ const ChooseOutlet = ({ navigation }) => {
 
   const getDeliveryNote = () => {
     setIsButtonLoading(true);
-    setTimeout(() => {
-      navigation.navigate('DeliveryPlan', selectedList);
-      uncheckAll();
-      setSearch('');
-      setIsButtonLoading(false);
-    }, 1500);
+    navigation.navigate('DeliveryPlan', selectedList);
+    uncheckAll();
+    setSearch('');
+    setIsButtonLoading(false);
   };
 
-  useEffect(() => {
-    setOutlets(prevData => prevData.filter(outlet =>
+  if (search) {
+    outlets = outlets.filter(outlet =>
       outlet.code.toLowerCase().includes(search.trim().toLowerCase())
-    ));
-  }, [search]);
+    );
+  }
 
 
-  // outlets = outlets.filter(outlet =>
-  //   outlet.code.toLowerCase().includes(search.trim().toLowerCase())
-  // );
-
-  console.log('search', search);
-  console.log('outlets', outlets);
+  // console.log('search', search);
+  // console.log('outlets', outlets);
 
   if (isLoading) {
-    <LoadingData text="Loading outlets. Please wait......" />
+    return (
+      <View className="w-full h-screen justify-center px-3">
+        <ActivityIndicator size="large" color="#EB4B50" />
+        <Text className="mt-4 text-gray-400 text-base text-center">
+          Loading outlets. Please wait......
+        </Text>
+      </View>
+    )
   }
 
   if (!isLoading && !search && outlets.length === 0) {
@@ -162,7 +159,7 @@ const ChooseOutlet = ({ navigation }) => {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white pt-14">
+    <SafeAreaView className="flex-1 bg-white pt-8">
       <View className="flex-1 h-full px-4">
         <View className="screen-header flex-row items-center mb-4">
           <ButtonBack navigation={navigation} />
@@ -187,7 +184,7 @@ const ChooseOutlet = ({ navigation }) => {
         </View>
         <View className="content mt-3">
           {/* Table data */}
-          <View className={`table ${selectedList.length > 0 ? 'h-[70vh]' : 'h-[78vh]'}`}>
+          <View className={`table ${selectedList.length > 0 ? 'h-[68vh]' : 'h-[77vh]'}`}>
             <View className="flex-row bg-th text-center mb-2 py-2">
               {tableHeader.map((th, i) => (
                 <Text

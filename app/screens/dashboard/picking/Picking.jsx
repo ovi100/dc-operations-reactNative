@@ -1,7 +1,6 @@
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, Image, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
-import { ButtonBack } from '../../../../components/buttons';
 import { NotPickingIcon, PickingIcon } from '../../../../constant/icons';
 import { getStorage } from '../../../../hooks/useStorage';
 import { toast } from '../../../../utils';
@@ -127,11 +126,21 @@ const Picking = ({ navigation }) => {
 
   const [active, setActive] = useState(tabInfo[0]);
 
+  if (isLoading) {
+    return (
+      <View className="w-full h-screen justify-center px-3">
+        <ActivityIndicator size="large" color="#EB4B50" />
+        <Text className="mt-4 text-gray-400 text-base text-center">
+          Loading picking list. Please wait......
+        </Text>
+      </View>
+    )
+  }
+
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">
       <View className="flex-1 px-4">
         <View className="screen-header flex-row items-center mb-4">
-          <ButtonBack navigation={navigation} />
           <Text className="text-lg flex-1 text-sh text-center font-semibold capitalize">
             picking
           </Text>

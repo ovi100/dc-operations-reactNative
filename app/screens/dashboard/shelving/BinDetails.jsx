@@ -51,15 +51,13 @@ const BinDetails = ({ navigation, route }) => {
   if (barcode !== '') {
     const binItem = bins.find(item => item.bin_id === barcode);
     if (binItem) {
-      navigation.navigate('ShelveArticle', { ...route.params, bins: { bin_id: binItem.bin_id, gondola_id: binItem.gondola_id } });
+      navigation.replace('ShelveArticle', { ...route.params, bins: { bin_id: binItem.bin_id, gondola_id: binItem.gondola_id } });
       setBarcode('');
     } else {
       navigation.replace('AssignToBin', { ...route.params });
       setBarcode('');
     }
   }
-
-  console.log('Bin details screen')
 
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">

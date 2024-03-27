@@ -181,7 +181,7 @@ const PurchaseOrder = ({ navigation, route }) => {
   if (barcode !== '') {
     const poItem = articles.find(item => item.barcode === barcode);
     if (poItem) {
-      navigation.replace('PoArticles', poItem);
+      navigation.navigate('PoArticles', poItem);
       setBarcode('');
     } else {
       toast('Article not found!');
@@ -208,7 +208,7 @@ const PurchaseOrder = ({ navigation, route }) => {
           toast(data.message);
           setIsButtonLoading(false);
           setTimeout(() => {
-            navigation.replace('Receiving');
+            navigation.goBack();
           }, 1000);
         })
         .catch(error => {
@@ -245,8 +245,9 @@ const PurchaseOrder = ({ navigation, route }) => {
 
   if (isLoading) {
     return (
-      <View className="w-full h-4/5 justify-center px-3">
-        <ActivityIndicator size="large" color="#0000ff" />
+      <View className="w-full h-screen justify-center px-3">
+        <ActivityIndicator size="large" color="#EB4B50" />
+        <Text className="mt-4 text-gray-400 text-base text-center">Loading po articles. Please wait......</Text>
       </View>
     )
   }
@@ -263,6 +264,7 @@ const PurchaseOrder = ({ navigation, route }) => {
 
   // console.log('Initial GRN list', initialGrnItems, initialGrnItems.length);
   // console.log('Actual GRN list', grnItems, grnItems.length);
+  // console.log('GRN by po list', GRNByPo, GRNByPo.length);
 
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">
@@ -272,9 +274,9 @@ const PurchaseOrder = ({ navigation, route }) => {
             po {po_id}
           </Text>
         </View>
-        <View className="content flex-1 justify-between py-5">
+        <View className="content">
           <>
-            <View className="table h-4/5 pb-2">
+            <View className="table h-[76vh] pb-2">
               <View className="flex-row bg-th text-center mb-2 py-2">
                 {tableHeader.map(th => (
                   <Text className="flex-1 text-white text-center font-bold" key={th}>

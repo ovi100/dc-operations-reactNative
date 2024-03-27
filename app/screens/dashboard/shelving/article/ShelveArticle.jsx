@@ -1,14 +1,14 @@
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useState } from 'react';
-import { Image, SafeAreaView, Text, TextInput, View } from 'react-native';
-import { ButtonBack, ButtonLg } from '../../../../../components/buttons';
+import { Image, SafeAreaView, Text, TextInput, TouchableWithoutFeedback, View } from 'react-native';
+import { ButtonLg, ButtonLoading } from '../../../../../components/buttons';
 import { BoxIcon } from '../../../../../constant/icons';
 import { getStorage } from '../../../../../hooks/useStorage';
 import { toast } from '../../../../../utils';
 
 const ShelveArticle = ({ navigation, route }) => {
   const { _id, bins, code, description, quantity } = route.params;
-  console.log('shelving--> Barcode --> article', route.params);
+  const [isButtonLoading, setIsButtonLoading] = useState(false);
   const [newQuantity, setNewQuantity] = useState(quantity);
   const [token, setToken] = useState('');
   const API_URL = 'https://shwapnooperation.onrender.com/api/product-shelving/';
@@ -28,8 +28,9 @@ const ShelveArticle = ({ navigation, route }) => {
         bin: bins.bin_id,
         quantity: newQuantity,
       };
-      console.log(assignToShelveObject);
+      // console.log(assignToShelveObject);
       try {
+        setIsButtonLoading(true);
         await fetch(API_URL + `in-shelf/${_id}`, {
           method: 'POST',
           headers: {
@@ -43,35 +44,40 @@ const ShelveArticle = ({ navigation, route }) => {
             if (data.status) {
               toast(data.message);
               setTimeout(() => {
+                setIsButtonLoading(false);
                 navigation.navigate('Shelving');
-              }, 2000);
+              }, 1500);
             } else {
               toast(data.message);
+              setIsButtonLoading(false);
             }
           })
           .catch(error => {
             toast(error.message);
+            setIsButtonLoading(false);
           });
       } catch (error) {
         toast(error.message);
+        setIsButtonLoading(false);
       }
     }
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-white pt-14">
+    <SafeAreaView className="flex-1 bg-white pt-8">
       <View className="flex-1 px-4">
-        <View className="screen-header flex-row items-start justify-between mb-4">
-          <ButtonBack navigation={navigation} />
-          <View className="text">
-            <View className="flex-row justify-end">
-              <Text className="text-base text-sh font-medium capitalize">
-                Shelving article
-              </Text>
-              <Text className="text-base text-sh font-bold capitalize">
-                {' ' + code}
-              </Text>
-            </View>
+        <View className="screen-header mb-4">
+          <View className="text items-center">
+            <TouchableWithoutFeedback>
+              <View className="flex-row">
+                <Text className="text-base text-sh font-medium capitalize">
+                  shelving article
+                </Text>
+                <Text className="text-base text-sh font-bold capitalize">
+                  {' ' + code}
+                </Text>
+              </View>
+            </TouchableWithoutFeedback>
             <Text className="text-sm text-sh text-right font-medium capitalize">
               {description}
             </Text>
@@ -98,7 +104,6 @@ const ShelveArticle = ({ navigation, route }) => {
               placeholderTextColor="#5D80C5"
               selectionColor="#5D80C5"
               keyboardType="numeric"
-              autoFocus={true}
               value={newQuantity.toString()}
               onChangeText={value => {
                 setNewQuantity(value);
@@ -107,8 +112,10 @@ const ShelveArticle = ({ navigation, route }) => {
           </View>
         </View>
 
-        <View className="button mt-3">
-          <ButtonLg title="Mark as Shelved" onPress={() => shelveArticle()} />
+        <View className="button mt-4">
+          {isButtonLoading ? <ButtonLoading styles='bg-theme rounded-md p-5' /> :
+            <ButtonLg title="Mark as Shelved" onPress={() => shelveArticle()} />
+          }
         </View>
       </View>
     </SafeAreaView>

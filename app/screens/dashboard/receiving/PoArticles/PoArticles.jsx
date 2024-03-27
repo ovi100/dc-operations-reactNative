@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Image, SafeAreaView, Text, TextInput, TouchableWithoutFeedback, View } from 'react-native';
-import { ButtonLg } from '../../../../../components/buttons';
+import { ButtonLg, ButtonLoading } from '../../../../../components/buttons';
 import { BoxIcon } from '../../../../../constant/icons';
 import useAppContext from '../../../../../hooks/useAppContext';
 import { getStorage } from '../../../../../hooks/useStorage';
@@ -12,6 +12,7 @@ const PoArticles = ({ navigation, route }) => {
     quantity, remainingQuantity, receivingPlant,
     storageLocation, unit
   } = route.params;
+  const [isButtonLoading, setIsButtonLoading] = useState(false);
   const [bins, setBins] = useState([]);
   const [newQuantity, setNewQuantity] = useState(remainingQuantity);
   const [token, setToken] = useState('');
@@ -44,7 +45,7 @@ const PoArticles = ({ navigation, route }) => {
 
   }, [material, user.site]);
 
-  const updateQuantity = async () => {
+  const readyForShelve = async () => {
     if (newQuantity > remainingQuantity) {
       toast('Quantity exceed')
     } else {
@@ -75,9 +76,8 @@ const PoArticles = ({ navigation, route }) => {
         bins,
       };
 
-      console.log(shelvingObject);
-
       try {
+        setIsButtonLoading(true);
         await fetch(API_URL + 'product-shelving/ready', {
           method: 'POST',
           headers: {
@@ -91,17 +91,21 @@ const PoArticles = ({ navigation, route }) => {
             if (data.status) {
               toast(data.message);
               addToGRN(grnItem);
-              navigation.replace('PurchaseOrder', { po_id: po });
+              navigation.goBack();
+              setIsButtonLoading(false);
             } else {
               toast(data.message);
               navigation.goBack();
+              setIsButtonLoading(false);
             }
           })
           .catch(error => {
             toast(error.message);
+            setIsButtonLoading(false);
           });
       } catch (error) {
         toast(error.message);
+        setIsButtonLoading(false);
       }
     }
   };
@@ -156,8 +160,10 @@ const PoArticles = ({ navigation, route }) => {
           </View>
         </View>
 
-        <View className="button mt-3">
-          <ButtonLg title="Mark as Received" onPress={() => updateQuantity()} />
+        <View className="button mt-4">
+          {isButtonLoading ? <ButtonLoading styles='bg-theme rounded-md p-5' /> :
+            <ButtonLg title="Mark as Received" onPress={() => readyForShelve()} />
+          }
         </View>
       </View>
     </SafeAreaView>

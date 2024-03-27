@@ -3,6 +3,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
   Image,
   Keyboard,
@@ -13,11 +14,11 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
+import ServerError from '../../../../components/animations/ServerError';
 import { ButtonBack, ButtonLg, ButtonLoading } from '../../../../components/buttons';
 import { SearchIcon } from '../../../../constant/icons';
 import { getStorage } from '../../../../hooks/useStorage';
 import { dateRange, toast } from '../../../../utils';
-import ServerError from '../../../../components/animations/ServerError';
 
 const DeliveryPlan = ({ navigation, route }) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -39,8 +40,6 @@ const DeliveryPlan = ({ navigation, route }) => {
     getStorage('token', setToken);
     setSelectedList([]);
   }, []);
-
-  console.log('URL: ', API_URL + `bapi/sto/list?from=${from}&to=${to}&site=${route.params}`)
 
   const getDnList = async () => {
     setIsLoading(true);
@@ -205,6 +204,19 @@ const DeliveryPlan = ({ navigation, route }) => {
     }
   };
 
+  const createDeliveryPlan = () => {
+    Alert.alert('Are you sure?',
+      `Do you want to make delivery plan for sto ${selectedList.map(item => item.sto).join(',')}?`,
+      [
+        {
+          text: 'Cancel',
+          onPress: () => null,
+          style: 'cancel',
+        },
+        { text: 'OK', onPress: () => createDN() },
+      ]);
+  };
+
   if (search !== '') {
     dpList = dpList.filter(
       dp =>
@@ -257,7 +269,7 @@ const DeliveryPlan = ({ navigation, route }) => {
         </View>
         <View className="content flex-1 mt-3">
           {/* Table data */}
-          <View className="table h-[90%] pb-2">
+          <View className={`table ${selectedList.length > 0 ? 'h-[68vh]' : 'h-[77vh]'}`}>
             <View className="flex-row bg-th text-center mb-2 py-2">
               {tableHeader.map((th) => (
                 <>
@@ -301,11 +313,11 @@ const DeliveryPlan = ({ navigation, route }) => {
           </View>
 
           {selectedList.length > 0 && (
-            <View className="button -mt-6">
+            <View className="button">
               {isButtonLoading ? <ButtonLoading styles='bg-theme rounded-md p-5' /> :
                 <ButtonLg
                   title="Mark as delivery ready"
-                  onPress={() => createDN()}
+                  onPress={() => createDeliveryPlan()}
                 />
               }
             </View>

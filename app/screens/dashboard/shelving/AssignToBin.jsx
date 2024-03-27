@@ -78,7 +78,7 @@ const AssignToBin = ({ navigation, route }) => {
       .then(data => {
         if (data.status) {
           toast(data.message);
-          navigation.replace('ShelveArticle', { ...route.params, bins: { bin_id: bin.bin_ID, gondola_id: bin.gondola_ID } })
+          navigation.navigate('ShelveArticle', { ...route.params, bins: { bin_id: bin.bin_ID, gondola_id: bin.gondola_ID } })
         } else {
           toast(data.message);
         }
@@ -102,7 +102,7 @@ const AssignToBin = ({ navigation, route }) => {
   if (isLoading) {
     return (
       <View className="w-full h-4/5 justify-center px-3">
-        <ActivityIndicator size="large" color="#0000ff" />
+        <ActivityIndicator size="large" color="#EB4B50" />
       </View>
     )
   }

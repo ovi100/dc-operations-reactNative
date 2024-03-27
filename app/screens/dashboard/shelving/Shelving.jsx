@@ -11,7 +11,6 @@ import {
 import { getStorage } from '../../../../hooks/useStorage';
 import { toast } from '../../../../utils';
 import SunmiScanner from '../../../../utils/sunmi/scanner';
-import LoadingData from '../../../../components/LoadingData';
 
 const Shelving = ({ navigation }) => {
   const isFocused = useIsFocused();
@@ -133,13 +132,13 @@ const Shelving = ({ navigation }) => {
           {item.description}
         </Text>
       </View>
-      <View>
-        {item.bins.length ? (
+      <View className="flex-1">
+        {item.bins.length > 0 ? (
           <>
             {item.bins.map((bin, i) => (
               <Text
                 key={i}
-                className="flex-1 text-black text-center mb-1 last:mb-0"
+                className="text-black text-center mb-1 last:mb-0"
                 numberOfLines={1}>
                 {bin.bin_id}
               </Text>
@@ -154,13 +153,20 @@ const Shelving = ({ navigation }) => {
   );
 
   if (isLoading && articles.length === 0) {
-    <LoadingData text="Loading shelving data. Please wait......" />
+    return (
+      <View className="w-full h-screen justify-center px-3">
+        <ActivityIndicator size="large" color="#EB4B50" />
+        <Text className="mt-4 text-gray-400 text-base text-center">
+          Loading shelving data. Please wait.....
+        </Text>
+      </View>
+    )
   }
 
-  if (!isLoading && articles.length === 0) {
+  if (articles.length === 0) {
     return (
       <View className="h-full justify-center pb-2">
-        <Text className="text-sh text-base font-bold text-center">
+        <Text className="text-base font-bold text-center">
           No product is ready for shelving!
         </Text>
       </View>

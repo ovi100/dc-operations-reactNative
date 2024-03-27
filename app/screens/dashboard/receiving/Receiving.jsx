@@ -113,7 +113,7 @@ const Receiving = ({ navigation }) => {
   if (barcode !== '') {
     const poItem = poList.find(item => item.po === barcode);
     if (poItem) {
-      navigation.replace('PurchaseOrder', { po_id: barcode });
+      navigation.navigate('PurchaseOrder', { po_id: barcode });
       setBarcode('');
     } else {
       toast('PO not found!');
@@ -142,15 +142,16 @@ const Receiving = ({ navigation }) => {
 
   if (isLoading) {
     return (
-      <View className="w-full h-4/5 justify-center px-3">
-        <ActivityIndicator size="large" color="#0000ff" />
+      <View className="w-full h-screen justify-center px-3">
+        <ActivityIndicator size="large" color="#EB4B50" />
+        <Text className="mt-4 text-gray-400 text-base text-center">Loading po list. Please wait......</Text>
       </View>
     )
   }
 
   if (poList.length === 0) {
     return (
-      <View className="w-full h-4/5 justify-center px-3">
+      <View className="w-full h-screen justify-center px-3">
         <ServerError message="No data found!" />
       </View>
     )

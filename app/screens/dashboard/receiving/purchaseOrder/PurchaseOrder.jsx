@@ -36,7 +36,7 @@ const PurchaseOrder = ({ navigation, route }) => {
       stopScan();
       DeviceEventEmitter.removeAllListeners('ScanDataReceived');
     };
-  }, [isFocused]);
+  }, []);
 
   const getPoList = async () => {
     setIsLoading(true);
@@ -67,11 +67,16 @@ const PurchaseOrder = ({ navigation, route }) => {
                 let remainingPoItems = poItems.filter(
                   poItem =>
                     !shItems.some(
-                      shItem => shItem.po === poItem.po && poItem.quantity === shItem.receivedQuantity
+                      shItem =>
+                        shItem.po === poItem.po &&
+                        shItem.code === poItem.material &&
+                        poItem.quantity === shItem.receivedQuantity
                     )
                 );
 
-                let remainingQuantityPoItems = shItems.filter(shItem => shItem.quantity > shItem.receivedQuantity && shItem.po === po_id);
+                let remainingQuantityPoItems = shItems.filter(
+                  shItem => shItem.quantity > shItem.receivedQuantity && shItem.po === po_id
+                );
 
                 if (remainingQuantityPoItems.length > 0) {
                   const remainingQuantity = remainingQuantityPoItems.map((item) => {
@@ -117,7 +122,10 @@ const PurchaseOrder = ({ navigation, route }) => {
                 setIsLoading(false);
               }
               else {
-                const poItems = result.data.items;
+                let poItems = result.data.items;
+                poItems.forEach(poItem => {
+                  poItem.remainingQuantity = poItem.quantity;
+                });
                 setArticles(poItems);
                 setIsLoading(false);
               }
@@ -181,7 +189,7 @@ const PurchaseOrder = ({ navigation, route }) => {
   if (barcode !== '') {
     const poItem = articles.find(item => item.barcode === barcode);
     if (poItem) {
-      navigation.navigate('PoArticles', poItem);
+      navigation.replace('PoArticles', poItem);
       setBarcode('');
     } else {
       toast('Article not found!');
@@ -203,13 +211,34 @@ const PurchaseOrder = ({ navigation, route }) => {
         body: JSON.stringify(grnList),
       })
         .then(response => response.json())
-        .then(data => {
-          setGrnItems([]);
-          toast(data.message);
-          setIsButtonLoading(false);
-          setTimeout(() => {
-            navigation.goBack();
-          }, 1000);
+        .then(async result => {
+          if (result.status) {
+            await fetch(API_URL + 'api/po-tracking', {
+              method: 'PATCH',
+              headers: {
+                authorization: token,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                po: po_id,
+                status: "pending for release"
+              }),
+            })
+              .then(response => response.json())
+              .then(data => {
+                setGrnItems([]);
+                toast(data.message);
+                setIsButtonLoading(false);
+                navigation.goBack();
+              })
+              .catch(error => {
+                toast(error.message);
+                setIsButtonLoading(false);
+              });
+          } else {
+            toast(data.message);
+            setIsButtonLoading(false);
+          }
         })
         .catch(error => {
           toast(error.message);
@@ -276,7 +305,7 @@ const PurchaseOrder = ({ navigation, route }) => {
         </View>
         <View className="content">
           <>
-            <View className="table h-[76vh] pb-2">
+            <View className={`table ${GRNByPo.length > 0 ? 'h-[70vh]' : 'h-[80vh]'}`}>
               <View className="flex-row bg-th text-center mb-2 py-2">
                 {tableHeader.map(th => (
                   <Text className="flex-1 text-white text-center font-bold" key={th}>

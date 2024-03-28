@@ -22,7 +22,7 @@ const Receiving = ({ navigation }) => {
   const dateObject = dateRange(15);
   const postObject = { ...dateObject, site: user?.site };
 
-  // console.log(postObject);
+  console.log(postObject);
 
   useEffect(() => {
     getStorage('user', setUser, 'object');
@@ -56,18 +56,19 @@ const Receiving = ({ navigation }) => {
         .then(response => response.json())
         .then(async result => {
           if (result.status) {
-            await fetch(API_URL + 'api/po-tracking/in-grn', {
+            await fetch(API_URL + 'api/po-tracking?pageSize=500&filterBy=status&value=pending for release', {
               method: 'GET',
               headers: {
                 authorization: token,
               },
             })
               .then(res => res.json())
-              .then(inGRNData => {
-                if (inGRNData.status) {
+              .then(releaseData => {
+                if (releaseData.status) {
                   const poList = result.data.po;
-                  const inGrnItems = inGRNData.items;
-                  let remainingPoItems = poList.filter(poItem => !inGrnItems.some(inGrnItem => inGrnItem.po === poItem.po));
+                  const releaseItems = releaseData.items.filter(item => item.receivingPlant === user?.site);
+                  console.log('releaseItems:', releaseItems)
+                  let remainingPoItems = poList.filter(poItem => !releaseItems.some(releaseItem => releaseItem.po === poItem.po));
                   setPoList(remainingPoItems);
                   setIsLoading(false);
                   setRefreshing(false);
@@ -139,6 +140,8 @@ const Receiving = ({ navigation }) => {
   if (search !== '') {
     poList = poList.filter(item => item.po.includes(search.toLowerCase()));
   }
+
+  // console.log('po list: ', poList)
 
   if (isLoading) {
     return (

@@ -4,6 +4,7 @@ import {
   ActivityIndicator,
   DeviceEventEmitter,
   FlatList,
+  RefreshControl,
   SafeAreaView,
   Text,
   View
@@ -15,11 +16,12 @@ import SunmiScanner from '../../../../utils/sunmi/scanner';
 const Shelving = ({ navigation }) => {
   const isFocused = useIsFocused();
   const [isLoading, setIsLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [token, setToken] = useState('');
   const [barcode, setBarcode] = useState('');
-  let [articles, setArticles] = useState([]);
-  const [page, setPage] = useState(1);
-  const [totalPage, setTotalPage] = useState(0);
+  let articles = [];
+  let [readyArticles, setReadyArticles] = useState([]);
+  let [partialArticles, setPartialArticles] = useState([]);
   const tableHeader = ['Article ID', 'BIN ID', 'Quantity'];
   const API_URL = 'https://shwapnooperation.onrender.com/api/product-shelving/';
   const { startScan, stopScan } = SunmiScanner;
@@ -41,73 +43,85 @@ const Shelving = ({ navigation }) => {
     };
   }, [isFocused]);
 
-  const getShelvingReady = async () => {
+  const getShelvingReadyData = async () => {
     try {
       setIsLoading(true);
-      await fetch(API_URL + 'ready' + `?currentPage=${page}`, {
+      await fetch(API_URL + 'ready?pageSize=500', {
         method: 'GET',
         headers: {
           authorization: token,
         },
       })
         .then(response => response.json())
-        .then(async readyData => {
-          // console.log(readyData)
-          if (readyData.status) {
-            await fetch(API_URL + 'in-shelf', {
-              method: 'GET',
-              headers: {
-                authorization: token,
-              },
-            })
-              .then(res => res.json())
-              .then(inShelfData => {
-                if (inShelfData.status) {
-                  const readyItems = readyData.items;
-                  const inShelfItems = inShelfData.items;
-                  let remainingShelvingItems = readyItems.filter(
-                    readyItem =>
-                      !inShelfItems.some(
-                        inShelfItem =>
-                          inShelfItem.po === readyItem.po &&
-                          inShelfItem.code === readyItem.code,
-                      ),
-                  );
-                  setArticles([...articles, ...remainingShelvingItems]);
-                  setTotalPage(readyData.totalPages);
-                  setIsLoading(false);
-                } else {
-                  const readyItems = readyData.items;
-                  setArticles([...articles, ...readyItems]);
-                  setTotalPage(readyData.totalPages);
-                  setIsLoading(false);
-                }
-              })
-              .catch(error => toast(error.message));
+        .then(result => {
+          if (result.status) {
+            const readyItems = result.items;
+            setReadyArticles(readyItems);
+          } else {
+            toast(readyData.message);
           }
         })
-        .catch(error => toast(error.message));
+        .catch(error => {
+          toast(error.message);
+        });
     } catch (error) {
       toast(error.message);
-      setIsLoading(false);
     }
   };
+
+  const getPartiallyInShelfData = async () => {
+    try {
+      await fetch(API_URL + 'partially-in-shelf?pageSize=500', {
+        method: 'GET',
+        headers: {
+          authorization: token,
+        },
+      })
+        .then(res => res.json())
+        .then(result => {
+          if (result.status) {
+            const partialData = result.items.map(item => {
+              return {
+                ...item,
+                receivedQuantity: item.receivedQuantity - item.inShelf.reduce((acc, item) => acc + item.quantity, 0)
+              }
+            });
+            setPartialArticles(partialData);
+          } else {
+            toast(error.message);
+          }
+        })
+        .catch(error =>
+          toast(error.message)
+        );
+    } catch (error) {
+      toast(error.message);
+    }
+  }
+
+  const getShelvingData = async () => {
+    setIsLoading(true);
+    await getShelvingReadyData();
+    await getPartiallyInShelfData();
+    setIsLoading(false);
+    setRefreshing(false);
+  }
 
   useFocusEffect(
     useCallback(() => {
       if (token) {
-        getShelvingReady();
+        getShelvingData();
       }
-    }, [token, page]),
+    }, [token, refreshing]),
   );
 
-  const loadMoreItem = () => {
-    if (totalPage >= page) {
-      setPage(prev => prev + 1);
-    } else {
-      setIsLoading(false);
-    }
+  const onRefresh = () => {
+    setRefreshing(true);
   };
+
+  if (readyArticles.length > 0 || partialArticles.length > 0) {
+    articles = [...readyArticles, ...partialArticles];
+  }
 
   if (barcode !== '') {
     const article = articles.find(item => item.barcode === barcode);
@@ -152,7 +166,7 @@ const Shelving = ({ navigation }) => {
     </View>
   );
 
-  if (isLoading && articles.length === 0) {
+  if (isLoading) {
     return (
       <View className="w-full h-screen justify-center px-3">
         <ActivityIndicator size="large" color="#EB4B50" />
@@ -198,9 +212,9 @@ const Shelving = ({ navigation }) => {
               data={articles}
               renderItem={renderItem}
               keyExtractor={item => item._id}
-              onEndReached={loadMoreItem}
-              ListFooterComponent={isLoading && <ActivityIndicator />}
-              onEndReachedThreshold={0}
+              refreshControl={
+                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+              }
             />
           </View>
         </View>

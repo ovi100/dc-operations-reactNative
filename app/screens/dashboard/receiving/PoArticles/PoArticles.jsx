@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Image, SafeAreaView, Text, TextInput, TouchableWithoutFeedback, View } from 'react-native';
+import { ActivityIndicator, Image, SafeAreaView, Text, TextInput, TouchableWithoutFeedback, View } from 'react-native';
 import { ButtonLg, ButtonLoading } from '../../../../../components/buttons';
 import { BoxIcon } from '../../../../../constant/icons';
 import useAppContext from '../../../../../hooks/useAppContext';
@@ -12,6 +12,7 @@ const PoArticles = ({ navigation, route }) => {
     quantity, remainingQuantity, receivingPlant,
     storageLocation, unit
   } = route.params;
+  const [isLoading, setIsLoading] = useState(false);
   const [isButtonLoading, setIsButtonLoading] = useState(false);
   const [bins, setBins] = useState([]);
   const [newQuantity, setNewQuantity] = useState(remainingQuantity);
@@ -27,6 +28,7 @@ const PoArticles = ({ navigation, route }) => {
 
   useEffect(() => {
     const getBins = async (code, site) => {
+      setIsLoading(true);
       await fetch(`https://shelves-backend.onrender.com/api/bins/product/${code}/${site}`)
         .then(res => res.json())
         .then(result => {
@@ -35,6 +37,9 @@ const PoArticles = ({ navigation, route }) => {
               return { bin_id: result.bin_ID, gondola_id: result.gondola_ID };
             });
             setBins(binsData);
+            setIsLoading(false);
+          } else {
+            setIsLoading(false);
           }
         });
     };
@@ -91,11 +96,13 @@ const PoArticles = ({ navigation, route }) => {
             if (data.status) {
               toast(data.message);
               addToGRN(grnItem);
-              navigation.goBack();
+              // navigation.goBack();
+              navigation.replace('PurchaseOrder', { po_id: po });
               setIsButtonLoading(false);
             } else {
               toast(data.message);
-              navigation.goBack();
+              // navigation.goBack();
+              navigation.replace('PurchaseOrder', { po_id: po });
               setIsButtonLoading(false);
             }
           })
@@ -110,6 +117,14 @@ const PoArticles = ({ navigation, route }) => {
     }
   };
 
+  if (isLoading) {
+    return (
+      <View className="w-full h-screen justify-center px-3">
+        <ActivityIndicator size="large" color="#EB4B50" />
+        <Text className="mt-4 text-gray-400 text-base text-center">Loading articles. Please wait......</Text>
+      </View>
+    )
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">

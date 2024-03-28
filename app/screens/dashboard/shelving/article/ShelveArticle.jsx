@@ -7,9 +7,9 @@ import { getStorage } from '../../../../../hooks/useStorage';
 import { toast } from '../../../../../utils';
 
 const ShelveArticle = ({ navigation, route }) => {
-  const { _id, bins, code, description, quantity } = route.params;
+  const { _id, bins, code, description, quantity, receivedQuantity } = route.params;
   const [isButtonLoading, setIsButtonLoading] = useState(false);
-  const [newQuantity, setNewQuantity] = useState(quantity);
+  const [newQuantity, setNewQuantity] = useState(receivedQuantity);
   const [token, setToken] = useState('');
   const API_URL = 'https://shwapnooperation.onrender.com/api/product-shelving/';
 
@@ -20,7 +20,7 @@ const ShelveArticle = ({ navigation, route }) => {
   );
 
   const shelveArticle = async () => {
-    if (newQuantity > quantity) {
+    if (newQuantity > receivedQuantity) {
       toast('Quantity exceed');
     } else {
       const assignToShelveObject = {
@@ -94,7 +94,7 @@ const ShelveArticle = ({ navigation, route }) => {
             </View>
             <View className="quantity flex-row items-center gap-3">
               <Image source={BoxIcon} />
-              <Text className="font-bold text-black">{quantity}</Text>
+              <Text className="font-bold text-black">{receivedQuantity}</Text>
             </View>
           </View>
           <View className="input-box mt-6">

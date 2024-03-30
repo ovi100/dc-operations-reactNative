@@ -4,6 +4,8 @@ import { ActivityIndicator, FlatList, RefreshControl, SafeAreaView, Text, Toucha
 import ServerError from '../../../../components/animations/ServerError';
 import { getStorage } from '../../../../hooks/useStorage';
 import { toast } from '../../../../utils';
+import Toast from 'react-native-toast-message';
+import CustomToast from '../../../../components/CustomToast';
 
 const TaskAssign = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -43,9 +45,21 @@ const TaskAssign = ({ navigation }) => {
             setRefreshing(false);
           }
         })
-        .catch(error => toast(error.message));
+        .catch(error => {
+          setIsLoading(false);
+          setRefreshing(false);
+          Toast.show({
+            type: 'customError',
+            text1: error.message.toString(),
+          });
+        });
     } catch (error) {
-      toast(error.message);
+      setIsLoading(false);
+      setRefreshing(false);
+      Toast.show({
+        type: 'customError',
+        text1: error.message.toString(),
+      });
     }
   };
 
@@ -101,6 +115,8 @@ const TaskAssign = ({ navigation }) => {
     )
   }
 
+  console.log('taskList: ', taskList, typeof taskList);
+
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">
       <View className="flex-1 px-4">
@@ -129,6 +145,7 @@ const TaskAssign = ({ navigation }) => {
           </View>
         </View>
       </View>
+      <CustomToast />
     </SafeAreaView>
   );
 };

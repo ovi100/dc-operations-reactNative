@@ -1,17 +1,19 @@
 import {useEffect, useState} from 'react';
 import Toast from 'react-native-toast-message';
 import {getStorage, removeItem, setStorage} from './useStorage';
+import {toast} from '../utils';
 
 const useAuth = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState(null);
+  let [outlets, setOutlets] = useState([]);
   const [token, setToken] = useState(null);
-  const API_URL = 'https://shwapnooperation.onrender.com/api/user/login';
+  const API_URL = 'https://shwapnooperation.onrender.com/';
 
   const login = async (email, password) => {
     setIsLoading(true);
     try {
-      const response = await fetch(API_URL, {
+      const response = await fetch(API_URL + 'api/user/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -23,7 +25,7 @@ const useAuth = () => {
         setIsLoading(false);
         Toast.show({
           type: 'customError',
-          text1: 'Please check your internet connection',
+          text1: 'Check your internet connection',
         });
       }
 
@@ -50,6 +52,56 @@ const useAuth = () => {
     setIsLoading(false);
   };
 
+  const getOutlets = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(API_URL + 'bapi/outlet');
+      const data = await response.json();
+      if (data.status) {
+        setOutlets(data.outlets);
+        setStorage('outlets', JSON.stringify(data.outlets));
+        setIsLoading(false);
+      } else {
+        toast('No outlets found');
+        setOutlets([
+          {
+            code: 'D014',
+            name: 'Nrayangonj',
+            district: 'Dhaka',
+            selected: false,
+          },
+          {
+            code: 'C001',
+            name: 'Cumilla',
+            district: 'Chittagong',
+            selected: false,
+          },
+        ]);
+        setStorage(
+          'outlets',
+          JSON.stringify([
+            {
+              code: 'D014',
+              name: 'Nrayangonj',
+              district: 'Dhaka',
+              selected: false,
+            },
+            {
+              code: 'C001',
+              name: 'Cumilla',
+              district: 'Chittagong',
+              selected: false,
+            },
+          ]),
+        );
+        setIsLoading(false);
+      }
+    } catch (error) {
+      toast(error.message);
+      setIsLoading(false);
+    }
+  };
+
   const isLoggedIn = () => {
     try {
       setIsLoading(true);
@@ -57,7 +109,6 @@ const useAuth = () => {
       let storedToken = getStorage('token', setToken);
 
       if (storedUser?.user) {
-        console.log({storedUser, storedToken});
         setUser(storedUser);
         setToken(storedToken);
         setIsLoading(false);
@@ -74,6 +125,7 @@ const useAuth = () => {
   };
 
   useEffect(() => {
+    getOutlets();
     isLoggedIn();
   }, []);
 
@@ -84,6 +136,7 @@ const useAuth = () => {
     user,
     setUser,
     token,
+    outlets,
   };
 
   return authInfo;

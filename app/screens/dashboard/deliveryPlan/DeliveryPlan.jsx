@@ -115,7 +115,6 @@ const DeliveryPlan = ({ navigation, route }) => {
     setRefreshing(true);
   };
 
-
   const renderItem = ({ item, index }) => (
     <TouchableOpacity
       className="flex-row items-center border border-tb rounded-lg mt-2.5 p-4"

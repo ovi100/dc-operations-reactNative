@@ -1,11 +1,11 @@
 import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, DeviceEventEmitter, FlatList, SafeAreaView, Text, View } from 'react-native';
-import { ButtonLg, ButtonLoading } from '../../../../../components/buttons';
-import useAppContext from '../../../../../hooks/useAppContext';
-import { getStorage } from '../../../../../hooks/useStorage';
-import { toast } from '../../../../../utils';
-import SunmiScanner from '../../../../../utils/sunmi/scanner';
+import { ButtonLg, ButtonLoading } from '../../../../components/buttons';
+import useAppContext from '../../../../hooks/useAppContext';
+import { getStorage } from '../../../../hooks/useStorage';
+import { toast } from '../../../../utils';
+import SunmiScanner from '../../../../utils/sunmi/scanner';
 
 const PurchaseOrder = ({ navigation, route }) => {
   const isFocused = useIsFocused();

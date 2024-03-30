@@ -17,6 +17,7 @@ import {
 import useAppContext from '../../hooks/useAppContext';
 import styles from '../../styles/button';
 import { validateInput } from '../../utils';
+import CustomToast from '../../components/CustomToast';
 
 const Login = () => {
   const [keyboardStatus, setKeyboardStatus] = useState(false);
@@ -141,6 +142,7 @@ const Login = () => {
           </View>
         </View>
       </View>
+      <CustomToast />
     </View>
   );
 };

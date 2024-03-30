@@ -2,10 +2,12 @@ import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, DeviceEventEmitter, FlatList, Image, RefreshControl, SafeAreaView, Text, TextInput, View } from 'react-native';
 import ServerError from '../../../../components/animations/ServerError';
-import { SearchIcon } from '../../../../constant/icons';
 import { getStorage } from '../../../../hooks/useStorage';
 import { dateRange, toast } from '../../../../utils';
 import SunmiScanner from '../../../../utils/sunmi/scanner';
+import Toast from 'react-native-toast-message';
+import CustomToast from '../../../../components/CustomToast';
+import { ButtonLg } from '../../../../components/buttons';
 
 const Receiving = ({ navigation }) => {
   const isFocused = useIsFocused();
@@ -67,34 +69,53 @@ const Receiving = ({ navigation }) => {
                 if (releaseData.status) {
                   const poList = result.data.po;
                   const releaseItems = releaseData.items.filter(item => item.receivingPlant === user?.site);
-                  console.log('releaseItems:', releaseItems)
                   let remainingPoItems = poList.filter(poItem => !releaseItems.some(releaseItem => releaseItem.po === poItem.po));
                   setPoList(remainingPoItems);
                   setIsLoading(false);
                   setRefreshing(false);
+                  Toast.show({
+                    type: 'customSuccess',
+                    text1: 'Data successfully loaded',
+                  });
                 } else {
                   setPoList(result.data.po);
                   setIsLoading(false);
                   setRefreshing(false);
+                  Toast.show({
+                    type: 'customSuccess',
+                    text1: 'Data successfully loaded',
+                  });
                 }
               })
               .catch(error => {
-                toast(error.message)
+                Toast.show({
+                  type: 'customSuccess',
+                  text1: error.message.toString(),
+                });
                 setIsLoading(false);
                 setRefreshing(false);
               });
           } else {
-            toast(data.message);
+            Toast.show({
+              type: 'customSuccess',
+              text1: error.message.toString(),
+            });
             setIsLoading(false);
             setRefreshing(false);
           }
         })
         .catch(error => {
-          toast(error.message)
+          Toast.show({
+            type: 'customSuccess',
+            text1: error.message.toString(),
+          });
           setIsLoading(false);
         });
     } catch (error) {
-      toast(error.message);
+      Toast.show({
+        type: 'customSuccess',
+        text1: error.message.toString(),
+      });
       setIsLoading(false);
     }
   };
@@ -108,6 +129,7 @@ const Receiving = ({ navigation }) => {
   );
 
   const onRefresh = () => {
+    setIsLoading(false);
     setRefreshing(true);
   };
 
@@ -141,8 +163,6 @@ const Receiving = ({ navigation }) => {
     poList = poList.filter(item => item.po.includes(search.toLowerCase()));
   }
 
-  // console.log('po list: ', poList)
-
   if (isLoading) {
     return (
       <View className="w-full h-screen justify-center px-3">
@@ -163,6 +183,7 @@ const Receiving = ({ navigation }) => {
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">
       <View className="flex-1 px-4">
+
         <View className="screen-header flex-row items-center mb-4">
           <Text className="text-lg flex-1 text-sh text-center font-semibold capitalize">
             receiving screen
@@ -172,9 +193,8 @@ const Receiving = ({ navigation }) => {
         {/* Search filter */}
         <View className="search flex-row">
           <View className="input-box relative flex-1">
-            <Image className="absolute top-3 left-3 z-10" source={SearchIcon} />
             <TextInput
-              className="bg-[#F5F6FA] h-[50px] text-black rounded-lg pl-12 pr-4"
+              className="bg-[#F5F6FA] h-[50px] text-black rounded-lg px-4"
               placeholder="Search by purchase order"
               keyboardType="phone-pad"
               placeholderTextColor="#CBC9D9"
@@ -204,8 +224,8 @@ const Receiving = ({ navigation }) => {
             />
           </View>
         </View>
-
       </View>
+      <CustomToast />
     </SafeAreaView>
   );
 };

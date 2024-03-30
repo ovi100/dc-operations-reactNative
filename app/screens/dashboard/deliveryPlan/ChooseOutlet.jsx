@@ -18,6 +18,7 @@ import { ButtonBack, ButtonLg, ButtonLoading } from '../../../../components/butt
 import { SearchIcon } from '../../../../constant/icons';
 import { getStorage } from '../../../../hooks/useStorage';
 import { toast } from '../../../../utils';
+import BottomSheet from '../../../../components/BottomSheet';
 
 const ChooseOutlet = ({ navigation }) => {
   const isFocused = useIsFocused();
@@ -182,9 +183,10 @@ const ChooseOutlet = ({ navigation }) => {
             />
           </View>
         </View>
+
         <View className="content mt-3">
           {/* Table data */}
-          <View className={`table ${selectedList.length > 0 ? 'h-[68vh]' : 'h-[77vh]'}`}>
+          {/* <View className={`table ${selectedList.length > 0 ? 'h-[68vh]' : 'h-[77vh]'}`}>
             <View className="flex-row bg-th text-center mb-2 py-2">
               {tableHeader.map((th, i) => (
                 <Text
@@ -203,7 +205,7 @@ const ChooseOutlet = ({ navigation }) => {
                 <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
               }
             />
-          </View>
+          </View> */}
           {selectedList.length > 0 && (
             <View className="button">
               {isButtonLoading ? <ButtonLoading styles='bg-theme rounded-md p-5' /> :
@@ -215,6 +217,10 @@ const ChooseOutlet = ({ navigation }) => {
             </View>
           )}
         </View>
+        {/* <BottomSheet /> */}
+        <BottomSheet>
+          <Text className="text-black text-center text-lg">My bottom sheet</Text>
+        </BottomSheet>
       </View>
     </SafeAreaView>
   );

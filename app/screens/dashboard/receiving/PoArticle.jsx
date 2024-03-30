@@ -1,16 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Image, SafeAreaView, Text, TextInput, TouchableWithoutFeedback, View } from 'react-native';
-import { ButtonLg, ButtonLoading } from '../../../../../components/buttons';
-import { BoxIcon } from '../../../../../constant/icons';
-import useAppContext from '../../../../../hooks/useAppContext';
-import { getStorage } from '../../../../../hooks/useStorage';
-import { toast } from '../../../../../utils';
+import { ButtonLg, ButtonLoading } from '../../../../components/buttons';
+import { BoxIcon } from '../../../../constant/icons';
+import useAppContext from '../../../../hooks/useAppContext';
+import { getStorage } from '../../../../hooks/useStorage';
+import { toast } from '../../../../utils';
 
-const PoArticles = ({ navigation, route }) => {
+const PoArticle = ({ navigation, route }) => {
   const {
-    description, material, barcode, po, poItem,
-    quantity, remainingQuantity, receivingPlant,
-    storageLocation, unit
+    description, material, barcode, po, poItem, quantity,
+    remainingQuantity, receivingPlant, storageLocation, unit
   } = route.params;
   const [isLoading, setIsLoading] = useState(false);
   const [isButtonLoading, setIsButtonLoading] = useState(false);
@@ -121,7 +120,7 @@ const PoArticles = ({ navigation, route }) => {
     return (
       <View className="w-full h-screen justify-center px-3">
         <ActivityIndicator size="large" color="#EB4B50" />
-        <Text className="mt-4 text-gray-400 text-base text-center">Loading articles. Please wait......</Text>
+        <Text className="mt-4 text-gray-400 text-base text-center">Loading article. Please wait......</Text>
       </View>
     )
   }
@@ -185,4 +184,4 @@ const PoArticles = ({ navigation, route }) => {
   );
 };
 
-export default PoArticles;
+export default PoArticle;

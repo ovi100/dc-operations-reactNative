@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
-import { Alert } from 'react-native';
-import { getStorage, removeItem, setStorage } from './useStorage';
+import {useEffect, useState} from 'react';
+import Toast from 'react-native-toast-message';
+import {getStorage, removeItem, setStorage} from './useStorage';
 
 const useAuth = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -21,7 +21,10 @@ const useAuth = () => {
 
       if (!response.ok) {
         setIsLoading(false);
-        throw new Error('Network response was not ok');
+        Toast.show({
+          type: 'customError',
+          text1: 'Please check your internet connection',
+        });
       }
 
       const data = await response.json();
@@ -32,8 +35,10 @@ const useAuth = () => {
       setIsLoading(false);
     } catch (error) {
       setIsLoading(false);
-      Alert.alert('Error', 'Login failed');
-      console.log(error);
+      Toast.show({
+        type: 'customInfo',
+        text1: error.message.toString(),
+      });
     }
   };
 

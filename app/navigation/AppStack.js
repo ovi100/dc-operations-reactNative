@@ -16,9 +16,9 @@ import PickedSto from '../screens/dashboard/picking/pickedSTO/PickedSto';
 import PickingSto from '../screens/dashboard/picking/pickingSTO/PickingSto';
 import PickingStoArticle from '../screens/dashboard/picking/pickingStoArticle/PickingStoArticle';
 import Print from '../screens/dashboard/print/Print';
-import PoArticles from '../screens/dashboard/receiving/PoArticles/PoArticles';
+import PoArticle from '../screens/dashboard/receiving/PoArticle';
 import Receiving from '../screens/dashboard/receiving/Receiving';
-import PurchaseOrder from '../screens/dashboard/receiving/purchaseOrder/PurchaseOrder';
+import PurchaseOrder from '../screens/dashboard/receiving/PurchaseOrder';
 import Return from '../screens/dashboard/return/Return';
 import ReturnDetails from '../screens/dashboard/return/returnDetails/ReturnDetails';
 import AssignToBin from '../screens/dashboard/shelving/AssignToBin';
@@ -43,7 +43,7 @@ const AppStack = () => {
     {id: 'change-password', name: 'ChangePassword', component: ChangePassword},
     {id: 'receiving', name: 'Receiving', component: Receiving},
     {id: 'purchase-order', name: 'PurchaseOrder', component: PurchaseOrder},
-    {id: 'po-articles', name: 'PoArticles', component: PoArticles},
+    {id: 'po-article', name: 'PoArticle', component: PoArticle},
     {id: 'shelving', name: 'Shelving', component: Shelving},
     {id: 'bin-details', name: 'BinDetails', component: BinDetails},
     {id: 'assign-bin', name: 'AssignToBin', component: AssignToBin},

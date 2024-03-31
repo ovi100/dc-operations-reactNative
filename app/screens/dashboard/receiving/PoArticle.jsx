@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Image, SafeAreaView, Text, TextInput, TouchableWithoutFeedback, View } from 'react-native';
+import { ActivityIndicator, Button, Image, SafeAreaView, Text, TextInput, TouchableWithoutFeedback, View } from 'react-native';
 import { ButtonLg, ButtonLoading } from '../../../../components/buttons';
 import { BoxIcon } from '../../../../constant/icons';
 import useAppContext from '../../../../hooks/useAppContext';

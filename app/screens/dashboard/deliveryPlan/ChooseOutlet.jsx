@@ -1,37 +1,35 @@
 import CheckBox from '@react-native-community/checkbox';
-import { useFocusEffect, useIsFocused } from '@react-navigation/native';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useIsFocused } from '@react-navigation/native';
+import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Button,
   FlatList,
-  Image,
   Keyboard,
-  RefreshControl,
-  SafeAreaView,
   Text,
   TextInput,
   TouchableOpacity,
   View
 } from 'react-native';
-import ServerError from '../../../../components/animations/ServerError';
-import { ButtonBack, ButtonLg, ButtonLoading } from '../../../../components/buttons';
-import { SearchIcon } from '../../../../constant/icons';
+import { ButtonLg, ButtonLoading } from '../../../../components/buttons';
 import { getStorage } from '../../../../hooks/useStorage';
-import Toast from 'react-native-toast-message';
 import BottomSheet from '../../../../components/BottomSheet';
-import CustomToast from '../../../../components/CustomToast';
+import BottomModal from '../../../../components/BottomModal';
 
 const ChooseOutlet = ({ navigation }) => {
   const isFocused = useIsFocused();
-  const [isLoading, setIsLoading] = useState(false);
   const [isButtonLoading, setIsButtonLoading] = useState(false);
   let [outlets, setOutlets] = useState([]);
   const [selectedList, setSelectedList] = useState('');
   const [search, setSearch] = useState('');
-  const tableHeader = ['Code', 'Name', 'District'];
-  const API_URL = 'https://shwapnooperation.onrender.com/bapi/outlet';
+  const [isModalVisible, setIsModalVisible] = useState(false);
+
+  const toggleModal = () => {
+    setIsModalVisible(!isModalVisible);
+  };
 
   useEffect(() => {
+    // toggleModal();
     getStorage('outlets', setOutlets, 'object');
     setSelectedList([]);
     setSearch('');
@@ -81,58 +79,68 @@ const ChooseOutlet = ({ navigation }) => {
     Keyboard.dismiss();
   };
 
+  const getDeliveryNote = () => {
+    setIsButtonLoading(true);
+    navigation.navigate('DeliveryPlan', selectedList);
+    uncheckAll();
+    setSearch('');
+    setIsButtonLoading(false);
+  };
+
   if (search) {
     outlets = outlets.filter(outlet =>
       outlet.code.toLowerCase().includes(search.trim().toLowerCase())
     );
   }
 
-  if (isLoading) {
-    return (
-      <View className="w-full h-screen justify-center px-3">
-        <ActivityIndicator size="large" color="#EB4B50" />
-        <Text className="mt-4 text-gray-400 text-base text-center">
-          Loading outlets. Please wait......
-        </Text>
-      </View>
-    )
-  }
-
-  if (!isLoading && !search && outlets.length === 0) {
-    return (
-      <View className="w-full h-screen justify-center px-3">
-        <ServerError message="No data found!" />
-      </View>
-    )
-  }
-
   return (
-    <BottomSheet>
-      <Text className="text-lg text-sh text-center font-semibold capitalize">
-        choose outlet
-      </Text>
-      {/* Search filter */}
-      <View className="search flex-row">
-        <View className="input-box relative flex-1">
-          <TextInput
-            className="bg-[#F5F6FA] h-[50px] text-black rounded-lg pl-12 pr-4"
-            placeholder="Search by outlets code"
-            inputMode='text'
-            placeholderTextColor="#CBC9D9"
-            selectionColor="#CBC9D9"
-            onChangeText={value => setSearch(value)}
-            value={search}
+    <>
+      {/* <View className="flex-1 flex-row items-center justify-center">
+        <Button title='open modal' onPress={() => toggleModal()} />
+      </View>
+      <BottomModal isVisible={isModalVisible} onClose={toggleModal} height={500}>
+        <Text className="text-black text-center text-lg font-semibold">Modal Content</Text>
+        <TouchableOpacity onPress={toggleModal}>
+          <Text className="text-gray-300 text-right font-semibold">Close</Text>
+        </TouchableOpacity>
+      </BottomModal> */}
+      <BottomSheet>
+        <Text className="text-lg text-sh text-center font-semibold capitalize mb-3">
+          choose outlet
+        </Text>
+
+        <View className="search flex-row">
+          <View className="input-box relative flex-1">
+            <TextInput
+              className="bg-[#F5F6FA] h-[50px] text-black rounded-lg px-4"
+              placeholder="Search by outlets code"
+              inputMode='text'
+              placeholderTextColor="#CBC9D9"
+              selectionColor="#CBC9D9"
+              onChangeText={value => setSearch(value)}
+              value={search}
+            />
+          </View>
+        </View>
+        <View className='outlet-list h-[60%]'>
+          <FlatList
+            data={outlets}
+            renderItem={renderItem}
+            keyExtractor={item => item.code}
           />
         </View>
-      </View>
-      <View className=''>
-        <FlatList
-          data={outlets}
-          renderItem={renderItem}
-          keyExtractor={item => item.code}
-        />
-      </View>
-    </BottomSheet>
+        {selectedList.length > 0 && (
+          <View className="button w-1/3 mx-auto">
+            {isButtonLoading ? <ButtonLoading styles='bg-theme rounded-md p-5' /> :
+              <ButtonLg
+                title="Confirm"
+                onPress={() => getDeliveryNote()}
+              />
+            }
+          </View>
+        )}
+      </BottomSheet>
+    </>
   );
 };
 

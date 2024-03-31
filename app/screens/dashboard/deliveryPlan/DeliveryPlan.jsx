@@ -19,6 +19,7 @@ import { ButtonBack, ButtonLg, ButtonLoading } from '../../../../components/butt
 import { SearchIcon } from '../../../../constant/icons';
 import { getStorage } from '../../../../hooks/useStorage';
 import { dateRange, toast } from '../../../../utils';
+import BottomModal from '../../../../components/BottomModal';
 
 const DeliveryPlan = ({ navigation, route }) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -31,12 +32,17 @@ const DeliveryPlan = ({ navigation, route }) => {
   const [search, setSearch] = useState('');
   const tableHeader = ['STO ID', 'SKU', 'Outlet Code'];
   const API_URL = 'https://shwapnooperation.onrender.com/';
-  const dateObject = dateRange(30);
+  const dateObject = dateRange(20);
   const { from, to } = dateObject;
 
-  console.log(route.params);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+
+  const toggleModal = () => {
+    setIsModalVisible(!isModalVisible);
+  };
 
   useEffect(() => {
+    toggleModal();
     getStorage('token', setToken);
     setSelectedList([]);
   }, []);
@@ -53,7 +59,6 @@ const DeliveryPlan = ({ navigation, route }) => {
       })
         .then(response => response.json())
         .then(async result => {
-          console.log(result)
           if (result.status) {
             await fetch(API_URL + 'api/sto-tracking/in-dn', {
               method: 'GET',
@@ -233,13 +238,15 @@ const DeliveryPlan = ({ navigation, route }) => {
     )
   }
 
-  if (!isLoading && !search && dpList.length === 0) {
+  if (!isLoading && dpList.length === 0) {
     return (
       <View className="w-full h-4/5 justify-center px-3">
         <ServerError message="No data found!" />
       </View>
     )
   }
+
+  console.log('Dp List', dpList);
 
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">
@@ -322,6 +329,7 @@ const DeliveryPlan = ({ navigation, route }) => {
             </View>
           )}
         </View>
+        <BottomModal isVisible={isModalVisible} onClose={toggleModal} />
       </View>
     </SafeAreaView>
   );

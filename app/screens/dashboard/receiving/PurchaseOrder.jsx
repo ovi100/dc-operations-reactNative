@@ -1,6 +1,6 @@
 import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, DeviceEventEmitter, FlatList, SafeAreaView, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Button, DeviceEventEmitter, FlatList, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
 import { ButtonLg, ButtonLoading } from '../../../../components/buttons';
 import useAppContext from '../../../../hooks/useAppContext';
 import { getStorage } from '../../../../hooks/useStorage';
@@ -8,8 +8,9 @@ import { toast } from '../../../../utils';
 import SunmiScanner from '../../../../utils/sunmi/scanner';
 
 const PurchaseOrder = ({ navigation, route }) => {
-  const isFocused = useIsFocused();
+  // const isFocused = useIsFocused();
   const { startScan, stopScan } = SunmiScanner;
+  const [pressMode, setPressMode] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isButtonLoading, setIsButtonLoading] = useState(false);
   const [barcode, setBarcode] = useState('');
@@ -166,30 +167,63 @@ const PurchaseOrder = ({ navigation, route }) => {
     }
   });
 
+  const togglePressMode = () => {
+    setPressMode(!pressMode);
+  };
+
   const renderItem = ({ item, index }) => (
-    <View className="flex-row border border-tb rounded-lg mt-2.5 p-4" key={index}>
-      <Text
-        className="flex-1 text-black text-center"
-        numberOfLines={1}>
-        {item.material}
-      </Text>
-      <Text
-        className="flex-1 text-black text-center"
-        numberOfLines={1}>
-        {item.description}
-      </Text>
-      <Text
-        className="flex-1 text-black text-center"
-        numberOfLines={1}>
-        {item.remainingQuantity}
-      </Text>
-    </View>
+    <>
+      {pressMode ?
+        (
+          <TouchableOpacity
+            key={index}
+            className="flex-row border border-tb rounded-lg mt-2.5 p-4"
+            onPress={() => navigation.replace('PoArticle', item)}
+          >
+            <Text
+              className="flex-1 text-black text-center"
+              numberOfLines={1}>
+              {item.material}
+            </Text>
+            <Text
+              className="flex-1 text-black text-center"
+              numberOfLines={1}>
+              {item.description}
+            </Text>
+            <Text
+              className="flex-1 text-black text-center"
+              numberOfLines={1}>
+              {item.remainingQuantity}
+            </Text>
+          </TouchableOpacity>
+        )
+        :
+        (
+          <View className="flex-row border border-tb rounded-lg mt-2.5 p-4" key={index}>
+            <Text
+              className="flex-1 text-black text-center"
+              numberOfLines={1}>
+              {item.material}
+            </Text>
+            <Text
+              className="flex-1 text-black text-center"
+              numberOfLines={1}>
+              {item.description}
+            </Text>
+            <Text
+              className="flex-1 text-black text-center"
+              numberOfLines={1}>
+              {item.remainingQuantity}
+            </Text>
+          </View>
+        )}
+    </>
   );
 
-  if (barcode !== '') {
+  if (barcode !== '' && !pressMode) {
     const poItem = articles.find(item => item.barcode === barcode);
     if (poItem) {
-      navigation.replace('PoArticles', poItem);
+      navigation.replace('PoArticle', poItem);
       setBarcode('');
     } else {
       toast('Article not found!');
@@ -302,6 +336,7 @@ const PurchaseOrder = ({ navigation, route }) => {
           <Text className="flex-1 text-lg text-sh text-center font-semibold uppercase">
             po {po_id}
           </Text>
+          <Button title={pressMode ? 'Turn off' : 'Turn on'} onPress={() => togglePressMode()} />
         </View>
         <View className="content">
           <>

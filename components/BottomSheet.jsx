@@ -8,13 +8,13 @@ import {
 } from "react-native"
 import { WINDOW_HEIGHT } from "../utils"
 
-const BOTTOM_SHEET_MAX_HEIGHT = WINDOW_HEIGHT * 0.6
-const BOTTOM_SHEET_MIN_HEIGHT = WINDOW_HEIGHT * 0.1
-const MAX_UPWARD_TRANSLATE_Y = BOTTOM_SHEET_MIN_HEIGHT - BOTTOM_SHEET_MAX_HEIGHT // negative number;
-const MAX_DOWNWARD_TRANSLATE_Y = 0
-const DRAG_THRESHOLD = 50
+const BottomSheet = ({ children, maxHeight = 1, minHeight = 0.05 }) => {
+  const BOTTOM_SHEET_MAX_HEIGHT = WINDOW_HEIGHT * maxHeight;
+  const BOTTOM_SHEET_MIN_HEIGHT = WINDOW_HEIGHT * minHeight;
+  const MAX_UPWARD_TRANSLATE_Y = BOTTOM_SHEET_MIN_HEIGHT - BOTTOM_SHEET_MAX_HEIGHT;
+  const MAX_DOWNWARD_TRANSLATE_Y = 0;
+  const DRAG_THRESHOLD = 100;
 
-const BottomSheet = ({ children }) => {
   const animatedValue = useRef(new Animated.Value(0)).current
   const lastGestureDy = useRef(0)
   const panResponder = useRef(
@@ -33,16 +33,16 @@ const BottomSheet = ({ children }) => {
         if (gesture.dy > 0) {
           // dragging down
           if (gesture.dy <= DRAG_THRESHOLD) {
-            springAnimation("up")
+            springAnimation("up");
           } else {
-            springAnimation("down")
+            springAnimation("down");
           }
         } else {
           // dragging up
           if (gesture.dy >= -DRAG_THRESHOLD) {
-            springAnimation("down")
+            springAnimation("down");
           } else {
-            springAnimation("up")
+            springAnimation("up");
           }
         }
       }
@@ -50,7 +50,6 @@ const BottomSheet = ({ children }) => {
   ).current
 
   const springAnimation = direction => {
-    console.log("direction", direction)
     lastGestureDy.current =
       direction === "down" ? MAX_DOWNWARD_TRANSLATE_Y : MAX_UPWARD_TRANSLATE_Y
     Animated.spring(animatedValue, {
@@ -73,7 +72,7 @@ const BottomSheet = ({ children }) => {
 
   return (
     <View style={styles.container}>
-      <Animated.View style={[styles.bottomSheet, bottomSheetAnimation]}>
+      <Animated.View style={[styles.bottomSheet, bottomSheetAnimation, { height: BOTTOM_SHEET_MAX_HEIGHT, bottom: BOTTOM_SHEET_MIN_HEIGHT - BOTTOM_SHEET_MAX_HEIGHT }]}>
         <View style={styles.draggableArea} {...panResponder.panHandlers}>
           <View style={styles.dragHandle} />
         </View>
@@ -92,8 +91,6 @@ const styles = StyleSheet.create({
   bottomSheet: {
     position: "absolute",
     width: "100%",
-    height: BOTTOM_SHEET_MAX_HEIGHT,
-    bottom: BOTTOM_SHEET_MIN_HEIGHT - BOTTOM_SHEET_MAX_HEIGHT,
     ...Platform.select({
       android: { elevation: 10 },
       ios: {

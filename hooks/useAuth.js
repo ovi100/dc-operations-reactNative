@@ -1,12 +1,10 @@
-import {useEffect, useState} from 'react';
+import { useEffect, useState } from 'react';
 import Toast from 'react-native-toast-message';
-import {getStorage, removeItem, setStorage} from './useStorage';
-import {toast} from '../utils';
+import { getStorage, removeItem, setStorage } from './useStorage';
 
 const useAuth = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState(null);
-  let [outlets, setOutlets] = useState([]);
   const [token, setToken] = useState(null);
   const API_URL = 'https://shwapnooperation.onrender.com/';
 
@@ -52,56 +50,6 @@ const useAuth = () => {
     setIsLoading(false);
   };
 
-  const getOutlets = async () => {
-    setIsLoading(true);
-    try {
-      const response = await fetch(API_URL + 'bapi/outlet');
-      const data = await response.json();
-      if (data.status) {
-        setOutlets(data.outlets);
-        setStorage('outlets', JSON.stringify(data.outlets));
-        setIsLoading(false);
-      } else {
-        toast('No outlets found');
-        setOutlets([
-          {
-            code: 'D014',
-            name: 'Nrayangonj',
-            district: 'Dhaka',
-            selected: false,
-          },
-          {
-            code: 'C001',
-            name: 'Cumilla',
-            district: 'Chittagong',
-            selected: false,
-          },
-        ]);
-        setStorage(
-          'outlets',
-          JSON.stringify([
-            {
-              code: 'D014',
-              name: 'Nrayangonj',
-              district: 'Dhaka',
-              selected: false,
-            },
-            {
-              code: 'C001',
-              name: 'Cumilla',
-              district: 'Chittagong',
-              selected: false,
-            },
-          ]),
-        );
-        setIsLoading(false);
-      }
-    } catch (error) {
-      toast(error.message);
-      setIsLoading(false);
-    }
-  };
-
   const isLoggedIn = () => {
     try {
       setIsLoading(true);
@@ -125,7 +73,6 @@ const useAuth = () => {
   };
 
   useEffect(() => {
-    getOutlets();
     isLoggedIn();
   }, []);
 
@@ -136,7 +83,6 @@ const useAuth = () => {
     user,
     setUser,
     token,
-    outlets,
   };
 
   return authInfo;

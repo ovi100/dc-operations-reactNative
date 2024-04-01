@@ -1,10 +1,10 @@
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useState } from 'react';
 import { Image, SafeAreaView, Text, TextInput, TouchableWithoutFeedback, View } from 'react-native';
-import { ButtonLg, ButtonLoading } from '../../../../../components/buttons';
-import { BoxIcon } from '../../../../../constant/icons';
-import { getStorage } from '../../../../../hooks/useStorage';
-import { toast } from '../../../../../utils';
+import { ButtonLg, ButtonLoading } from '../../../../components/buttons';
+import { BoxIcon } from '../../../../constant/icons';
+import { getStorage } from '../../../../hooks/useStorage';
+import { toast } from '../../../../utils';
 
 const ShelveArticle = ({ navigation, route }) => {
   const { _id, bins, code, description, quantity, receivedQuantity } = route.params;
@@ -28,7 +28,7 @@ const ShelveArticle = ({ navigation, route }) => {
         bin: bins.bin_id,
         quantity: newQuantity,
       };
-      // console.log(assignToShelveObject);
+
       try {
         setIsButtonLoading(true);
         await fetch(API_URL + `in-shelf/${_id}`, {

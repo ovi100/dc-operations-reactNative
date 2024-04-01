@@ -1,17 +1,18 @@
 import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Button, DeviceEventEmitter, FlatList, Image, RefreshControl, SafeAreaView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator, DeviceEventEmitter, FlatList, RefreshControl,
+  SafeAreaView, Text, TextInput, TouchableWithoutFeedback, View
+} from 'react-native';
+import Toast from 'react-native-toast-message';
+import CustomToast from '../../../../components/CustomToast';
 import ServerError from '../../../../components/animations/ServerError';
 import { getStorage } from '../../../../hooks/useStorage';
 import { dateRange, toast } from '../../../../utils';
 import SunmiScanner from '../../../../utils/sunmi/scanner';
-import Toast from 'react-native-toast-message';
-import CustomToast from '../../../../components/CustomToast';
-import { ButtonLg, ButtonXs } from '../../../../components/buttons';
 
 const Receiving = ({ navigation }) => {
   const isFocused = useIsFocused();
-  const [pressMode, setPressMode] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [user, setUser] = useState(null);
@@ -123,10 +124,6 @@ const Receiving = ({ navigation }) => {
     setRefreshing(true);
   };
 
-  const togglePressMode = () => {
-    setPressMode(!pressMode);
-  };
-
   if (barcode !== '' && !pressMode) {
     const poItem = poList.find(item => item.po === barcode);
     if (poItem) {
@@ -139,42 +136,24 @@ const Receiving = ({ navigation }) => {
   }
 
   const renderItem = ({ item, index }) => (
-    <>
-      {pressMode ?
-        (
-          <TouchableOpacity
-            key={index}
-            className="flex-row border border-tb rounded-lg mt-2.5 p-4"
-            onPress={() => navigation.navigate('PurchaseOrder', { po_id: item.po })}
-          >
-            <Text
-              className="flex-1 text-black text-center"
-              numberOfLines={1} >
-              {item.po}
-            </Text>
-            <Text
-              className="flex-1 text-black text-center"
-              numberOfLines={1}>
-              {item.sku}
-            </Text>
-          </TouchableOpacity>
-        )
-        :
-        (
-          <View className="flex-row border border-tb rounded-lg mt-2.5 p-4" key={index}>
-            <Text
-              className="flex-1 text-black text-center"
-              numberOfLines={1} >
-              {item.po}
-            </Text>
-            <Text
-              className="flex-1 text-black text-center"
-              numberOfLines={1}>
-              {item.sku}
-            </Text>
-          </View>
-        )}
-    </>
+    <TouchableWithoutFeedback
+      key={index}
+      onPress={() => navigation.navigate('PurchaseOrder', { po_id: item.po })}
+    >
+      <View className="flex-row border border-tb rounded-lg mt-2.5 p-4" key={index}>
+        <Text
+          className="flex-1 text-black text-center"
+          numberOfLines={1} >
+          {item.po}
+        </Text>
+        <Text
+          className="flex-1 text-black text-center"
+          numberOfLines={1}>
+          {item.sku}
+        </Text>
+      </View>
+    </TouchableWithoutFeedback>
+
   );
 
   if (search !== '') {
@@ -198,7 +177,6 @@ const Receiving = ({ navigation }) => {
     )
   }
 
-
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">
       <View className="flex-1 px-4">
@@ -206,7 +184,6 @@ const Receiving = ({ navigation }) => {
           <Text className="text-lg flex-1 text-sh text-center font-semibold capitalize">
             receiving screen
           </Text>
-          <Button title={pressMode ? 'Turn off' : 'Turn on'} onPress={() => togglePressMode()} />
         </View>
 
         {/* Search filter */}

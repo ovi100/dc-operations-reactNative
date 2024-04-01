@@ -1,6 +1,11 @@
-import { useFocusEffect, useIsFocused } from '@react-navigation/native';
+import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Button, DeviceEventEmitter, FlatList, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator, Alert,
+  DeviceEventEmitter,
+  FlatList, SafeAreaView, Text, TouchableWithoutFeedback,
+  View
+} from 'react-native';
 import { ButtonLg, ButtonLoading } from '../../../../components/buttons';
 import useAppContext from '../../../../hooks/useAppContext';
 import { getStorage } from '../../../../hooks/useStorage';
@@ -10,7 +15,6 @@ import SunmiScanner from '../../../../utils/sunmi/scanner';
 const PurchaseOrder = ({ navigation, route }) => {
   // const isFocused = useIsFocused();
   const { startScan, stopScan } = SunmiScanner;
-  const [pressMode, setPressMode] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isButtonLoading, setIsButtonLoading] = useState(false);
   const [barcode, setBarcode] = useState('');
@@ -167,57 +171,29 @@ const PurchaseOrder = ({ navigation, route }) => {
     }
   });
 
-  const togglePressMode = () => {
-    setPressMode(!pressMode);
-  };
-
   const renderItem = ({ item, index }) => (
-    <>
-      {pressMode ?
-        (
-          <TouchableOpacity
-            key={index}
-            className="flex-row border border-tb rounded-lg mt-2.5 p-4"
-            onPress={() => navigation.replace('PoArticle', item)}
-          >
-            <Text
-              className="flex-1 text-black text-center"
-              numberOfLines={1}>
-              {item.material}
-            </Text>
-            <Text
-              className="flex-1 text-black text-center"
-              numberOfLines={1}>
-              {item.description}
-            </Text>
-            <Text
-              className="flex-1 text-black text-center"
-              numberOfLines={1}>
-              {item.remainingQuantity}
-            </Text>
-          </TouchableOpacity>
-        )
-        :
-        (
-          <View className="flex-row border border-tb rounded-lg mt-2.5 p-4" key={index}>
-            <Text
-              className="flex-1 text-black text-center"
-              numberOfLines={1}>
-              {item.material}
-            </Text>
-            <Text
-              className="flex-1 text-black text-center"
-              numberOfLines={1}>
-              {item.description}
-            </Text>
-            <Text
-              className="flex-1 text-black text-center"
-              numberOfLines={1}>
-              {item.remainingQuantity}
-            </Text>
-          </View>
-        )}
-    </>
+    <TouchableWithoutFeedback
+      key={index}
+      onPress={() => navigation.replace('PoArticle', item)}
+    >
+      <View className="flex-row border border-tb rounded-lg mt-2.5 p-4" key={index}>
+        <Text
+          className="flex-1 text-black text-center"
+          numberOfLines={1}>
+          {item.material}
+        </Text>
+        <Text
+          className="flex-1 text-black text-center"
+          numberOfLines={1}>
+          {item.description}
+        </Text>
+        <Text
+          className="flex-1 text-black text-center"
+          numberOfLines={1}>
+          {item.remainingQuantity}
+        </Text>
+      </View>
+    </TouchableWithoutFeedback>
   );
 
   if (barcode !== '' && !pressMode) {
@@ -332,11 +308,10 @@ const PurchaseOrder = ({ navigation, route }) => {
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">
       <View className="flex-1 h-full px-4">
-        <View className="screen-header flex-row mb-4">
-          <Text className="flex-1 text-lg text-sh text-center font-semibold uppercase">
+        <View className="screen-header flex-row items-center mb-4">
+          <Text className="text-lg flex-1 text-sh text-center font-semibold uppercase">
             po {po_id}
           </Text>
-          <Button title={pressMode ? 'Turn off' : 'Turn on'} onPress={() => togglePressMode()} />
         </View>
         <View className="content">
           <>

@@ -1,12 +1,12 @@
-import React, { useRef } from "react"
+import React, { useRef } from "react";
 import {
   Animated,
   PanResponder,
   Platform,
   StyleSheet,
   View
-} from "react-native"
-import { WINDOW_HEIGHT } from "../utils"
+} from "react-native";
+import { WINDOW_HEIGHT } from "../utils";
 
 const BottomSheet = ({ children, maxHeight = 1, minHeight = 0.05 }) => {
   const BOTTOM_SHEET_MAX_HEIGHT = WINDOW_HEIGHT * maxHeight;
@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     width: "100%",
     ...Platform.select({
-      android: { elevation: 10 },
+      android: { elevation: 20 },
       ios: {
         shadowColor: "#a8bed2",
         shadowOpacity: 1,

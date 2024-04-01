@@ -2,8 +2,6 @@ import CheckBox from '@react-native-community/checkbox';
 import { useIsFocused } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
-  Button,
   FlatList,
   Keyboard,
   Text,
@@ -11,18 +9,30 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
-import { ButtonLg, ButtonLoading } from '../../../../components/buttons';
-import { getStorage } from '../../../../hooks/useStorage';
 import BottomSheet from '../../../../components/BottomSheet';
-import BottomModal from '../../../../components/BottomModal';
+import { ButtonLg, ButtonLoading } from '../../../../components/buttons';
 
 const ChooseOutlet = ({ navigation }) => {
   const isFocused = useIsFocused();
   const [isButtonLoading, setIsButtonLoading] = useState(false);
-  let [outlets, setOutlets] = useState([]);
   const [selectedList, setSelectedList] = useState('');
   const [search, setSearch] = useState('');
   const [isModalVisible, setIsModalVisible] = useState(false);
+
+  const outlets = [
+    {
+      code: 'D014',
+      name: 'Nrayangonj',
+      district: 'Dhaka',
+      selected: false,
+    },
+    {
+      code: 'C001',
+      name: 'Cumilla',
+      district: 'Chittagong',
+      selected: false,
+    },
+  ];
 
   const toggleModal = () => {
     setIsModalVisible(!isModalVisible);
@@ -30,7 +40,6 @@ const ChooseOutlet = ({ navigation }) => {
 
   useEffect(() => {
     // toggleModal();
-    getStorage('outlets', setOutlets, 'object');
     setSelectedList([]);
     setSearch('');
   }, [isFocused]);

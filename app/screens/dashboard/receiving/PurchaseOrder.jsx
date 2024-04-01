@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator, Alert,
   DeviceEventEmitter,
-  FlatList, SafeAreaView, Text, TouchableWithoutFeedback,
+  FlatList, SafeAreaView, Text,
   View
 } from 'react-native';
 import { ButtonLg, ButtonLoading } from '../../../../components/buttons';
@@ -13,7 +13,6 @@ import { toast } from '../../../../utils';
 import SunmiScanner from '../../../../utils/sunmi/scanner';
 
 const PurchaseOrder = ({ navigation, route }) => {
-  // const isFocused = useIsFocused();
   const { startScan, stopScan } = SunmiScanner;
   const [isLoading, setIsLoading] = useState(false);
   const [isButtonLoading, setIsButtonLoading] = useState(false);
@@ -172,31 +171,29 @@ const PurchaseOrder = ({ navigation, route }) => {
   });
 
   const renderItem = ({ item, index }) => (
-    <TouchableWithoutFeedback
+    <View
       key={index}
-      onPress={() => navigation.replace('PoArticle', item)}
+      className="flex-row border border-tb rounded-lg mt-2.5 p-4"
     >
-      <View className="flex-row border border-tb rounded-lg mt-2.5 p-4" key={index}>
-        <Text
-          className="flex-1 text-black text-center"
-          numberOfLines={1}>
-          {item.material}
-        </Text>
-        <Text
-          className="flex-1 text-black text-center"
-          numberOfLines={1}>
-          {item.description}
-        </Text>
-        <Text
-          className="flex-1 text-black text-center"
-          numberOfLines={1}>
-          {item.remainingQuantity}
-        </Text>
-      </View>
-    </TouchableWithoutFeedback>
+      <Text
+        className="flex-1 text-black text-center"
+        numberOfLines={1}>
+        {item.material}
+      </Text>
+      <Text
+        className="flex-1 text-black text-center"
+        numberOfLines={1}>
+        {item.description}
+      </Text>
+      <Text
+        className="flex-1 text-black text-center"
+        numberOfLines={1}>
+        {item.remainingQuantity}
+      </Text>
+    </View>
   );
 
-  if (barcode !== '' && !pressMode) {
+  if (barcode !== '') {
     const poItem = articles.find(item => item.barcode === barcode);
     if (poItem) {
       navigation.replace('PoArticle', poItem);
@@ -246,7 +243,7 @@ const PurchaseOrder = ({ navigation, route }) => {
                 setIsButtonLoading(false);
               });
           } else {
-            toast(data.message);
+            toast(result.message);
             setIsButtonLoading(false);
           }
         })
@@ -272,6 +269,8 @@ const PurchaseOrder = ({ navigation, route }) => {
       return acc;
     }, []);
 
+    console.log('Final GRN List', uniqueGrnList);
+
     Alert.alert('Are you sure?', 'GRN will be created', [
       {
         text: 'Cancel',
@@ -291,7 +290,7 @@ const PurchaseOrder = ({ navigation, route }) => {
     )
   }
 
-  if (articles.length === 0) {
+  if (articles.length === 0 && GRNByPo.length === 0) {
     return (
       <View className="w-full h-4/5 justify-center px-3">
         <Text className="text-blue-800 text-lg text-center font-semibold font-mono mt-5">
@@ -308,8 +307,8 @@ const PurchaseOrder = ({ navigation, route }) => {
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">
       <View className="flex-1 h-full px-4">
-        <View className="screen-header flex-row items-center mb-4">
-          <Text className="text-lg flex-1 text-sh text-center font-semibold uppercase">
+        <View className="screen-header flex-row items-center justify-center mb-4">
+          <Text className="text-lg text-sh font-semibold uppercase">
             po {po_id}
           </Text>
         </View>
@@ -323,12 +322,19 @@ const PurchaseOrder = ({ navigation, route }) => {
                   </Text>
                 ))}
               </View>
-              <FlatList
-                data={articles}
-                renderItem={renderItem}
-                keyExtractor={item => item.material}
-                initialNumToRender={15}
-              />
+              {articles.length === 0 && GRNByPo.length > 0 ? (
+                <Text className="text-black text-lg text-center font-bold mt-5">
+                  No articles left to receive
+                </Text>
+              ) : (
+                <FlatList
+                  data={articles}
+                  renderItem={renderItem}
+                  keyExtractor={item => item.material}
+                  initialNumToRender={15}
+                />
+              )}
+
             </View>
             {Boolean(GRNByPo.length) && (
               <View className="button">

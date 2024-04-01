@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Button, Image, SafeAreaView, Text, TextInput, TouchableWithoutFeedback, View } from 'react-native';
+import { ActivityIndicator, Image, SafeAreaView, Text, TextInput, TouchableWithoutFeedback, View } from 'react-native';
+import Toast from 'react-native-toast-message';
+import CustomToast from '../../../../components/CustomToast';
 import { ButtonLg, ButtonLoading } from '../../../../components/buttons';
 import { BoxIcon } from '../../../../constant/icons';
 import useAppContext from '../../../../hooks/useAppContext';
@@ -51,7 +53,10 @@ const PoArticle = ({ navigation, route }) => {
 
   const readyForShelve = async () => {
     if (newQuantity > remainingQuantity) {
-      toast('Quantity exceed')
+      Toast.show({
+        type: 'customWarn',
+        text1: 'Quantity exceed',
+      });
     } else {
       const grnItem = {
         movementType: '101',
@@ -93,14 +98,18 @@ const PoArticle = ({ navigation, route }) => {
           .then(response => response.json())
           .then(data => {
             if (data.status) {
-              toast(data.message);
+              Toast.show({
+                type: 'customInfo',
+                text1: data.message,
+              });
               addToGRN(grnItem);
-              // navigation.goBack();
               navigation.replace('PurchaseOrder', { po_id: po });
               setIsButtonLoading(false);
             } else {
-              toast(data.message);
-              // navigation.goBack();
+              Toast.show({
+                type: 'customError',
+                text1: data.message,
+              });
               navigation.replace('PurchaseOrder', { po_id: po });
               setIsButtonLoading(false);
             }
@@ -180,6 +189,7 @@ const PoArticle = ({ navigation, route }) => {
           }
         </View>
       </View>
+      <CustomToast />
     </SafeAreaView>
   );
 };

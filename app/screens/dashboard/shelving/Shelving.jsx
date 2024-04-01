@@ -9,6 +9,8 @@ import {
   Text,
   View
 } from 'react-native';
+import Toast from 'react-native-toast-message';
+import CustomToast from '../../../../components/CustomToast';
 import { getStorage } from '../../../../hooks/useStorage';
 import { toast } from '../../../../utils';
 import SunmiScanner from '../../../../utils/sunmi/scanner';
@@ -129,7 +131,11 @@ const Shelving = ({ navigation }) => {
       navigation.navigate('BinDetails', article);
       setBarcode('');
     } else {
-      toast('Article not found!');
+      Toast.show({
+        type: 'customError',
+        text1: 'Article not found!',
+      });
+      // toast('Article not found!');
       setBarcode('');
     }
   }
@@ -219,6 +225,7 @@ const Shelving = ({ navigation }) => {
           </View>
         </View>
       </View>
+      <CustomToast />
     </SafeAreaView>
   );
 };

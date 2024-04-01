@@ -2,7 +2,7 @@ import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator, DeviceEventEmitter, FlatList, RefreshControl,
-  SafeAreaView, Text, TextInput, TouchableWithoutFeedback, View
+  SafeAreaView, Text, TextInput, View
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
@@ -23,7 +23,7 @@ const Receiving = ({ navigation }) => {
   const tableHeader = ['Purchase Order ID', 'SKU'];
   const API_URL = 'https://shwapnooperation.onrender.com/';
   const { startScan, stopScan } = SunmiScanner;
-  const dateObject = dateRange(20);
+  const dateObject = dateRange(15);
   const postObject = { ...dateObject, site: user?.site };
 
   useEffect(() => {
@@ -80,7 +80,7 @@ const Receiving = ({ navigation }) => {
               })
               .catch(error => {
                 Toast.show({
-                  type: 'customSuccess',
+                  type: 'customError',
                   text1: error.message.toString(),
                 });
                 setIsLoading(false);
@@ -88,7 +88,7 @@ const Receiving = ({ navigation }) => {
               });
           } else {
             Toast.show({
-              type: 'customSuccess',
+              type: 'customError',
               text1: error.message.toString(),
             });
             setIsLoading(false);
@@ -97,14 +97,14 @@ const Receiving = ({ navigation }) => {
         })
         .catch(error => {
           Toast.show({
-            type: 'customSuccess',
+            type: 'customError',
             text1: error.message.toString(),
           });
           setIsLoading(false);
         });
     } catch (error) {
       Toast.show({
-        type: 'customSuccess',
+        type: 'customError',
         text1: error.message.toString(),
       });
       setIsLoading(false);
@@ -124,7 +124,7 @@ const Receiving = ({ navigation }) => {
     setRefreshing(true);
   };
 
-  if (barcode !== '' && !pressMode) {
+  if (barcode !== '') {
     const poItem = poList.find(item => item.po === barcode);
     if (poItem) {
       navigation.navigate('PurchaseOrder', { po_id: barcode });
@@ -136,24 +136,21 @@ const Receiving = ({ navigation }) => {
   }
 
   const renderItem = ({ item, index }) => (
-    <TouchableWithoutFeedback
+    <View
       key={index}
-      onPress={() => navigation.navigate('PurchaseOrder', { po_id: item.po })}
+      className="flex-row border border-tb rounded-lg mt-2.5 p-4"
     >
-      <View className="flex-row border border-tb rounded-lg mt-2.5 p-4" key={index}>
-        <Text
-          className="flex-1 text-black text-center"
-          numberOfLines={1} >
-          {item.po}
-        </Text>
-        <Text
-          className="flex-1 text-black text-center"
-          numberOfLines={1}>
-          {item.sku}
-        </Text>
-      </View>
-    </TouchableWithoutFeedback>
-
+      <Text
+        className="flex-1 text-black text-center"
+        numberOfLines={1} >
+        {item.po}
+      </Text>
+      <Text
+        className="flex-1 text-black text-center"
+        numberOfLines={1}>
+        {item.sku}
+      </Text>
+    </View>
   );
 
   if (search !== '') {
@@ -180,8 +177,8 @@ const Receiving = ({ navigation }) => {
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">
       <View className="flex-1 px-4">
-        <View className="screen-header flex-row items-center mb-4">
-          <Text className="text-lg flex-1 text-sh text-center font-semibold capitalize">
+        <View className="screen-header flex-row items-center justify-center mb-4">
+          <Text className="text-lg text-sh font-semibold capitalize">
             receiving screen
           </Text>
         </View>

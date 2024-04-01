@@ -14,18 +14,19 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
-import ServerError from '../../../../components/animations/ServerError';
+import Toast from 'react-native-toast-message';
+import Modal from '../../../../components/Modal';
 import { ButtonBack, ButtonLg, ButtonLoading } from '../../../../components/buttons';
 import { SearchIcon } from '../../../../constant/icons';
 import { getStorage } from '../../../../hooks/useStorage';
 import { dateRange, toast } from '../../../../utils';
-import BottomModal from '../../../../components/BottomModal';
 
 const DeliveryPlan = ({ navigation, route }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isButtonLoading, setIsButtonLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [token, setToken] = useState('');
+  const [sites, setSites] = useState('');
   let [dpList, setDpList] = useState([]);
   const [selectedList, setSelectedList] = useState([]);
   const [isAllChecked, setIsAllChecked] = useState(false);
@@ -35,14 +36,14 @@ const DeliveryPlan = ({ navigation, route }) => {
   const dateObject = dateRange(20);
   const { from, to } = dateObject;
 
-  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
 
   const toggleModal = () => {
-    setIsModalVisible(!isModalVisible);
+    setModalVisible(!modalVisible);
   };
 
   useEffect(() => {
-    toggleModal();
+    setModalVisible(true);
     getStorage('token', setToken);
     setSelectedList([]);
   }, []);
@@ -50,7 +51,7 @@ const DeliveryPlan = ({ navigation, route }) => {
   const getDnList = async () => {
     setIsLoading(true);
     try {
-      await fetch(API_URL + `bapi/sto/list?from=${from}&to=${to}&site=${route.params}`, {
+      await fetch(API_URL + `bapi/sto/list?from=${from}&to=${to}&site=${sites}`, {
         method: 'GET',
         headers: {
           authorization: token,
@@ -91,29 +92,48 @@ const DeliveryPlan = ({ navigation, route }) => {
                 }
               })
           } else {
-            toast(data.message);
+            // toast(result.message);
+            Toast.show({
+              type: 'customError',
+              text1: result.message.toString(),
+            });
             setIsLoading(false);
             setRefreshing(false);
+            setModalVisible(true);
           }
         })
         .catch(error => {
-          toast(error.message);
+          // toast(error.message);
+          Toast.show({
+            type: 'customError',
+            text1: error.message.toString(),
+          });
           setIsLoading(false);
           setRefreshing(false);
+          setModalVisible(true);
         });
     } catch (error) {
-      toast(error.message);
+      // toast(error.message);
+      Toast.show({
+        type: 'customError',
+        text1: error.message.toString(),
+      });
       setIsLoading(false);
       setRefreshing(false);
+      setModalVisible(true);
     }
   };
 
+  console.log('sites', sites);
+
   useFocusEffect(
     useCallback(() => {
-      if (token) {
+      if (token && sites) {
         getDnList();
+      } else {
+        setModalVisible(true);
       }
-    }, [token, refreshing])
+    }, [token, refreshing, sites])
   );
 
   const onRefresh = () => {
@@ -238,15 +258,14 @@ const DeliveryPlan = ({ navigation, route }) => {
     )
   }
 
-  if (!isLoading && dpList.length === 0) {
-    return (
-      <View className="w-full h-4/5 justify-center px-3">
-        <ServerError message="No data found!" />
-      </View>
-    )
-  }
-
-  console.log('Dp List', dpList);
+  // if (!isLoading && dpList.length === 0) {
+  //   return (
+  //     <View className="w-full h-4/5 justify-center px-3">
+  //       <ServerError message="No data found!" />
+  //       <Button title='open modal' onPress={() => toggleModal()} />
+  //     </View>
+  //   )
+  // }
 
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">
@@ -329,8 +348,20 @@ const DeliveryPlan = ({ navigation, route }) => {
             </View>
           )}
         </View>
-        <BottomModal isVisible={isModalVisible} onClose={toggleModal} />
+        {/* <BottomModal isVisible={isModalVisible} onClose={toggleModal} /> */}
+        <Modal
+          isOpen={sites.length > 0 ? true : modalVisible}
+          modalHeader="choose outlets"
+          onPress={() => setModalVisible(false)}
+        >
+          <View className="">
+            <Text className="text-black text-base">
+              modal content
+            </Text>
+          </View>
+        </Modal>
       </View>
+
     </SafeAreaView>
   );
 };

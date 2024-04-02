@@ -17,6 +17,7 @@ const PurchaseOrder = ({ navigation, route }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isButtonLoading, setIsButtonLoading] = useState(false);
   const [barcode, setBarcode] = useState('');
+  const [scanArticle, setScanArticle] = useState({});
   const [token, setToken] = useState('');
   const [articles, setArticles] = useState([]);
   const tableHeader = ['Article ID', 'Article Name', 'Quantity'];
@@ -32,7 +33,6 @@ const PurchaseOrder = ({ navigation, route }) => {
   useEffect(() => {
     startScan();
     DeviceEventEmitter.addListener('ScanDataReceived', data => {
-      console.log(data.code);
       setBarcode(data.code);
     });
 
@@ -41,6 +41,34 @@ const PurchaseOrder = ({ navigation, route }) => {
       DeviceEventEmitter.removeAllListeners('ScanDataReceived');
     };
   }, []);
+
+  // const getArticleBarcode = async (barcode) => {
+  //   const response = await fetch('https://shelves-backend-1.onrender.com/api/barcodes/material/' + barcode);
+  //   const result = await response.json();
+  //   const material = JSON.parse(result.data.material)
+  //   console.log("Material from API ", typeof material, material)
+  //   return material;
+  // }
+
+  const getArticleBarcode = async (barcode) => {
+    try {
+      const response = await fetch('https://shelves-backend-1.onrender.com/api/barcodes/material/' + barcode);
+
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const result = await response.json();
+
+      if (!result.status) {
+        throw new Error('API request failed');
+      }
+      setScanArticle(result.data);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      throw error; // Rethrow the error for the caller to handle
+    }
+  };
+
 
   const getPoList = async () => {
     setIsLoading(true);
@@ -64,7 +92,7 @@ const PurchaseOrder = ({ navigation, route }) => {
             },
           )
             .then(res => res.json())
-            .then(shelveData => {
+            .then(async shelveData => {
               if (shelveData.status) {
                 const poItems = result.data.items;
                 const shItems = shelveData.items;
@@ -73,63 +101,14 @@ const PurchaseOrder = ({ navigation, route }) => {
                     !shItems.some(
                       shItem =>
                         shItem.po === poItem.po &&
-                        shItem.code === poItem.material &&
-                        poItem.quantity === shItem.receivedQuantity
+                        shItem.code === poItem.material
                     )
                 );
-
-                let remainingQuantityPoItems = shItems.filter(
-                  shItem => shItem.quantity > shItem.receivedQuantity && shItem.po === po_id
-                );
-
-                if (remainingQuantityPoItems.length > 0) {
-                  const remainingQuantity = remainingQuantityPoItems.map((item) => {
-                    return {
-                      code: item.code,
-                      quantity: item.quantity,
-                      receivedQuantity: item.receivedQuantity,
-                      remainingQuantity: item.quantity - item.receivedQuantity,
-                    };
-                  });
-
-                  const adjustedItems = remainingQuantity.reduce((acc, curr) => {
-                    const existingItem = acc.find((item) => item.code === curr.code);
-                    if (existingItem) {
-                      existingItem.receivedQuantity += curr.receivedQuantity;
-                      existingItem.remainingQuantity =
-                        curr.quantity - existingItem.receivedQuantity;
-                    } else {
-                      acc.push({
-                        code: curr.code,
-                        quantity: curr.quantity,
-                        receivedQuantity: curr.receivedQuantity,
-                        remainingQuantity: curr.quantity - curr.receivedQuantity,
-                      });
-                    }
-                    return acc;
-                  }, []);
-
-                  remainingPoItems.forEach(poItem => {
-                    const adjustedItem = adjustedItems.find(item => item.code === poItem.material);
-                    if (adjustedItem) {
-                      poItem.remainingQuantity = adjustedItem.remainingQuantity;
-                    } else {
-                      poItem.remainingQuantity = poItem.quantity;
-                    }
-                  });
-                } else {
-                  remainingPoItems.forEach(poItem => {
-                    poItem.remainingQuantity = poItem.quantity;
-                  });
-                }
                 setArticles(remainingPoItems);
                 setIsLoading(false);
               }
               else {
                 let poItems = result.data.items;
-                poItems.forEach(poItem => {
-                  poItem.remainingQuantity = poItem.quantity;
-                });
                 setArticles(poItems);
                 setIsLoading(false);
               }
@@ -155,20 +134,6 @@ const PurchaseOrder = ({ navigation, route }) => {
     }, [token, po_id]),
   );
 
-  const initialGrnItems = articles.map(article => {
-    return {
-      movementType: '101',
-      movementIndicator: 'B',
-      po: po_id,
-      poItem: Number(article.poItem).toString(),
-      material: article.material,
-      plant: article.receivingPlant,
-      storageLocation: article.storageLocation,
-      quantity: 0,
-      uom: article.unit,
-      uomIso: article.unit,
-    }
-  });
 
   const renderItem = ({ item, index }) => (
     <View
@@ -188,15 +153,17 @@ const PurchaseOrder = ({ navigation, route }) => {
       <Text
         className="flex-1 text-black text-center"
         numberOfLines={1}>
-        {item.remainingQuantity}
+        {item.quantity}
       </Text>
     </View>
   );
 
   if (barcode !== '') {
-    const poItem = articles.find(item => item.barcode === barcode);
+    getArticleBarcode(barcode);
+    const poItem = articles.find(item => item.material === scanArticle.material);
+    console.log('Merge item', { ...poItem, barcode: scanArticle.barcodes });
     if (poItem) {
-      navigation.replace('PoArticle', poItem);
+      navigation.replace('PoArticle', { ...poItem });
       setBarcode('');
     } else {
       toast('Article not found!');
@@ -258,26 +225,13 @@ const PurchaseOrder = ({ navigation, route }) => {
   }
 
   const postGRN = () => {
-    let finalGrnList = GRNByPo.concat(initialGrnItems);
-    const uniqueGrnList = finalGrnList.reduce((acc, curr) => {
-      const existingItem = acc.find(item => item.material === curr.material);
-      if (existingItem) {
-        existingItem.quantity += curr.quantity;
-      } else {
-        acc.push({ ...curr });
-      }
-      return acc;
-    }, []);
-
-    console.log('Final GRN List', uniqueGrnList);
-
     Alert.alert('Are you sure?', 'GRN will be created', [
       {
         text: 'Cancel',
         onPress: () => null,
         style: 'cancel',
       },
-      { text: 'OK', onPress: () => createGRN(uniqueGrnList) },
+      { text: 'OK', onPress: () => createGRN(GRNByPo) },
     ]);
   }
 

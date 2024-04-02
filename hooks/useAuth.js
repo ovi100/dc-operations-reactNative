@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import Toast from 'react-native-toast-message';
-import { getStorage, removeItem, setStorage } from './useStorage';
+import { getStorage, removeAll, setStorage } from './useStorage';
 
 const useAuth = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -45,8 +45,7 @@ const useAuth = () => {
   const logout = () => {
     setUser(null);
     setToken(null);
-    removeItem('user');
-    removeItem('token');
+    removeAll();
     setIsLoading(false);
   };
 

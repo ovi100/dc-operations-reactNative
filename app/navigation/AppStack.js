@@ -8,7 +8,6 @@ import Audit from '../screens/dashboard/audit/Audit';
 import ChildPacking from '../screens/dashboard/childPacking/ChildPacking';
 import QualityCheck from '../screens/dashboard/childPacking/qualityCheck/QualityCheck';
 import DeliveryNote from '../screens/dashboard/deliveryNote/DeliveryNote';
-import ChooseOutlet from '../screens/dashboard/deliveryPlan/ChooseOutlet';
 import DeliveryPlan from '../screens/dashboard/deliveryPlan/DeliveryPlan';
 import MasterPacking from '../screens/dashboard/masterPacking/MasterPacking';
 import Picking from '../screens/dashboard/picking/Picking';
@@ -49,7 +48,6 @@ const AppStack = () => {
     {id: 'assign-bin', name: 'AssignToBin', component: AssignToBin},
     {id: 'shelve-article', name: 'ShelveArticle', component: ShelveArticle},
     {id: 'delivery-plan', name: 'DeliveryPlan', component: DeliveryPlan},
-    {id: 'choose-outlet', name: 'ChooseOutlet', component: ChooseOutlet},
     {id: 'task-assign', name: 'TaskAssign', component: TaskAssign},
     {
       id: 'picker-packer-assign',

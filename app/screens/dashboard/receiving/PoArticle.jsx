@@ -11,12 +11,12 @@ import { toast } from '../../../../utils';
 const PoArticle = ({ navigation, route }) => {
   const {
     description, material, barcode, po, poItem, quantity,
-    remainingQuantity, receivingPlant, storageLocation, unit
+    receivingPlant, storageLocation, unit
   } = route.params;
   const [isLoading, setIsLoading] = useState(false);
   const [isButtonLoading, setIsButtonLoading] = useState(false);
   const [bins, setBins] = useState([]);
-  const [newQuantity, setNewQuantity] = useState(remainingQuantity);
+  const [newQuantity, setNewQuantity] = useState(quantity);
   const [token, setToken] = useState('');
   const API_URL = 'https://shwapnooperation.onrender.com/api/';
   const { GRNInfo, authInfo } = useAppContext();
@@ -52,7 +52,7 @@ const PoArticle = ({ navigation, route }) => {
   }, [material, user.site]);
 
   const readyForShelve = async () => {
-    if (newQuantity > remainingQuantity) {
+    if (newQuantity > quantity) {
       Toast.show({
         type: 'customWarn',
         text1: 'Quantity exceed',
@@ -165,7 +165,7 @@ const PoArticle = ({ navigation, route }) => {
             </View>
             <View className="quantity flex-row items-center gap-3">
               <Image source={BoxIcon} />
-              <Text className="font-bold text-black">{remainingQuantity}</Text>
+              <Text className="font-bold text-black">{quantity}</Text>
             </View>
           </View>
           <View className="input-box mt-6">

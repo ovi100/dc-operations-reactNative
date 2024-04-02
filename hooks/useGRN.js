@@ -4,7 +4,6 @@ import { toast } from '../utils';
 const useGRN = () => {
   const [grnItems, setGrnItems] = useState([]);
 
-
   const addToGRN = article => {
     const index = grnItems.findIndex(
       item => item.po && item.material === article.po && article.material,
@@ -24,7 +23,7 @@ const useGRN = () => {
     }
   };
 
-  console.log('GRN items', grnItems, grnItems.length);
+  // console.log('GRN items', grnItems, grnItems.length);
 
   const GRNInfo = {
     grnItems,

@@ -102,23 +102,24 @@ const Shelving = ({ navigation }) => {
   }
 
   const getShelvingData = async () => {
-    setIsLoading(true);
     await getShelvingReadyData();
     await getPartiallyInShelfData();
-    setIsLoading(false);
-    setRefreshing(false);
   }
 
   useFocusEffect(
     useCallback(() => {
       if (token) {
+        setIsLoading(true);
         getShelvingData();
+        setIsLoading(false);
       }
-    }, [token, refreshing]),
+    }, [token]),
   );
 
-  const onRefresh = () => {
+  const onRefresh = async () => {
     setRefreshing(true);
+    await getShelvingData();
+    setRefreshing(false);
   };
 
   if (readyArticles.length > 0 || partialArticles.length > 0) {
@@ -253,6 +254,7 @@ const Shelving = ({ navigation }) => {
               data={articles}
               renderItem={renderItem}
               keyExtractor={item => item._id}
+              initialNumToRender={10}
               refreshControl={
                 <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
               }

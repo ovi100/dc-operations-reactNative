@@ -121,13 +121,9 @@ const Receiving = ({ navigation }) => {
   );
 
   const onRefresh = async () => {
-    const start = performance.now();
     setRefreshing(true);
     await getPoList();
     setRefreshing(false);
-    const end = performance.now();
-    const time = (end - start) / 1000
-    console.log(`Refresh time: ${time.toFixed(2)} Seconds`);
   };
 
   if (barcode !== '') {

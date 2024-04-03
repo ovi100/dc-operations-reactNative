@@ -66,11 +66,9 @@ const TaskAssign = ({ navigation }) => {
   );
 
   const onRefresh = async () => {
-    console.log('fetch started');
     setRefreshing(true);
     await getInDnList();
     setRefreshing(false);
-    console.log('fetch ended');
   };
 
   const renderItem = ({ item, index }) => (

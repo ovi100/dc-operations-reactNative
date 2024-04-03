@@ -4,6 +4,7 @@ import {
   Image,
   Text,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   View,
 } from 'react-native';
 import {
@@ -16,9 +17,9 @@ import styles from '../../styles/button';
 
 const ButtonLoading = ({styles}) => {
   return (
-    <TouchableOpacity className={styles}>
+    <TouchableWithoutFeedback className={styles}>
       <ActivityIndicator size="small" color="#ffffff" />
-    </TouchableOpacity>
+    </TouchableWithoutFeedback>
   );
 };
 
@@ -68,7 +69,9 @@ const ButtonLg = ({title, onPress}) => {
   return (
     <TouchableOpacity onPress={onPress}>
       <View className="bg-theme rounded-md p-4">
-        <Text className="text-white text-xl text-center font-semibold">{title}</Text>
+        <Text className="text-white text-xl text-center font-semibold">
+          {title}
+        </Text>
       </View>
     </TouchableOpacity>
   );
@@ -77,7 +80,9 @@ const ButtonLg = ({title, onPress}) => {
 const ButtonXs = ({title}) => {
   return (
     <View style={styles.buttonXs}>
-      <Text className="text-white text-sm text-center font-medium">{title}</Text>
+      <Text className="text-white text-sm text-center font-medium">
+        {title}
+      </Text>
     </View>
   );
 };

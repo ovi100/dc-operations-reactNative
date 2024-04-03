@@ -1,4 +1,4 @@
-import {Alert, Dimensions, ToastAndroid} from 'react-native';
+import { Alert, Dimensions, ToastAndroid } from 'react-native';
 
 const validateInput = (type, value) => {
   if (!value) {
@@ -81,6 +81,8 @@ const dateRange = range => {
 const {width: WINDOW_WIDTH, height: WINDOW_HEIGHT} = Dimensions.get('window');
 
 export {
+  WINDOW_HEIGHT,
+  WINDOW_WIDTH,
   dateRange,
   formatDateYYYYMMDD,
   groupBy,
@@ -88,7 +90,6 @@ export {
   uniqueArray,
   uniqueArrayOfObjects,
   validateFile,
-  validateInput,
-  WINDOW_WIDTH,
-  WINDOW_HEIGHT,
+  validateInput
 };
+

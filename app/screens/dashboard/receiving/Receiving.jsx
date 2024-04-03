@@ -8,7 +8,7 @@ import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
 import ServerError from '../../../../components/animations/ServerError';
 import { getStorage } from '../../../../hooks/useStorage';
-import { dateRange, toast } from '../../../../utils';
+import { dateRange } from '../../../../utils';
 import SunmiScanner from '../../../../utils/sunmi/scanner';
 
 const Receiving = ({ navigation }) => {
@@ -26,9 +26,11 @@ const Receiving = ({ navigation }) => {
   const dateObject = dateRange(15);
   const postObject = { ...dateObject, site: user?.site };
 
+  // console.log(postObject);
+
   useEffect(() => {
     getStorage('user', setUser, 'object');
-    getStorage('token', setToken,);
+    getStorage('token', setToken);
   }, []);
 
   useEffect(() => {
@@ -44,7 +46,6 @@ const Receiving = ({ navigation }) => {
   }, [isFocused]);
 
   const getPoList = async () => {
-    setIsLoading(true);
     try {
       await fetch(API_URL + 'bapi/po/list', {
         method: 'POST',
@@ -70,29 +71,22 @@ const Receiving = ({ navigation }) => {
                   const releaseItems = releaseData.items.filter(item => item.receivingPlant === user?.site);
                   let remainingPoItems = poList.filter(poItem => !releaseItems.some(releaseItem => releaseItem.po === poItem.po));
                   setPoList(remainingPoItems);
-                  setIsLoading(false);
-                  setRefreshing(false);
                 } else {
                   setPoList(result.data.po);
-                  setIsLoading(false);
-                  setRefreshing(false);
                 }
               })
               .catch(error => {
+                console.log(error)
                 Toast.show({
                   type: 'customError',
                   text1: error.message.toString(),
                 });
-                setIsLoading(false);
-                setRefreshing(false);
               });
           } else {
             Toast.show({
               type: 'customError',
               text1: error.message.toString(),
             });
-            setIsLoading(false);
-            setRefreshing(false);
           }
         })
         .catch(error => {
@@ -100,28 +94,40 @@ const Receiving = ({ navigation }) => {
             type: 'customError',
             text1: error.message.toString(),
           });
-          setIsLoading(false);
         });
     } catch (error) {
       Toast.show({
         type: 'customError',
         text1: error.message.toString(),
       });
-      setIsLoading(false);
     }
   };
 
   useFocusEffect(
     useCallback(() => {
+      const getPoData = async () => {
+        const start = performance.now();
+        setIsLoading(true);
+        await getPoList();
+        setIsLoading(false);
+        const end = performance.now();
+        const time = (end - start) / 1000
+        console.log(`Loading time: ${time.toFixed(2)} Seconds`);
+      };
       if (token) {
-        getPoList();
+        getPoData();
       }
-    }, [token, refreshing])
+    }, [token])
   );
 
-  const onRefresh = () => {
-    setIsLoading(false);
+  const onRefresh = async () => {
+    const start = performance.now();
     setRefreshing(true);
+    await getPoList();
+    setRefreshing(false);
+    const end = performance.now();
+    const time = (end - start) / 1000
+    console.log(`Refresh time: ${time.toFixed(2)} Seconds`);
   };
 
   if (barcode !== '') {
@@ -130,7 +136,10 @@ const Receiving = ({ navigation }) => {
       navigation.navigate('PurchaseOrder', { po_id: barcode });
       setBarcode('');
     } else {
-      toast('PO not found!');
+      Toast.show({
+        type: 'customInfo',
+        text1: 'PO not found!',
+      });
       setBarcode('');
     }
   }
@@ -210,7 +219,7 @@ const Receiving = ({ navigation }) => {
               data={poList}
               renderItem={renderItem}
               keyExtractor={item => item.po}
-              initialNumToRender={15}
+              initialNumToRender={10}
               refreshControl={
                 <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
               }

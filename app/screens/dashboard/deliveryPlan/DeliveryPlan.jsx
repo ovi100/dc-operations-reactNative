@@ -48,7 +48,6 @@ const DeliveryPlan = ({ navigation }) => {
     setSelectedList([]);
   }, []);
 
-
   const getDnList = async () => {
     try {
       await fetch(API_URL + `bapi/sto/list?from=${from}&to=${to}&site=${outlets}`, {
@@ -89,7 +88,6 @@ const DeliveryPlan = ({ navigation }) => {
                 }
               })
           } else {
-            // toast(result.message);
             Toast.show({
               type: 'customError',
               text1: result.message.toString(),
@@ -97,14 +95,12 @@ const DeliveryPlan = ({ navigation }) => {
           }
         })
         .catch(error => {
-          // toast(error.message);
           Toast.show({
             type: 'customError',
             text1: error.message.toString(),
           });
         });
     } catch (error) {
-      // toast(error.message);
       Toast.show({
         type: 'customError',
         text1: error.message.toString(),
@@ -124,7 +120,11 @@ const DeliveryPlan = ({ navigation }) => {
         getDpList();
       }
       else {
-        setModalVisible(true);
+        setIsLoading(true);
+        setTimeout(() => {
+          setIsLoading(false);
+          setModalVisible(true);
+        }, 500)
       }
     }, [token, outlets])
   );
@@ -148,7 +148,7 @@ const DeliveryPlan = ({ navigation }) => {
     if (modalText.length > 0) {
       Alert.alert(
         'Are you sure?',
-        `Delivery plan will be generated with ${modalText} outlet`,
+        `Delivery plan will be generated with ${modalText} outlets`,
         [
           {
             text: 'Cancel',
@@ -297,7 +297,7 @@ const DeliveryPlan = ({ navigation }) => {
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">
       <CustomToast />
-      {outlets && !isLoading ? (
+      {outlets ? (
         <View className="flex-1 h-full px-4">
           <View className="screen-header flex-row items-center mb-4">
             <ButtonBack navigation={navigation} />
@@ -358,7 +358,7 @@ const DeliveryPlan = ({ navigation }) => {
                   data={dpList}
                   renderItem={renderItem}
                   keyExtractor={item => item.sto}
-                  initialNumToRender={15}
+                  initialNumToRender={10}
                   refreshControl={
                     <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
                   }
@@ -379,48 +379,58 @@ const DeliveryPlan = ({ navigation }) => {
           </View>
         </View>
       ) : (
-        <Modal
-          isOpen={modalVisible}
-          withInput={true}
-          withCloseButton={false}
-          modalHeader="Choose outlet"
-          onPress={() => setModalVisible(false)}
-        >
-          <View className="content">
-            <View className="outlet-list flex-row border-b border-gray-300 mt-3 pb-3">
-              {modalText.length > 0 ? (
-                <>
-                  {chosenList.map((outlet, i) => (
-                    <View className="outlet bg-gray-300 rounded mr-1 px-2 py-1" key={i}>
-                      <Text className="text-sh">{outlet}</Text>
-                    </View>
-                  ))}
-                </>
-              ) : (
-                <View className="outlet">
-                  <Text>No outlet selected</Text>
-                </View>
-              )}
-            </View>
-            <View className="input-box mt-3">
-              <TextInput
-                className="bg-[#F5F6FA] border border-gray-300 h-[50px] text-[#5D80C5] rounded-md mb-3 px-4 uppercase"
-                placeholder="Add multiple outlets code by comma"
-                placeholderTextColor="#5D80C5"
-                selectionColor="#5D80C5"
-                keyboardType="default"
-                value={modalText}
-                onChangeText={(text) => setModalText(text)}
-              />
-            </View>
-            <View className="button w-1/3 mx-auto">
-              <TouchableWithoutFeedback onPress={() => submitModal()}>
-                <Text className="bg-blue-600 text-white text-base text-center rounded p-1.5">submit</Text>
-              </TouchableWithoutFeedback>
-            </View>
-          </View>
-        </Modal>
+        <View className="w-full h-full justify-center px-3">
+          <Text className="mt-4 text-gray-400 text-lg text-center font-semibold">
+            No outlets selected yet!
+          </Text>
+          <TouchableWithoutFeedback onPress={() => setModalVisible(true)}>
+            <Text className="w-1/2 bg-blue-600 text-white text-lg text-center font-semibold rounded mx-auto mt-4 p-1.5">
+              choose outlets
+            </Text>
+          </TouchableWithoutFeedback>
+        </View>
       )}
+      <Modal
+        isOpen={modalVisible}
+        withInput={true}
+        // withCloseButton={false}
+        modalHeader="Choose outlet"
+        onPress={() => setModalVisible(false)}
+      >
+        <View className="content">
+          <View className="outlet-list flex-row border-b border-gray-300 mt-3 pb-3">
+            {modalText.length > 0 ? (
+              <>
+                {chosenList.map((outlet, i) => (
+                  <View className="outlet bg-gray-300 rounded mr-1 px-2 py-1" key={i}>
+                    <Text className="text-sh">{outlet}</Text>
+                  </View>
+                ))}
+              </>
+            ) : (
+              <View className="outlet">
+                <Text>No outlet selected</Text>
+              </View>
+            )}
+          </View>
+          <View className="input-box mt-3">
+            <TextInput
+              className="bg-[#F5F6FA] border border-gray-300 h-[50px] text-[#5D80C5] rounded-md mb-3 px-4 uppercase"
+              placeholder="Add multiple outlets code by comma"
+              placeholderTextColor="#5D80C5"
+              selectionColor="#5D80C5"
+              keyboardType="default"
+              value={modalText}
+              onChangeText={(text) => setModalText(text)}
+            />
+          </View>
+          <View className="button w-1/3 mx-auto">
+            <TouchableWithoutFeedback onPress={() => submitModal()}>
+              <Text className="bg-blue-600 text-white text-base text-center rounded p-1.5">submit</Text>
+            </TouchableWithoutFeedback>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };

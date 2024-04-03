@@ -1,11 +1,10 @@
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, RefreshControl, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
-import ServerError from '../../../../components/animations/ServerError';
-import { getStorage } from '../../../../hooks/useStorage';
-import { toast } from '../../../../utils';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
+import ServerError from '../../../../components/animations/ServerError';
+import { getStorage } from '../../../../hooks/useStorage';
 
 const TaskAssign = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -20,11 +19,6 @@ const TaskAssign = ({ navigation }) => {
   }, []);
 
   const getInDnList = async () => {
-    if (!refreshing) {
-      setIsLoading(true);
-    } else {
-      setRefreshing(true);
-    }
     try {
       await fetch(API_URL, {
         method: 'GET',
@@ -37,25 +31,20 @@ const TaskAssign = ({ navigation }) => {
           if (data.status) {
             const serverData = data.items.filter(item => item.status === 'in dn' || item.status === 'picker assigned');
             setTaskList(serverData);
-            setIsLoading(false);
-            setRefreshing(false);
           } else {
-            toast(data.message);
-            setIsLoading(false);
-            setRefreshing(false);
+            Toast.show({
+              type: 'customError',
+              text1: data.message.toString(),
+            });
           }
         })
         .catch(error => {
-          setIsLoading(false);
-          setRefreshing(false);
           Toast.show({
             type: 'customError',
             text1: error.message.toString(),
           });
         });
     } catch (error) {
-      setIsLoading(false);
-      setRefreshing(false);
       Toast.show({
         type: 'customError',
         text1: error.message.toString(),
@@ -65,14 +54,23 @@ const TaskAssign = ({ navigation }) => {
 
   useFocusEffect(
     useCallback(() => {
+      const getTaskList = async () => {
+        setIsLoading(true);
+        await getInDnList();
+        setIsLoading(false);
+      };
       if (token) {
-        getInDnList();
+        getTaskList();
       }
-    }, [token, refreshing])
+    }, [token])
   );
 
-  const onRefresh = () => {
+  const onRefresh = async () => {
+    console.log('fetch started');
     setRefreshing(true);
+    await getInDnList();
+    setRefreshing(false);
+    console.log('fetch ended');
   };
 
   const renderItem = ({ item, index }) => (
@@ -115,8 +113,6 @@ const TaskAssign = ({ navigation }) => {
     )
   }
 
-  console.log('taskList: ', taskList, typeof taskList);
-
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">
       <View className="flex-1 px-4">
@@ -138,6 +134,7 @@ const TaskAssign = ({ navigation }) => {
               data={taskList}
               renderItem={renderItem}
               keyExtractor={item => item._id}
+              initialNumToRender={10}
               refreshControl={
                 <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
               }

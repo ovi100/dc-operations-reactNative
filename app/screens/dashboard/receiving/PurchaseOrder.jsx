@@ -3,9 +3,10 @@ import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator, Alert,
   DeviceEventEmitter,
-  FlatList, SafeAreaView, Text,
-  View
+  FlatList, SafeAreaView, Text, View
 } from 'react-native';
+import Toast from 'react-native-toast-message';
+import CustomToast from '../../../../components/CustomToast';
 import { ButtonLg, ButtonLoading } from '../../../../components/buttons';
 import useAppContext from '../../../../hooks/useAppContext';
 import { getStorage } from '../../../../hooks/useStorage';
@@ -17,8 +18,8 @@ const PurchaseOrder = ({ navigation, route }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isButtonLoading, setIsButtonLoading] = useState(false);
   const [barcode, setBarcode] = useState('');
-  const [scanArticle, setScanArticle] = useState({});
   const [token, setToken] = useState('');
+  const [poStatus, setPoStatus] = useState('');
   const [articles, setArticles] = useState([]);
   const tableHeader = ['Article ID', 'Article Name', 'Quantity'];
   const API_URL = 'https://shwapnooperation.onrender.com/';
@@ -42,33 +43,41 @@ const PurchaseOrder = ({ navigation, route }) => {
     };
   }, []);
 
-  // const getArticleBarcode = async (barcode) => {
-  //   const response = await fetch('https://shelves-backend-1.onrender.com/api/barcodes/material/' + barcode);
-  //   const result = await response.json();
-  //   const material = JSON.parse(result.data.material)
-  //   console.log("Material from API ", typeof material, material)
-  //   return material;
-  // }
-
-  const getArticleBarcode = async (barcode) => {
+  const getPoStatus = async () => {
     try {
-      const response = await fetch('https://shelves-backend-1.onrender.com/api/barcodes/material/' + barcode);
-
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      const result = await response.json();
-
-      if (!result.status) {
-        throw new Error('API request failed');
-      }
-      setScanArticle(result.data);
+      setIsLoading(true);
+      await fetch(API_URL + `api/po-tracking?filterBy=po&value=${po_id}`, {
+        method: 'GET',
+        headers: {
+          authorization: token,
+        },
+      })
+        .then(res => res.json())
+        .then(result => {
+          if (result.status) {
+            setPoStatus(result.items[0].status);
+            setIsLoading(false);
+          } else {
+            setPoStatus(result.message);
+            setIsLoading(false);
+          }
+        })
+        .catch(error => {
+          Toast.show({
+            type: 'customError',
+            text1: "could not fetch API",
+          });
+          setIsLoading(false);
+          setRefreshing(false);
+        });
     } catch (error) {
-      console.error('Error fetching data:', error);
-      throw error; // Rethrow the error for the caller to handle
+      Toast.show({
+        type: 'customError',
+        text1: error.message.toString(),
+      });
+      setIsLoading(false);
     }
   };
-
 
   const getPoList = async () => {
     setIsLoading(true);
@@ -129,11 +138,11 @@ const PurchaseOrder = ({ navigation, route }) => {
   useFocusEffect(
     useCallback(() => {
       if (token && po_id) {
+        getPoStatus();
         getPoList();
       }
     }, [token, po_id]),
   );
-
 
   const renderItem = ({ item, index }) => (
     <View
@@ -159,16 +168,53 @@ const PurchaseOrder = ({ navigation, route }) => {
   );
 
   if (barcode !== '') {
+    const getArticleBarcode = async (barcode) => {
+      try {
+        await fetch('https://shelves-backend-1.onrender.com/api/barcodes/material/' + barcode, {
+          method: 'GET',
+          headers: {
+            authorization: token,
+            'Content-Type': 'application/json',
+          }
+        })
+          .then(response => response.json())
+          .then(result => {
+            if (result.status) {
+              const isValidBarcode = result.data.barcodes.some(item => item === barcode);
+              const poItem = articles.find(item => item.material === result.data.material);
+
+              if (poItem && isValidBarcode) {
+                navigation.replace('PoArticle', poItem);
+                setBarcode('');
+              } else {
+                Toast.show({
+                  type: 'customInfo',
+                  text1: 'Article not found!',
+                });
+                setBarcode('');
+              }
+            } else {
+              Toast.show({
+                type: 'customError',
+                text1: result.message.toString(),
+              });
+            }
+          })
+          .catch(error => {
+            console.log(error.message);
+            Toast.show({
+              type: 'customError',
+              text1: 'API request failed',
+            });
+          });
+      } catch (error) {
+        Toast.show({
+          type: 'customError',
+          text1: 'Unable to fetch data',
+        });
+      }
+    };
     getArticleBarcode(barcode);
-    const poItem = articles.find(item => item.material === scanArticle.material);
-    console.log('Merge item', { ...poItem, barcode: scanArticle.barcodes });
-    if (poItem) {
-      navigation.replace('PoArticle', { ...poItem });
-      setBarcode('');
-    } else {
-      toast('Article not found!');
-      setBarcode('');
-    }
   }
 
   const GRNByPo = grnItems.filter(grnItem => grnItem.po == po_id);
@@ -244,19 +290,15 @@ const PurchaseOrder = ({ navigation, route }) => {
     )
   }
 
-  if (articles.length === 0 && GRNByPo.length === 0) {
+  if (poStatus === 'pending for release' && GRNByPo.length === 0) {
     return (
       <View className="w-full h-4/5 justify-center px-3">
         <Text className="text-blue-800 text-lg text-center font-semibold font-mono mt-5">
-          PO {po_id} is waiting for release
+          PO {po_id} is {poStatus}
         </Text>
       </View>
     )
   }
-
-  // console.log('Initial GRN list', initialGrnItems, initialGrnItems.length);
-  // console.log('Actual GRN list', grnItems, grnItems.length);
-  // console.log('GRN by po list', GRNByPo, GRNByPo.length);
 
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">
@@ -303,6 +345,7 @@ const PurchaseOrder = ({ navigation, route }) => {
           </>
         </View>
       </View>
+      <CustomToast />
     </SafeAreaView >
   );
 };

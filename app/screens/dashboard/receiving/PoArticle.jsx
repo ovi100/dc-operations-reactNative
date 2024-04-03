@@ -1,5 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Image, SafeAreaView, Text, TextInput, TouchableWithoutFeedback, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Image, SafeAreaView, Text, TextInput,
+  TouchableWithoutFeedback, View
+} from 'react-native';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
 import { ButtonLg, ButtonLoading } from '../../../../components/buttons';
@@ -74,7 +78,6 @@ const PoArticle = ({ navigation, route }) => {
       const shelvingObject = {
         po: po,
         code: material,
-        barcode: barcode,
         description: description,
         userId: user._id,
         site: receivingPlant,

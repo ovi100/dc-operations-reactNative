@@ -126,18 +126,53 @@ const Shelving = ({ navigation }) => {
   }
 
   if (barcode !== '') {
-    const article = articles.find(item => item.barcode === barcode);
-    if (article) {
-      navigation.navigate('BinDetails', article);
-      setBarcode('');
-    } else {
-      Toast.show({
-        type: 'customError',
-        text1: 'Article not found!',
-      });
-      // toast('Article not found!');
-      setBarcode('');
-    }
+    const getArticleBarcode = async (barcode) => {
+      try {
+        await fetch('https://shelves-backend-1.onrender.com/api/barcodes/material/' + barcode, {
+          method: 'GET',
+          headers: {
+            authorization: token,
+            'Content-Type': 'application/json',
+          }
+        })
+          .then(response => response.json())
+          .then(result => {
+            if (result.status) {
+              const isValidBarcode = result.data.barcodes.some(item => item === barcode);
+              const article = articles.find(item => item.code === result.data.material);
+
+              if (article && isValidBarcode) {
+                navigation.navigate('BinDetails', article);
+                setBarcode('');
+              } else {
+                Toast.show({
+                  type: 'customInfo',
+                  text1: 'Article not found!',
+                });
+                setBarcode('');
+              }
+            } else {
+              Toast.show({
+                type: 'customError',
+                text1: result.message.toString(),
+              });
+            }
+          })
+          .catch(error => {
+            console.log(error.message);
+            Toast.show({
+              type: 'customError',
+              text1: 'API request failed',
+            });
+          });
+      } catch (error) {
+        Toast.show({
+          type: 'customError',
+          text1: 'Unable to fetch data',
+        });
+      }
+    };
+    getArticleBarcode(barcode);
   }
 
   const renderItem = ({ item, index }) => (

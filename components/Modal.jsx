@@ -50,7 +50,6 @@ const Modal = ({ isOpen, withInput = false, withCloseButton = true, children, mo
       animationType='fade'
       statusBarTranslucent
       transparent
-      onRequestClose={onPress}
     >
       {content}
     </RNModal>

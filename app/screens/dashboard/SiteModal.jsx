@@ -1,16 +1,16 @@
 import React from 'react';
 import { Image, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
+import Toast from 'react-native-toast-message';
 import { ButtonProfile } from '../../../components/buttons';
 import { Dk02Icon, Dk11Icon } from '../../../constant/icons';
 import useAppContext from '../../../hooks/useAppContext';
 import { setStorage } from '../../../hooks/useStorage';
-import { toast } from '../../../utils';
 
 const SiteModal = ({ navigation }) => {
   const { authInfo } = useAppContext();
   const { user, setUser, logout } = authInfo;
   let sites;
-  const siteIcons = [
+  const siteList = [
     {
       name: 'PnP DC',
       code: 'DK02',
@@ -20,23 +20,35 @@ const SiteModal = ({ navigation }) => {
       name: 'Tejgaon DC',
       code: 'DK11',
       icon: Dk11Icon
+    },
+    {
+      name: 'New Kamarpara  DC',
+      code: 'DK14',
+      icon: Dk02Icon
+    },
+    {
+      name: 'Uttara 11',
+      code: 'DS01',
+      icon: Dk11Icon
     }
   ];
 
   if (user.site.length === 0) {
-    toast("You don't have any site");
+    Toast.show({
+      type: 'customInfo',
+      text1: "You don't have any site",
+    });
     logout();
     return;
   }
 
   if (!Array.isArray(user.site)) {
-    console.log('navigating to home from site');
     navigation.navigate('Home');
     return;
   }
 
   if (user.site.length > 0) {
-    sites = user.site.map(item => siteIcons.find(elm => elm.code === item));
+    sites = user.site.map(item => siteList.find(elm => elm.code === item));
   }
 
   const updateUser = (site) => {

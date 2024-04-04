@@ -134,7 +134,12 @@ const TaskAssign = ({ navigation }) => {
               keyExtractor={item => item._id}
               initialNumToRender={10}
               refreshControl={
-                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                <RefreshControl
+                  colors={["#fff"]}
+                  onRefresh={onRefresh}
+                  progressBackgroundColor="#000"
+                  refreshing={refreshing}
+                />
               }
             />
           </View>

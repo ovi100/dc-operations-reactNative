@@ -10,7 +10,6 @@ import CustomToast from '../../../../components/CustomToast';
 import { ButtonLg, ButtonLoading } from '../../../../components/buttons';
 import useAppContext from '../../../../hooks/useAppContext';
 import { getStorage } from '../../../../hooks/useStorage';
-import { toast } from '../../../../utils';
 import SunmiScanner from '../../../../utils/sunmi/scanner';
 
 const PurchaseOrder = ({ navigation, route }) => {
@@ -56,10 +55,8 @@ const PurchaseOrder = ({ navigation, route }) => {
         .then(result => {
           if (result.status) {
             setPoStatus(result.items[0].status);
-            setIsLoading(false);
           } else {
             setPoStatus(result.message);
-            setIsLoading(false);
           }
         })
         .catch(error => {
@@ -67,20 +64,16 @@ const PurchaseOrder = ({ navigation, route }) => {
             type: 'customError',
             text1: "could not fetch API",
           });
-          setIsLoading(false);
-          setRefreshing(false);
         });
     } catch (error) {
       Toast.show({
         type: 'customError',
         text1: error.message.toString(),
       });
-      setIsLoading(false);
     }
   };
 
   const getPoList = async () => {
-    setIsLoading(true);
     await fetch(API_URL + 'bapi/po/display', {
       method: 'POST',
       headers: {
@@ -114,32 +107,43 @@ const PurchaseOrder = ({ navigation, route }) => {
                     )
                 );
                 setArticles(remainingPoItems);
-                setIsLoading(false);
               }
               else {
                 let poItems = result.data.items;
                 setArticles(poItems);
-                setIsLoading(false);
               }
             })
             .catch(error => {
-              toast(error.message);
+              Toast.show({
+                type: 'customError',
+                text1: error.message.toString(),
+              });
             });
         } else {
-          setIsLoading(false);
-          toast(result.message);
+          Toast.show({
+            type: 'customError',
+            text1: error.message.toString(),
+          });
         }
       })
       .catch(error => {
-        toast(error.message);
+        Toast.show({
+          type: 'customError',
+          text1: error.message.toString(),
+        });
       });
   };
 
   useFocusEffect(
     useCallback(() => {
+      const getPoInfo = async () => {
+        setIsLoading(true);
+        await getPoStatus();
+        await getPoList();
+        setIsLoading(false);
+      }
       if (token && po_id) {
-        getPoStatus();
-        getPoList();
+        getPoInfo();
       }
     }, [token, po_id]),
   );
@@ -185,19 +189,19 @@ const PurchaseOrder = ({ navigation, route }) => {
 
               if (poItem && isValidBarcode) {
                 navigation.replace('PoArticle', poItem);
-                setBarcode('');
               } else {
                 Toast.show({
                   type: 'customInfo',
                   text1: 'Article not found!',
                 });
-                setBarcode('');
               }
+              setBarcode('');
             } else {
               Toast.show({
                 type: 'customError',
-                text1: result.message.toString(),
+                text1: result.message,
               });
+              setBarcode('');
             }
           })
           .catch(error => {
@@ -232,7 +236,7 @@ const PurchaseOrder = ({ navigation, route }) => {
       })
         .then(response => response.json())
         .then(async result => {
-          if (result.status) {
+          if (result.message === `Purchasing document ${po_id} not yet released`) {
             await fetch(API_URL + 'api/po-tracking', {
               method: 'PATCH',
               headers: {
@@ -246,26 +250,50 @@ const PurchaseOrder = ({ navigation, route }) => {
             })
               .then(response => response.json())
               .then(data => {
-                setGrnItems([]);
-                toast(data.message);
-                setIsButtonLoading(false);
-                navigation.goBack();
+                if (data.status) {
+                  setGrnItems([]);
+                  Toast.show({
+                    type: 'customSuccess',
+                    text1: result.message,
+                  });
+                  setIsButtonLoading(false);
+                  setTimeout(() => {
+                    navigation.navigate('Receiving');
+                  }, 1500);
+                } else {
+                  Toast.show({
+                    type: 'customError',
+                    text1: data.message,
+                  });
+                }
               })
               .catch(error => {
-                toast(error.message);
+                Toast.show({
+                  type: 'customError',
+                  text1: error.message.toString(),
+                });
                 setIsButtonLoading(false);
               });
           } else {
-            toast(result.message);
+            Toast.show({
+              type: 'customError',
+              text1: result.message,
+            });
             setIsButtonLoading(false);
           }
         })
         .catch(error => {
-          toast(error.message);
+          Toast.show({
+            type: 'customError',
+            text1: error.message.toString(),
+          });
           setIsButtonLoading(false);
         });
     } catch (error) {
-      toast(error.message);
+      Toast.show({
+        type: 'customError',
+        text1: error.message.toString(),
+      });
       setIsButtonLoading(false);
     }
   }
@@ -294,7 +322,7 @@ const PurchaseOrder = ({ navigation, route }) => {
     return (
       <View className="w-full h-4/5 justify-center px-3">
         <Text className="text-blue-800 text-lg text-center font-semibold font-mono mt-5">
-          PO {po_id} is {poStatus}
+          {po_id} is {poStatus}
         </Text>
       </View>
     )

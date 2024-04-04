@@ -1,6 +1,8 @@
 import { useIsFocused } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, DeviceEventEmitter, SafeAreaView, Text, View } from 'react-native';
+import Toast from 'react-native-toast-message';
+import CustomToast from '../../../../components/CustomToast';
 import Ready from '../../../../components/animations/Ready';
 import Scan from '../../../../components/animations/Scan';
 import { ButtonLg } from '../../../../components/buttons';
@@ -34,7 +36,10 @@ const AssignToBin = ({ navigation, route }) => {
           setIsLoading(false);
         } else {
           setIsBinExist(result.status);
-          toast('Bin not exist!');
+          Toast.show({
+            type: 'customError',
+            text1: 'Bin not exist!',
+          });
           setIsLoading(false);
         }
       });
@@ -107,8 +112,6 @@ const AssignToBin = ({ navigation, route }) => {
     )
   }
 
-  console.log('Bin assign screen');
-
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">
       <View className="flex-1 px-4">
@@ -140,6 +143,7 @@ const AssignToBin = ({ navigation, route }) => {
           }
         </View>
       </View>
+      <CustomToast />
     </SafeAreaView>
   )
 }

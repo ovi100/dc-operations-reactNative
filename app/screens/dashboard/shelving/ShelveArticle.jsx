@@ -1,6 +1,7 @@
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useState } from 'react';
 import { Image, SafeAreaView, Text, TextInput, TouchableWithoutFeedback, View } from 'react-native';
+import Toast from 'react-native-toast-message';
 import { ButtonLg, ButtonLoading } from '../../../../components/buttons';
 import { BoxIcon } from '../../../../constant/icons';
 import { getStorage } from '../../../../hooks/useStorage';
@@ -42,22 +43,34 @@ const ShelveArticle = ({ navigation, route }) => {
           .then(response => response.json())
           .then(data => {
             if (data.status) {
-              toast(data.message);
+              Toast.show({
+                type: 'customInfo',
+                text1: data.message,
+              });
               setTimeout(() => {
                 setIsButtonLoading(false);
                 navigation.navigate('Shelving');
               }, 1500);
             } else {
-              toast(data.message);
+              Toast.show({
+                type: 'customError',
+                text1: data.message,
+              });
               setIsButtonLoading(false);
             }
           })
           .catch(error => {
-            toast(error.message);
+            Toast.show({
+              type: 'customError',
+              text1: error.message.toString(),
+            });
             setIsButtonLoading(false);
           });
       } catch (error) {
-        toast(error.message);
+        Toast.show({
+          type: 'customError',
+          text1: error.message.toString(),
+        });
         setIsButtonLoading(false);
       }
     }

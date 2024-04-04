@@ -1,23 +1,19 @@
 import { useIsFocused } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
-import { DeviceEventEmitter, FlatList, SafeAreaView, Text, View } from 'react-native';
+import { Alert, DeviceEventEmitter, FlatList, SafeAreaView, Text, View } from 'react-native';
+import Toast from 'react-native-toast-message';
+import CustomToast from '../../../../components/CustomToast';
 import EmptyBox from '../../../../components/animations/EmptyBox';
 import { ButtonLg } from '../../../../components/buttons';
-import { getStorage } from '../../../../hooks/useStorage';
 import SunmiScanner from '../../../../utils/sunmi/scanner';
 
 const BinDetails = ({ navigation, route }) => {
   const isFocused = useIsFocused();
-  const { bins, code, description, quantity } = route.params;
+  const { bins, code, description } = route.params;
   const tableHeader = ['Bin ID', 'Gondola ID'];
   const [barcode, setBarcode] = useState('');
   const isBinsFound = Boolean(bins.length);
-  const [token, setToken] = useState('');
   const { startScan, stopScan } = SunmiScanner;
-
-  useEffect(() => {
-    getStorage('token', setToken);
-  }, [])
 
   useEffect(() => {
     startScan();
@@ -30,8 +26,7 @@ const BinDetails = ({ navigation, route }) => {
       stopScan();
       DeviceEventEmitter.removeAllListeners('ScanDataReceived');
     };
-  }, [isFocused, !isBinsFound]);
-
+  }, [isFocused]);
 
   const renderItem = ({ item, index }) => (
     <View className="flex-row border border-tb rounded-lg mt-2.5 p-4" key={index}>
@@ -48,15 +43,39 @@ const BinDetails = ({ navigation, route }) => {
     </View>
   );
 
+  const assignToNew = () => {
+    navigation.replace('AssignToBin', { ...route.params })
+  }
+
   if (barcode !== '') {
     const binItem = bins.find(item => item.bin_id === barcode);
     if (binItem) {
       navigation.replace('ShelveArticle', { ...route.params, bins: { bin_id: binItem.bin_id, gondola_id: binItem.gondola_id } });
-      setBarcode('');
     } else {
-      navigation.replace('AssignToBin', { ...route.params });
-      setBarcode('');
+      const isBinExist = async (code) => {
+        await fetch(`https://shelves-backend.onrender.com/api/bins/checkBin/${code}`)
+          .then(res => res.json())
+          .then(result => {
+            if (result.status) {
+              Alert.alert('Are you sure?', 'assign to new bin', [
+                {
+                  text: 'Cancel',
+                  onPress: () => null,
+                  style: 'cancel',
+                },
+                { text: 'OK', onPress: () => assignToNew() },
+              ]);
+            } else {
+              Toast.show({
+                type: 'customError',
+                text1: result.message,
+              });
+            }
+          });
+      };
+      isBinExist(barcode);
     }
+    setBarcode('');
   }
 
   return (
@@ -111,6 +130,7 @@ const BinDetails = ({ navigation, route }) => {
 
 
       </View>
+      <CustomToast />
     </SafeAreaView>
   );
 };

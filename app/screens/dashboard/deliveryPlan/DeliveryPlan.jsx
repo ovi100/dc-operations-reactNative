@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Button,
   FlatList,
   Image,
   Keyboard,
@@ -22,7 +23,7 @@ import ServerError from '../../../../components/animations/ServerError';
 import { ButtonBack, ButtonLg, ButtonLoading } from '../../../../components/buttons';
 import { SearchIcon } from '../../../../constant/icons';
 import { getStorage, setStorage } from '../../../../hooks/useStorage';
-import { dateRange, toast } from '../../../../utils';
+import { dateRange } from '../../../../utils';
 
 const DeliveryPlan = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -38,7 +39,7 @@ const DeliveryPlan = ({ navigation }) => {
   const [search, setSearch] = useState('');
   const tableHeader = ['STO ID', 'SKU', 'Outlet Code'];
   const API_URL = 'https://shwapnooperation.onrender.com/';
-  const dateObject = dateRange(20);
+  const dateObject = dateRange(15);
   const { from, to } = dateObject;
 
   useEffect(() => {
@@ -108,14 +109,14 @@ const DeliveryPlan = ({ navigation }) => {
     }
   };
 
+  const getDpList = async () => {
+    setIsLoading(true);
+    await getDnList();
+    setIsLoading(false);
+  };
+
   useFocusEffect(
     useCallback(() => {
-      const getDpList = async () => {
-        setIsLoading(true);
-        await getDnList();
-        setIsLoading(false);
-      };
-
       if (token && outlets) {
         getDpList();
       }
@@ -233,23 +234,40 @@ const DeliveryPlan = ({ navigation }) => {
             .then(data => {
               if (data.status) {
                 uncheckAll();
-                toast(data.message);
+                Toast.show({
+                  type: 'customInfo',
+                  text1: data.message,
+                });
                 setIsButtonLoading(false);
-                setRefreshing(true);
+                onRefresh();
               } else {
                 uncheckAll();
-                toast(data.message);
+                Toast.show({
+                  type: 'customError',
+                  text1: data.message,
+                });
                 setIsButtonLoading(false);
-                setRefreshing(true);
+                onRefresh();
               }
             })
-            .catch(error => toast(error.message));
+            .catch(error => {
+              Toast.show({
+                type: 'customError',
+                text1: error.message.toString(),
+              });
+            });
         })
       } catch (error) {
-        toast(error.message)
+        Toast.show({
+          type: 'customError',
+          text1: error.message.toString(),
+        });
       }
     } else {
-      toast('No item selected!');
+      Toast.show({
+        type: 'customError',
+        text1: 'No item selected!',
+      });
     }
   };
 
@@ -279,7 +297,7 @@ const DeliveryPlan = ({ navigation }) => {
     return (
       <View className="w-full h-screen justify-center px-3">
         <ActivityIndicator size="large" color="#EB4B50" />
-        <Text className="mt-4 text-gray-400 text-base text-center">Loading delivery note. Please wait......</Text>
+        <Text className="mt-4 text-gray-400 text-base text-center">Loading delivery plan. Please wait......</Text>
       </View>
     )
   }
@@ -288,6 +306,12 @@ const DeliveryPlan = ({ navigation }) => {
     return (
       <View className="w-full h-4/5 justify-center px-3">
         <ServerError message="No data found!" />
+        <View className="button w-1/4 mx-auto mt-4">
+          <Button
+            title="Retry"
+            onPress={() => getDpList()}
+          />
+        </View>
       </View>
     )
   }
@@ -360,7 +384,12 @@ const DeliveryPlan = ({ navigation }) => {
                   keyExtractor={item => item.sto}
                   initialNumToRender={10}
                   refreshControl={
-                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                    <RefreshControl
+                      colors={["#fff"]}
+                      onRefresh={onRefresh}
+                      progressBackgroundColor="#000"
+                      refreshing={refreshing}
+                    />
                   }
                 />
               )}

@@ -2,7 +2,7 @@ import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator, DeviceEventEmitter, FlatList, RefreshControl,
-  SafeAreaView, Text, TextInput, View
+  SafeAreaView, Text, TextInput, TouchableWithoutFeedback, View
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
@@ -11,7 +11,7 @@ import { getStorage } from '../../../../hooks/useStorage';
 import { dateRange } from '../../../../utils';
 import SunmiScanner from '../../../../utils/sunmi/scanner';
 
-const Receiving = ({ navigation }) => {
+const Receiving = ({ navigation, route }) => {
   const isFocused = useIsFocused();
   const [isLoading, setIsLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -25,8 +25,6 @@ const Receiving = ({ navigation }) => {
   const { startScan, stopScan } = SunmiScanner;
   const dateObject = dateRange(15);
   const postObject = { ...dateObject, site: user?.site };
-
-  // console.log(postObject);
 
   useEffect(() => {
     getStorage('user', setUser, 'object');
@@ -106,13 +104,9 @@ const Receiving = ({ navigation }) => {
   useFocusEffect(
     useCallback(() => {
       const getPoData = async () => {
-        const start = performance.now();
         setIsLoading(true);
         await getPoList();
         setIsLoading(false);
-        const end = performance.now();
-        const time = (end - start) / 1000
-        console.log(`Loading time: ${time.toFixed(2)} Seconds`);
       };
       if (token) {
         getPoData();
@@ -129,15 +123,14 @@ const Receiving = ({ navigation }) => {
   if (barcode !== '') {
     const poItem = poList.find(item => item.po === barcode);
     if (poItem) {
-      navigation.navigate('PurchaseOrder', { po_id: barcode });
-      setBarcode('');
+      navigation.replace('PurchaseOrder', { po_id: barcode });
     } else {
       Toast.show({
         type: 'customInfo',
         text1: 'PO not found!',
       });
-      setBarcode('');
     }
+    setBarcode('');
   }
 
   const renderItem = ({ item, index }) => (
@@ -183,6 +176,7 @@ const Receiving = ({ navigation }) => {
     <SafeAreaView className="flex-1 bg-white pt-8">
       <View className="flex-1 px-4">
         <View className="screen-header flex-row items-center justify-center mb-4">
+          <TouchableWithoutFeedback></TouchableWithoutFeedback>
           <Text className="text-lg text-sh font-semibold capitalize">
             receiving screen
           </Text>
@@ -217,7 +211,12 @@ const Receiving = ({ navigation }) => {
               keyExtractor={item => item.po}
               initialNumToRender={10}
               refreshControl={
-                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                <RefreshControl
+                  colors={["#fff"]}
+                  onRefresh={onRefresh}
+                  progressBackgroundColor="#000"
+                  refreshing={refreshing}
+                />
               }
             />
           </View>

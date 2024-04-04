@@ -12,7 +12,6 @@ import {
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
 import { getStorage } from '../../../../hooks/useStorage';
-import { toast } from '../../../../utils';
 import SunmiScanner from '../../../../utils/sunmi/scanner';
 
 const Shelving = ({ navigation }) => {
@@ -47,7 +46,6 @@ const Shelving = ({ navigation }) => {
 
   const getShelvingReadyData = async () => {
     try {
-      setIsLoading(true);
       await fetch(API_URL + 'ready?pageSize=500', {
         method: 'GET',
         headers: {
@@ -59,15 +57,19 @@ const Shelving = ({ navigation }) => {
           if (result.status) {
             const readyItems = result.items;
             setReadyArticles(readyItems);
-          } else {
-            toast(readyData.message);
           }
         })
         .catch(error => {
-          toast(error.message);
+          Toast.show({
+            type: 'customError',
+            text1: error.message.toString(),
+          });
         });
     } catch (error) {
-      toast(error.message);
+      Toast.show({
+        type: 'customError',
+        text1: error.message.toString(),
+      });
     }
   };
 
@@ -89,15 +91,19 @@ const Shelving = ({ navigation }) => {
               }
             });
             setPartialArticles(partialData);
-          } else {
-            toast(error.message);
           }
         })
         .catch(error =>
-          toast(error.message)
+          Toast.show({
+            type: 'customError',
+            text1: error.message.toString(),
+          })
         );
     } catch (error) {
-      toast(error.message);
+      Toast.show({
+        type: 'customError',
+        text1: error.message.toString(),
+      });
     }
   }
 
@@ -108,10 +114,13 @@ const Shelving = ({ navigation }) => {
 
   useFocusEffect(
     useCallback(() => {
-      if (token) {
+      const getShelvingList = async () => {
         setIsLoading(true);
-        getShelvingData();
+        await getShelvingData();
         setIsLoading(false);
+      };
+      if (token) {
+        getShelvingList();
       }
     }, [token]),
   );
@@ -143,20 +152,20 @@ const Shelving = ({ navigation }) => {
               const article = articles.find(item => item.code === result.data.material);
 
               if (article && isValidBarcode) {
-                navigation.navigate('BinDetails', article);
-                setBarcode('');
+                navigation.replace('BinDetails', article);
               } else {
                 Toast.show({
                   type: 'customInfo',
                   text1: 'Article not found!',
                 });
-                setBarcode('');
               }
+              setBarcode('');
             } else {
               Toast.show({
                 type: 'customError',
                 text1: result.message.toString(),
               });
+              setBarcode('');
             }
           })
           .catch(error => {
@@ -200,7 +209,7 @@ const Shelving = ({ navigation }) => {
               </Text>
             ))}
           </>
-        ) : (<Text>No bins found!</Text>)}
+        ) : (<Text>Don't have any bin</Text>)}
       </View>
       <Text className="flex-1 text-black text-center" numberOfLines={1}>
         {item.receivedQuantity}
@@ -208,7 +217,7 @@ const Shelving = ({ navigation }) => {
     </View>
   );
 
-  if (isLoading) {
+  if (isLoading && articles.length === 0) {
     return (
       <View className="w-full h-screen justify-center px-3">
         <ActivityIndicator size="large" color="#EB4B50" />
@@ -219,7 +228,7 @@ const Shelving = ({ navigation }) => {
     )
   }
 
-  if (articles.length === 0) {
+  if (!isLoading && articles.length === 0) {
     return (
       <View className="h-full justify-center pb-2">
         <Text className="text-base font-bold text-center">
@@ -256,7 +265,12 @@ const Shelving = ({ navigation }) => {
               keyExtractor={item => item._id}
               initialNumToRender={10}
               refreshControl={
-                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                <RefreshControl
+                  colors={["#fff"]}
+                  onRefresh={onRefresh}
+                  progressBackgroundColor="#000"
+                  refreshing={refreshing}
+                />
               }
             />
           </View>

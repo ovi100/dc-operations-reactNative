@@ -1,24 +1,23 @@
 import CheckBox from '@react-native-community/checkbox';
-import {useState} from 'react';
+import { useState } from 'react';
 import {
-  Alert,
   FlatList,
   SafeAreaView,
   Text,
   TouchableOpacity,
-  View,
+  View
 } from 'react-native';
-import {ButtonBack, ButtonLg, ButtonXs} from '../../../../components/buttons';
-import {articles} from '../../../../constant/data';
+import { ButtonBack, ButtonLg, ButtonXs } from '../../../../components/buttons';
+import { articles } from '../../../../constant/data';
 import { toast } from '../../../../utils';
 
-const ChildPacking = ({navigation}) => {
+const ChildPacking = ({ navigation }) => {
   const [isAllChecked, setIsAllChecked] = useState(false);
   const [childPackingList, setChildPackingList] = useState(articles);
   const [selectedList, setSelectedList] = useState([]);
   const tableHeader = ['Article ID', 'Article Name', 'Quantity'];
 
-  const renderItem = ({item}) => (
+  const renderItem = ({ item }) => (
     <TouchableOpacity
       className="flex-row border border-tb rounded-lg mt-2.5 p-4"
       onPress={() => handelCheckbox(item)}>
@@ -43,7 +42,7 @@ const ChildPacking = ({navigation}) => {
 
   const handelCheckbox = article => {
     let newItems = childPackingList.map(item =>
-      article.id === item.id ? {...item, selected: !item.selected} : item,
+      article.id === item.id ? { ...item, selected: !item.selected } : item,
     );
     setSelectedList(newItems.filter(item => item.selected));
     setChildPackingList(newItems);
@@ -51,7 +50,7 @@ const ChildPacking = ({navigation}) => {
 
   const checkAll = () => {
     const checkAllData = childPackingList.map(item => {
-      return {...item, selected: true};
+      return { ...item, selected: true };
     });
     setChildPackingList(checkAllData);
     setSelectedList(checkAllData);
@@ -60,7 +59,7 @@ const ChildPacking = ({navigation}) => {
 
   const uncheckAll = () => {
     const checkAllData = childPackingList.map(item => {
-      return {...item, selected: false};
+      return { ...item, selected: false };
     });
     setChildPackingList(checkAllData);
     setSelectedList([]);

@@ -17,8 +17,10 @@ import styles from '../../styles/button';
 
 const ButtonLoading = ({styles}) => {
   return (
-    <TouchableWithoutFeedback className={styles}>
-      <ActivityIndicator size="small" color="#ffffff" />
+    <TouchableWithoutFeedback>
+      <View className={styles}>
+        <ActivityIndicator size="small" color="#ffffff" />
+      </View>
     </TouchableWithoutFeedback>
   );
 };

@@ -1,6 +1,7 @@
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
+  ActivityIndicator,
   FlatList,
   SafeAreaView,
   Text,
@@ -12,9 +13,9 @@ import { getStorage } from '../../../../hooks/useStorage';
 
 
 // components
+import Toast from 'react-native-toast-message';
 import ServerError from '../../../../components/animations/ServerError';
 import { ButtonBack } from '../../../../components/buttons';
-import { toast } from '../../../../utils';
 
 
 const Audit = ({ navigation }) => {
@@ -23,6 +24,7 @@ const Audit = ({ navigation }) => {
   const [token, setToken] = useState('');
   const [shelveData, setShelveData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const API_URL = 'https://shwapnooperation.onrender.com/api/product-shelving/';
 
   useEffect(() => {
     getStorage('user', setUser, 'object');
@@ -30,7 +32,7 @@ const Audit = ({ navigation }) => {
   }, []);
 
   // custom functions
-  function makeOrganizedData(data) {
+  const makeOrganizedData = (data) => {
     let organizedData = {};
 
     data.forEach(item => {
@@ -56,10 +58,9 @@ const Audit = ({ navigation }) => {
   }
 
   const getShelveData = async () => {
-    setIsLoading(true);
-    const API_URL = `https://shwapnooperation.onrender.com/api/product-shelving/in-shelf?filterBy=site&value=${user?.site}&pageSize=10&currentPage=1&sortBy=&sortOrder=`;
     try {
-      await fetch(API_URL, {
+      setIsLoading(true);
+      await fetch(API_URL + `in-shelf?filterBy=site&value=${user?.site}&pageSize=500`, {
         method: 'GET',
         headers: {
           authorization: token,
@@ -72,16 +73,25 @@ const Audit = ({ navigation }) => {
             setShelveData(makeOrganizedData(result.items));
             setIsLoading(false);
           } else {
-            toast(data.message);
+            Toast.show({
+              type: 'customError',
+              text1: result.message,
+            });
             setIsLoading(false);
           }
         })
         .catch(error => {
-          toast(data.message);
+          Toast.show({
+            type: 'customError',
+            text1: error.message.toString(),
+          });
           setIsLoading(false);
         });
     } catch (error) {
-      toast(data.message);
+      Toast.show({
+        type: 'customError',
+        text1: error.message.toString(),
+      });
       setIsLoading(false);
     }
   };
@@ -93,8 +103,6 @@ const Audit = ({ navigation }) => {
       }
     }, [token]),
   );
-
-  // console.log(shelveData);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProduct, setSelectedProduct] = useState(null);
@@ -121,6 +129,14 @@ const Audit = ({ navigation }) => {
     setSearchQuery(product.code)
   };
 
+  if (isLoading) {
+    return (
+      <View className="w-full h-screen justify-center px-3">
+        <ActivityIndicator size="large" color="#EB4B50" />
+        <Text className="mt-4 text-gray-400 text-base text-center">Loading audit data. Please wait......</Text>
+      </View>
+    )
+  }
 
   if (!shelveData || shelveData.length === 0) {
     return (
@@ -158,6 +174,7 @@ const Audit = ({ navigation }) => {
                 data={filteredData}
                 renderItem={renderItem}
                 keyExtractor={item => item.key}
+                initialNumToRender={10}
                 keyboardShouldPersistTaps="always"
               />
             </View>}

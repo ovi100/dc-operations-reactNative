@@ -15,6 +15,7 @@ const Receiving = ({ navigation, route }) => {
   const isFocused = useIsFocused();
   const [isLoading, setIsLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [pressMode, setPressMode] = useState(false);
   const [user, setUser] = useState(null);
   const [token, setToken] = useState('');
   const [barcode, setBarcode] = useState('');
@@ -29,6 +30,7 @@ const Receiving = ({ navigation, route }) => {
   useEffect(() => {
     getStorage('user', setUser, 'object');
     getStorage('token', setToken);
+    getStorage('pressMode', setPressMode);
   }, []);
 
   useEffect(() => {
@@ -120,7 +122,9 @@ const Receiving = ({ navigation, route }) => {
     setRefreshing(false);
   };
 
-  if (barcode !== '') {
+  console.log(barcode !== '' && pressMode === 'false');
+
+  if (barcode !== '' && pressMode === 'false') {
     const poItem = poList.find(item => item.po === barcode);
     if (poItem) {
       navigation.replace('PurchaseOrder', { po_id: barcode });
@@ -134,21 +138,43 @@ const Receiving = ({ navigation, route }) => {
   }
 
   const renderItem = ({ item, index }) => (
-    <View
-      key={index}
-      className="flex-row border border-tb rounded-lg mt-2.5 p-4"
-    >
-      <Text
-        className="flex-1 text-black text-center"
-        numberOfLines={1} >
-        {item.po}
-      </Text>
-      <Text
-        className="flex-1 text-black text-center"
-        numberOfLines={1}>
-        {item.sku}
-      </Text>
-    </View>
+    <>
+      {pressMode === 'true' ? (
+        <TouchableWithoutFeedback onPress={() => navigation.replace('PurchaseOrder', { po_id: item.po })}>
+          <View
+            key={index}
+            className="flex-row border border-tb rounded-lg mt-2.5 p-4"
+          >
+            <Text
+              className="flex-1 text-black text-center"
+              numberOfLines={1} >
+              {item.po}
+            </Text>
+            <Text
+              className="flex-1 text-black text-center"
+              numberOfLines={1}>
+              {item.sku}
+            </Text>
+          </View>
+        </TouchableWithoutFeedback>
+      ) : (
+        <View
+          key={index}
+          className="flex-row border border-tb rounded-lg mt-2.5 p-4"
+        >
+          <Text
+            className="flex-1 text-black text-center"
+            numberOfLines={1} >
+            {item.po}
+          </Text>
+          <Text
+            className="flex-1 text-black text-center"
+            numberOfLines={1}>
+            {item.sku}
+          </Text>
+        </View>
+      )}
+    </>
   );
 
   if (search !== '') {
@@ -176,10 +202,14 @@ const Receiving = ({ navigation, route }) => {
     <SafeAreaView className="flex-1 bg-white pt-8">
       <View className="flex-1 px-4">
         <View className="screen-header flex-row items-center justify-center mb-4">
-          <TouchableWithoutFeedback></TouchableWithoutFeedback>
           <Text className="text-lg text-sh font-semibold capitalize">
             receiving screen
           </Text>
+          {/* <TouchableWithoutFeedback onPress={() => Alert.alert('press mode on')}>
+            <Text className="text-lg text-sh font-semibold uppercase">
+              {pressMode === 'true' ? 'on' : 'off'}
+            </Text>
+          </TouchableWithoutFeedback> */}
         </View>
 
         {/* Search filter */}

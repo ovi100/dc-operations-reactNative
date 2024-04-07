@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Alert } from 'react-native';
+import {Alert} from 'react-native';
 
 const setStorage = async (key, value) => {
   try {
@@ -14,13 +14,13 @@ const setStorage = async (key, value) => {
   }
 };
 
-const getStorage = async (key, fn, type = '') => {
+const getStorage = async (key, setFunction, type = '') => {
   try {
     const value = await AsyncStorage.getItem(key);
     if (type === 'object') {
-      return fn(value !== null ? JSON.parse(value) : null);
+      return setFunction(value !== null ? JSON.parse(value) : null);
     } else {
-      return fn(value !== null ? value : null);
+      return setFunction(value !== null ? value : null);
     }
   } catch (e) {
     Alert.alert(e);
@@ -43,5 +43,4 @@ const removeAll = async () => {
   }
 };
 
-export { getStorage, removeAll, removeItem, setStorage };
-
+export {getStorage, removeAll, removeItem, setStorage};

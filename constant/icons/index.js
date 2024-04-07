@@ -34,6 +34,7 @@ import SuccessIcon from './success-icon.png';
 import TaskAssignIcon from './task-assign-icon.png';
 import UserIcon from './user-icon.png';
 import WarehouseIcon from './warehouse-icon.png';
+import SwitchIcon from './switch-icon.png';
 
 export {
   ArrowLeftIcon,
@@ -68,6 +69,7 @@ export {
   ScannerIcon,
   SearchIcon,
   ShelvingIcon,
+  SwitchIcon,
   SuccessIcon,
   TaskAssignIcon,
   UserIcon,

@@ -205,7 +205,6 @@ const PurchaseOrder = ({ navigation, route }) => {
             }
           })
           .catch(error => {
-            console.log(error.message);
             Toast.show({
               type: 'customError',
               text1: 'API request failed',

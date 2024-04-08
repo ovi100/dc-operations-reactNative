@@ -122,9 +122,7 @@ const Receiving = ({ navigation, route }) => {
     setRefreshing(false);
   };
 
-  console.log(barcode !== '' && pressMode === 'false');
-
-  if (barcode !== '' && pressMode === 'false') {
+  if (barcode !== '') {
     const poItem = poList.find(item => item.po === barcode);
     if (poItem) {
       navigation.replace('PurchaseOrder', { po_id: barcode });

@@ -2,8 +2,8 @@ import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator, Alert,
-  DeviceEventEmitter,
-  FlatList, SafeAreaView, Text, View
+  DeviceEventEmitter, FlatList,
+  SafeAreaView, Text, TouchableWithoutFeedback, View
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
@@ -16,6 +16,7 @@ const PurchaseOrder = ({ navigation, route }) => {
   const { startScan, stopScan } = SunmiScanner;
   const [isLoading, setIsLoading] = useState(false);
   const [isButtonLoading, setIsButtonLoading] = useState(false);
+  const [pressMode, setPressMode] = useState(false);
   const [barcode, setBarcode] = useState('');
   const [token, setToken] = useState('');
   const [poStatus, setPoStatus] = useState('');
@@ -28,6 +29,7 @@ const PurchaseOrder = ({ navigation, route }) => {
 
   useEffect(() => {
     getStorage('token', setToken, 'string');
+    getStorage('pressMode', setPressMode);
   }, []);
 
   useEffect(() => {
@@ -149,26 +151,53 @@ const PurchaseOrder = ({ navigation, route }) => {
   );
 
   const renderItem = ({ item, index }) => (
-    <View
-      key={index}
-      className="flex-row border border-tb rounded-lg mt-2.5 p-4"
-    >
-      <Text
-        className="flex-1 text-black text-center"
-        numberOfLines={1}>
-        {item.material}
-      </Text>
-      <Text
-        className="flex-1 text-black text-center"
-        numberOfLines={1}>
-        {item.description}
-      </Text>
-      <Text
-        className="flex-1 text-black text-center"
-        numberOfLines={1}>
-        {item.quantity}
-      </Text>
-    </View>
+    <>
+      {pressMode === 'true' ? (
+        <TouchableWithoutFeedback onPress={() => navigation.replace('PoArticle', item)}>
+          <View
+            key={index}
+            className="flex-row border border-tb rounded-lg mt-2.5 p-4"
+          >
+            <Text
+              className="flex-1 text-black text-center"
+              numberOfLines={1}>
+              {item.material}
+            </Text>
+            <Text
+              className="flex-1 text-black text-center"
+              numberOfLines={1}>
+              {item.description}
+            </Text>
+            <Text
+              className="flex-1 text-black text-center"
+              numberOfLines={1}>
+              {item.quantity}
+            </Text>
+          </View>
+        </TouchableWithoutFeedback>
+      ) : (
+        <View
+          key={index}
+          className="flex-row border border-tb rounded-lg mt-2.5 p-4"
+        >
+          <Text
+            className="flex-1 text-black text-center"
+            numberOfLines={1}>
+            {item.material}
+          </Text>
+          <Text
+            className="flex-1 text-black text-center"
+            numberOfLines={1}>
+            {item.description}
+          </Text>
+          <Text
+            className="flex-1 text-black text-center"
+            numberOfLines={1}>
+            {item.quantity}
+          </Text>
+        </View>
+      )}
+    </>
   );
 
   if (barcode !== '') {

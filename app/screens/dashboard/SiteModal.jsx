@@ -33,7 +33,7 @@ const SiteModal = ({ navigation }) => {
     }
   ];
 
-  if (user.site.length === 0) {
+  if (user.site?.length === 0) {
     Toast.show({
       type: 'customInfo',
       text1: "You don't have any site",
@@ -47,7 +47,7 @@ const SiteModal = ({ navigation }) => {
     return;
   }
 
-  if (user.site.length > 0) {
+  if (user.site?.length > 0) {
     sites = user.site.map(item => siteList.find(elm => elm.code === item));
   }
 

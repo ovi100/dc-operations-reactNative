@@ -2,7 +2,7 @@ import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator, DeviceEventEmitter, FlatList, RefreshControl,
-  SafeAreaView, Text, TextInput, TouchableWithoutFeedback, View
+  SafeAreaView, Text, TextInput, TouchableOpacity, View
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
@@ -24,7 +24,7 @@ const Receiving = ({ navigation, route }) => {
   const tableHeader = ['Purchase Order ID', 'SKU'];
   const API_URL = 'https://shwapnooperation.onrender.com/';
   const { startScan, stopScan } = SunmiScanner;
-  const dateObject = dateRange(15);
+  const dateObject = dateRange(5);
   const postObject = { ...dateObject, site: user?.site };
 
   useEffect(() => {
@@ -138,7 +138,7 @@ const Receiving = ({ navigation, route }) => {
   const renderItem = ({ item, index }) => (
     <>
       {pressMode === 'true' ? (
-        <TouchableWithoutFeedback onPress={() => navigation.replace('PurchaseOrder', { po_id: item.po })}>
+        <TouchableOpacity onPress={() => navigation.replace('PurchaseOrder', { po_id: item.po })}>
           <View
             key={index}
             className="flex-row border border-tb rounded-lg mt-2.5 p-4"
@@ -154,7 +154,7 @@ const Receiving = ({ navigation, route }) => {
               {item.sku}
             </Text>
           </View>
-        </TouchableWithoutFeedback>
+        </TouchableOpacity>
       ) : (
         <View
           key={index}

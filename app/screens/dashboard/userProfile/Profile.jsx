@@ -141,29 +141,33 @@ const Profile = ({ navigation }) => {
                   value={isEnabled}
                 />
                 <Text className={`text-base ${isEnabled ? 'text-green-600' : 'text-red-600'} font-medium capitalize`}>
-                  {isEnabled ? 'Enabled' : 'Disabled'}
+                  {isEnabled ? 'press mode enabled' : 'press mode disabled'}
                 </Text>
               </View>
             </View>
-            <View className="site mt-2 px-3">
-              {/* picker select box */}
-              <View className="bg-white border border-solid border-gray-300 rounded">
-                <Picker
-                  selectedValue={selectedSite}
-                  onValueChange={site => updateUser(site)}
-                  style={{ color: 'black' }}>
-                  <Picker.Item label="Change Site" value="" />
-                  {site.map((item, i) => (
-                    <Picker.Item
-                      label={item}
-                      value={item}
-                      key={i}
-                      style={{ color: 'black' }}
-                    />
-                  ))}
-                </Picker>
+            {site !== null && (
+
+
+              <View className="site mt-2 px-3">
+                {/* picker select box */}
+                <View className="bg-white border border-solid border-gray-300 rounded">
+                  <Picker
+                    selectedValue={selectedSite}
+                    onValueChange={site => updateUser(site)}
+                    style={{ color: 'black' }}>
+                    <Picker.Item label="Change Site" value="" />
+                    {site?.map((item, i) => (
+                      <Picker.Item
+                        label={item}
+                        value={item}
+                        key={i}
+                        style={{ color: 'black' }}
+                      />
+                    ))}
+                  </Picker>
+                </View>
               </View>
-            </View>
+            )}
           </View>
         </View>
 

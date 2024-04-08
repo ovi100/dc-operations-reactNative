@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator, Alert,
   DeviceEventEmitter, FlatList,
-  SafeAreaView, Text, TouchableWithoutFeedback, View
+  SafeAreaView, Text, TouchableOpacity, View
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
@@ -153,7 +153,7 @@ const PurchaseOrder = ({ navigation, route }) => {
   const renderItem = ({ item, index }) => (
     <>
       {pressMode === 'true' ? (
-        <TouchableWithoutFeedback onPress={() => navigation.replace('PoArticle', item)}>
+        <TouchableOpacity onPress={() => navigation.replace('PoArticle', item)}>
           <View
             key={index}
             className="flex-row border border-tb rounded-lg mt-2.5 p-4"
@@ -174,7 +174,7 @@ const PurchaseOrder = ({ navigation, route }) => {
               {item.quantity}
             </Text>
           </View>
-        </TouchableWithoutFeedback>
+        </TouchableOpacity>
       ) : (
         <View
           key={index}

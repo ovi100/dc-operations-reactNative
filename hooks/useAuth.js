@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Alert } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { getStorage, removeAll, setStorage } from './useStorage';
 
@@ -38,10 +39,11 @@ const useAuth = () => {
       setIsLoading(false);
     } catch (error) {
       setIsLoading(false);
-      Toast.show({
-        type: 'customInfo',
-        text1: error.message.toString(),
-      });
+      console.log(error.message);
+      // Toast.show({
+      //   type: 'customInfo',
+      //   text1: error.message.toString(),
+      // });
     }
   };
 
@@ -70,7 +72,7 @@ const useAuth = () => {
       }
     } catch (error) {
       Alert.alert(error);
-      console.log(error);
+      console.log('catch error', error);
       setIsLoading(false);
     }
   };

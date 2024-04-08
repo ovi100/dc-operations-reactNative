@@ -91,7 +91,7 @@ const Home = ({navigation}) => {
     // }
   ];
 
-  if (user.role === 'super-admin') {
+  if (user?.role === 'super-admin') {
     filteredLinks = navLinks;
   } else {
     filteredLinks = navLinks.filter(link => link.role === user.role);

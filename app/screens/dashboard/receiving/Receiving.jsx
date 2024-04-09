@@ -1,14 +1,15 @@
 import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
-  ActivityIndicator, DeviceEventEmitter, FlatList, RefreshControl,
-  SafeAreaView, Text, TextInput, TouchableOpacity, View
+  ActivityIndicator, Button, DeviceEventEmitter, FlatList,
+  RefreshControl,
+  SafeAreaView, Text, TextInput, TouchableHighlight, TouchableOpacity, View
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
 import ServerError from '../../../../components/animations/ServerError';
 import { getStorage } from '../../../../hooks/useStorage';
-import { dateRange } from '../../../../utils';
+import { dateRange, toast } from '../../../../utils';
 import SunmiScanner from '../../../../utils/sunmi/scanner';
 
 const Receiving = ({ navigation, route }) => {
@@ -28,9 +29,12 @@ const Receiving = ({ navigation, route }) => {
   const postObject = { ...dateObject, site: user?.site };
 
   useEffect(() => {
-    getStorage('user', setUser, 'object');
-    getStorage('token', setToken);
-    getStorage('pressMode', setPressMode);
+    const getUserInfo = async () => {
+      await getStorage('token', setToken, 'string');
+      await getStorage('user', setUser, 'object');
+      await getStorage('pressMode', setPressMode);
+    }
+    getUserInfo();
   }, []);
 
   useEffect(() => {
@@ -103,26 +107,35 @@ const Receiving = ({ navigation, route }) => {
     }
   };
 
+  const getPoData = async () => {
+    const start = performance.now();
+    setIsLoading(true);
+    await getPoList();
+    setIsLoading(false);
+    const end = performance.now();
+    const time = (end - start) / 1000
+    toast(`Loading time: ${time.toFixed(2)} Seconds`);
+  };
+
   useFocusEffect(
     useCallback(() => {
-      const getPoData = async () => {
-        setIsLoading(true);
-        await getPoList();
-        setIsLoading(false);
-      };
-      if (token) {
+      if (token && user?.site) {
         getPoData();
       }
-    }, [token])
+    }, [token, user?.site])
   );
 
   const onRefresh = async () => {
+    const start = performance.now();
     setRefreshing(true);
     await getPoList();
     setRefreshing(false);
+    const end = performance.now();
+    const time = (end - start) / 1000
+    toast(`Loading time: ${time.toFixed(2)} Seconds`);
   };
 
-  if (barcode !== '') {
+  if (barcode !== '' && pressMode === 'false') {
     const poItem = poList.find(item => item.po === barcode);
     if (poItem) {
       navigation.replace('PurchaseOrder', { po_id: barcode });
@@ -192,6 +205,12 @@ const Receiving = ({ navigation, route }) => {
     return (
       <View className="w-full h-screen justify-center px-3">
         <ServerError message="No data found!" />
+        <View className="button w-1/4 mx-auto mt-4">
+          <Button
+            title="Retry"
+            onPress={() => getPoData()}
+          />
+        </View>
       </View>
     )
   }
@@ -200,14 +219,17 @@ const Receiving = ({ navigation, route }) => {
     <SafeAreaView className="flex-1 bg-white pt-8">
       <View className="flex-1 px-4">
         <View className="screen-header flex-row items-center justify-center mb-4">
-          <Text className="text-lg text-sh font-semibold capitalize">
-            receiving screen
-          </Text>
-          {/* <TouchableWithoutFeedback onPress={() => Alert.alert('press mode on')}>
-            <Text className="text-lg text-sh font-semibold uppercase">
-              {pressMode === 'true' ? 'on' : 'off'}
+          {pressMode === 'true' ? (
+            <TouchableHighlight onPress={() => null}>
+              <Text className="text-lg text-sh font-semibold capitalize">
+                receiving screen
+              </Text>
+            </TouchableHighlight>
+          ) : (
+            <Text className="text-lg text-sh font-semibold capitalize">
+              receiving screen
             </Text>
-          </TouchableWithoutFeedback> */}
+          )}
         </View>
 
         {/* Search filter */}
@@ -219,6 +241,7 @@ const Receiving = ({ navigation, route }) => {
               keyboardType="phone-pad"
               placeholderTextColor="#CBC9D9"
               selectionColor="#CBC9D9"
+              // autoFocus={pressMode === 'true' ? true : false}
               onChangeText={value => setSearch(value)}
               value={search}
             />

@@ -3,13 +3,14 @@ import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator, Alert,
   DeviceEventEmitter, FlatList,
-  SafeAreaView, Text, TouchableOpacity, View
+  SafeAreaView, Text, TouchableHighlight, TouchableOpacity, View
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
 import { ButtonLg, ButtonLoading } from '../../../../components/buttons';
 import useAppContext from '../../../../hooks/useAppContext';
 import { getStorage } from '../../../../hooks/useStorage';
+import { toast } from '../../../../utils';
 import SunmiScanner from '../../../../utils/sunmi/scanner';
 
 const PurchaseOrder = ({ navigation, route }) => {
@@ -28,8 +29,11 @@ const PurchaseOrder = ({ navigation, route }) => {
   const { grnItems, setGrnItems } = GRNInfo;
 
   useEffect(() => {
-    getStorage('token', setToken, 'string');
-    getStorage('pressMode', setPressMode);
+    const getUserInfo = async () => {
+      await getStorage('token', setToken, 'string');
+      await getStorage('pressMode', setPressMode);
+    }
+    getUserInfo();
   }, []);
 
   useEffect(() => {
@@ -139,10 +143,14 @@ const PurchaseOrder = ({ navigation, route }) => {
   useFocusEffect(
     useCallback(() => {
       const getPoInfo = async () => {
+        const start = performance.now();
         setIsLoading(true);
         await getPoStatus();
         await getPoList();
         setIsLoading(false);
+        const end = performance.now();
+        const time = (end - start) / 1000
+        toast(`Loading time: ${time.toFixed(2)} Seconds`);
       }
       if (token && po_id) {
         getPoInfo();
@@ -360,9 +368,17 @@ const PurchaseOrder = ({ navigation, route }) => {
     <SafeAreaView className="flex-1 bg-white pt-8">
       <View className="flex-1 h-full px-4">
         <View className="screen-header flex-row items-center justify-center mb-4">
-          <Text className="text-lg text-sh font-semibold uppercase">
-            po {po_id}
-          </Text>
+          {pressMode === 'true' ? (
+            <TouchableHighlight onPress={() => null}>
+              <Text className="text-lg text-sh font-semibold uppercase">
+                po {po_id}
+              </Text>
+            </TouchableHighlight>
+          ) : (
+            <Text className="text-lg text-sh font-semibold uppercase">
+              po {po_id}
+            </Text>
+          )}
         </View>
         <View className="content">
           <>

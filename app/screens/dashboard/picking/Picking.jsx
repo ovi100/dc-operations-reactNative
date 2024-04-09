@@ -1,12 +1,15 @@
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, Image, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
+import Toast from 'react-native-toast-message';
+import CustomToast from '../../../../components/CustomToast';
 import { NotPickingIcon, PickingIcon } from '../../../../constant/icons';
 import { getStorage } from '../../../../hooks/useStorage';
 import { toast } from '../../../../utils';
 
 const Picking = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
+  const [user, setUser] = useState({});
   const [token, setToken] = useState('');
   let [notPickedData, setNotPickedData] = useState([]);
   let [pickedData, setPickedData] = useState([]);
@@ -16,13 +19,19 @@ const Picking = ({ navigation }) => {
   const API_URL = 'https://shwapnooperation.onrender.com/api/sto-tracking';
 
   useEffect(() => {
-    getStorage('token', setToken, 'string');
+    const getUserInfo = async () => {
+      setIsLoading(true);
+      await getStorage('token', setToken, 'string');
+      await getStorage('user', setUser, 'object');
+      setIsLoading(false);
+    }
+    getUserInfo();
   }, []);
 
   const getInDnList = async () => {
     setIsLoading(true);
     try {
-      await fetch(API_URL + `?currentPage=${page}`, {
+      await fetch(API_URL + `?pageSize=500&currentPage=${page}`, {
         method: 'GET',
         headers: {
           authorization: token,
@@ -31,14 +40,18 @@ const Picking = ({ navigation }) => {
         .then(response => response.json())
         .then(data => {
           if (data.status) {
-            const notPicked = data.items.filter(item => item.status === 'picker assigned' || item.status === 'picker packer assigned');
+            const notPicked = data.items.filter(item => item.status === 'picker assigned' || item.status === 'picker packer assigned'
+              && item.supplyingPlant === user?.site);
             const picked = data.items.filter(item => item.status === 'picked');
             setNotPickedData([...notPickedData, ...notPicked]);
             setPickedData([...pickedData, ...picked]);
             setTotalPage(data.totalPages);
             setIsLoading(false);
           } else {
-            toast(data.message);
+            Toast.show({
+              type: 'customError',
+              text1: data.message,
+            });
             setIsLoading(false);
           }
         })
@@ -139,6 +152,7 @@ const Picking = ({ navigation }) => {
 
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">
+      <CustomToast />
       <View className="flex-1 px-4">
         <View className="screen-header flex-row items-center mb-4">
           <Text className="text-lg flex-1 text-sh text-center font-semibold capitalize">

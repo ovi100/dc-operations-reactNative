@@ -39,8 +39,10 @@ const DeliveryPlan = ({ navigation }) => {
   const [search, setSearch] = useState('');
   const tableHeader = ['STO ID', 'SKU', 'Outlet Code'];
   const API_URL = 'https://shwapnooperation.onrender.com/';
-  const dateObject = dateRange(15);
+  const dateObject = dateRange(12);
   const { from, to } = dateObject;
+
+  console.log(dateObject)
 
   useEffect(() => {
     getStorage('token', setToken);
@@ -135,6 +137,8 @@ const DeliveryPlan = ({ navigation }) => {
     await getDnList();
     setRefreshing(false);
   };
+
+  console.log('outlets', outlets);
 
   const confirmModal = () => {
     if (modalText.length > 0) {

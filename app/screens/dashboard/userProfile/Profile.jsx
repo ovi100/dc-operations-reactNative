@@ -22,14 +22,12 @@ const Profile = ({ navigation }) => {
   const [selectedSite, setSelectedSite] = useState('');
   const [user, setLsUser] = useState({});
   const [site, setSite] = useState([]);
-  const [token, setToken] = useState('');
   const { authInfo } = useAppContext();
   const { logout, setUser } = authInfo;
 
   useEffect(() => {
     const getUserInfo = async () => {
       setIsLoading(true);
-      await getStorage('token', setToken, 'string');
       await getStorage('user', setLsUser, 'object');
       await getStorage('usersite', setSite, 'object');
       setIsLoading(false);

@@ -30,20 +30,26 @@ const useAuth = () => {
       }
 
       const data = await response.json();
-      setUser(data.user);
-      setUserSite(data.user.site);
-      setToken(data.token);
-      setStorage('token', data.token);
-      setStorage('user', data.user);
-      setStorage('usersite', data.user.site);
+      if(data.status){
+        setUser(data.user);
+        setUserSite(data.user.site);
+        setToken(data.token);
+        setStorage('token', data.token);
+        setStorage('user', data.user);
+        setStorage('usersite', data.user.site);
+      } else{
+        Toast.show({
+          type: 'customError',
+          text1: data.message,
+        });
+      }
       setIsLoading(false);
     } catch (error) {
       setIsLoading(false);
-      console.log(error.message);
-      // Toast.show({
-      //   type: 'customInfo',
-      //   text1: error.message.toString(),
-      // });
+      Toast.show({
+        type: 'customInfo',
+        text1: error.message.toString(),
+      });
     }
   };
 

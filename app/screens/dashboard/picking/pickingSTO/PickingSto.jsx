@@ -1,8 +1,8 @@
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, DeviceEventEmitter, FlatList, Platform, SafeAreaView, Text, View } from 'react-native';
+import { ActivityIndicator, DeviceEventEmitter, FlatList, SafeAreaView, Text, View } from 'react-native';
+import Toast from 'react-native-toast-message';
 import { getStorage } from '../../../../../hooks/useStorage';
-import { toast } from '../../../../../utils';
 import SunmiScanner from '../../../../../utils/sunmi/scanner';
 
 const PickingSto = ({ navigation, route }) => {
@@ -24,21 +24,17 @@ const PickingSto = ({ navigation, route }) => {
   }, []);
 
   useEffect(() => {
-    if (Platform.constants.Manufacturer === 'SUNMI') {
-      startScan();
-      DeviceEventEmitter.addListener('ScanDataReceived', data => {
-        console.log(data.code);
-        setBarcode(data.code);
-      });
+    startScan();
+    DeviceEventEmitter.addListener('ScanDataReceived', data => {
+      console.log(data.code);
+      setBarcode(data.code);
+    });
 
-      return () => {
-        stopScan();
-        DeviceEventEmitter.removeAllListeners('ScanDataReceived');
-      };
-    } else {
-      console.log('Device do not have scanner')
-    }
-  }, [Platform]);
+    return () => {
+      stopScan();
+      DeviceEventEmitter.removeAllListeners('ScanDataReceived');
+    };
+  }, []);
 
   const fetchStoDetails = async () => {
     await fetch(API_URL + 'bapi/sto/display' + `?currentPage=${page}`, {
@@ -74,16 +70,18 @@ const PickingSto = ({ navigation, route }) => {
     }, [token, page]),
   );
 
-  if (barcode) {
+  if (barcode !== '') {
     const article = articles.find(item => item.material === String(barcode));
     if (article) {
       let data = { ...article, pickingStartingTime: new Date() }
       navigation.push('PickingStoArticle', data);
-      setBarcode('');
     } else {
-      toast('Barcode not found!');
-      setBarcode('');
+      Toast.show({
+        type: 'customInfo',
+        text1: 'Article not found!',
+      });
     }
+    setBarcode('');
   }
 
   const loadMoreItem = () => {
@@ -119,8 +117,6 @@ const PickingSto = ({ navigation, route }) => {
   );
 
   articles = [...new Set(articles)];
-
-  console.log(articles)
 
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">

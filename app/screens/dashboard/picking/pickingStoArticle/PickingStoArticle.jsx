@@ -22,7 +22,7 @@ const PickingStoArticle = ({ navigation, route }) => {
 
   const getSTODetails = async () => {
     try {
-      await fetch(`https://shwapnooperation.onrender.com/api/sto-tracking?filterBy=sto&value=${Number(sto)}`, {
+      await fetch(`https://shwapnooperation.onrender.com/api/sto-tracking?filterBy=sto&value=${sto}`, {
         method: 'GET',
         headers: {
           authorization: token,

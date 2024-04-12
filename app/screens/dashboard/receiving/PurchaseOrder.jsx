@@ -22,18 +22,20 @@ const PurchaseOrder = ({ navigation, route }) => {
   const [token, setToken] = useState('');
   const [poStatus, setPoStatus] = useState('');
   const [articles, setArticles] = useState([]);
+  const [grnItems, setAsGrnItems] = useState([]);
   const tableHeader = ['Article ID', 'Article Name', 'Quantity'];
   const API_URL = 'https://shwapnooperation.onrender.com/';
   const { po_id } = route.params;
   const { GRNInfo } = useAppContext();
-  const { grnItems, setGrnItems } = GRNInfo;
+  const { setGrnItems } = GRNInfo;
 
   useEffect(() => {
-    const getUserInfo = async () => {
+    const getAsyncStorage = async () => {
       await getStorage('token', setToken, 'string');
       await getStorage('pressMode', setPressMode);
+      await getStorage('grnItems', setAsGrnItems, 'object');
     }
-    getUserInfo();
+    getAsyncStorage();
   }, []);
 
   useEffect(() => {
@@ -295,7 +297,7 @@ const PurchaseOrder = ({ navigation, route }) => {
                   setIsButtonLoading(false);
                   setTimeout(() => {
                     navigation.navigate('Receiving');
-                  }, 1500);
+                  }, 1800);
                 } else {
                   Toast.show({
                     type: 'customError',

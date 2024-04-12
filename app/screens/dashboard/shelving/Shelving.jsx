@@ -85,6 +85,16 @@ const Shelving = ({ navigation }) => {
         .then(result => {
           if (result.status) {
             const partialData = result.items.map(item => {
+              if (item.bins.length === 0) {
+                const bins = item.inShelf.map(item => {
+                  return { bin_id: item.bin, gondola_id: item.gondola };
+                });
+                return {
+                  ...item,
+                  bins,
+                  receivedQuantity: item.receivedQuantity - item.inShelf.reduce((acc, item) => acc + item.quantity, 0)
+                }
+              }
               return {
                 ...item,
                 receivedQuantity: item.receivedQuantity - item.inShelf.reduce((acc, item) => acc + item.quantity, 0)
@@ -132,7 +142,7 @@ const Shelving = ({ navigation }) => {
   };
 
   if (readyArticles.length > 0 || partialArticles.length > 0) {
-    articles = [...readyArticles, ...partialArticles];
+    articles = [...partialArticles, ...readyArticles];
   }
 
   if (barcode !== '') {
@@ -188,16 +198,16 @@ const Shelving = ({ navigation }) => {
   const renderItem = ({ item, index }) => (
     <View
       key={index}
-      className="flex-row items-center border border-tb rounded-lg mt-2.5 p-3">
-      <View className="flex-1">
+      className="flex-row items-center justify-between border border-tb rounded-lg mt-2.5 p-3">
+      <View className="w-[45%]">
         <Text className="text-xs text-black" numberOfLines={1}>
           {item.code}
         </Text>
-        <Text className="text-black text-base mt-1" numberOfLines={1}>
+        <Text className="text-black text-base mt-1" numberOfLines={2}>
           {item.description}
         </Text>
       </View>
-      <View className="flex-1">
+      <View className="w-2/5">
         {item.bins.length > 0 ? (
           <>
             {item.bins.map((bin, i) => (
@@ -209,9 +219,9 @@ const Shelving = ({ navigation }) => {
               </Text>
             ))}
           </>
-        ) : (<Text>Don't have any bin</Text>)}
+        ) : (<Text className="text-black text-center">Don't have any bin</Text>)}
       </View>
-      <Text className="flex-1 text-black text-center" numberOfLines={1}>
+      <Text className="w-[15%] text-black text-center" numberOfLines={1}>
         {item.receivedQuantity}
       </Text>
     </View>
@@ -249,10 +259,10 @@ const Shelving = ({ navigation }) => {
 
         <View className="content flex-1">
           <View className="h-full pb-2">
-            <View className="flex-row bg-th mb-2 py-2">
+            <View className="flex-row justify-between bg-th mb-2 py-2 px-3">
               {tableHeader.map(th => (
                 <Text
-                  className="flex-1 text-white text-center font-bold"
+                  className="text-white text-center font-bold"
                   key={th}>
                   {th}
                 </Text>

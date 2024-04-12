@@ -3,7 +3,6 @@ import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   Button,
   FlatList,
   Image,
@@ -24,12 +23,15 @@ import { ButtonBack, ButtonLg, ButtonLoading } from '../../../../components/butt
 import { SearchIcon } from '../../../../constant/icons';
 import { getStorage, setStorage } from '../../../../hooks/useStorage';
 import { dateRange } from '../../../../utils';
+import Dialog from '../../../../components/Dialog';
 
 const DeliveryPlan = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isButtonLoading, setIsButtonLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
+  const [outletDialogVisible, setOutletDialogVisible] = useState(false);
+  const [dialogVisible, setDialogVisible] = useState(false);
   const [token, setToken] = useState('');
   const [outlets, setOutlets] = useState('');
   let [dpList, setDpList] = useState([]);
@@ -39,10 +41,8 @@ const DeliveryPlan = ({ navigation }) => {
   const [search, setSearch] = useState('');
   const tableHeader = ['STO ID', 'SKU', 'Outlet Code'];
   const API_URL = 'https://shwapnooperation.onrender.com/';
-  const dateObject = dateRange(12);
+  const dateObject = dateRange(15);
   const { from, to } = dateObject;
-
-  console.log(dateObject)
 
   useEffect(() => {
     getStorage('token', setToken);
@@ -52,6 +52,7 @@ const DeliveryPlan = ({ navigation }) => {
   }, []);
 
   const getDnList = async () => {
+    setOutletDialogVisible(false);
     try {
       await fetch(API_URL + `bapi/sto/list?from=${from}&to=${to}&site=${outlets}`, {
         method: 'GET',
@@ -138,8 +139,6 @@ const DeliveryPlan = ({ navigation }) => {
     setRefreshing(false);
   };
 
-  console.log('outlets', outlets);
-
   const confirmModal = () => {
     if (modalText.length > 0) {
       let result = modalText.toUpperCase();
@@ -151,17 +150,8 @@ const DeliveryPlan = ({ navigation }) => {
 
   const submitModal = () => {
     if (modalText.length > 0) {
-      Alert.alert(
-        'Are you sure?',
-        `Delivery plan will be generated with ${modalText} outlets`,
-        [
-          {
-            text: 'Cancel',
-            onPress: () => null,
-            style: 'cancel',
-          },
-          { text: 'OK', onPress: () => confirmModal() },
-        ]);
+      setModalVisible(false);
+      setOutletDialogVisible(true);
     } else {
       Toast.show({
         type: 'customError',
@@ -221,8 +211,9 @@ const DeliveryPlan = ({ navigation }) => {
     Keyboard.dismiss();
   };
 
-  const createDN = () => {
+  const createDN = async () => {
     if (selectedList.length > 0) {
+      setDialogVisible(false);
       setIsButtonLoading(true);
       try {
         selectedList.map(async item => {
@@ -275,20 +266,6 @@ const DeliveryPlan = ({ navigation }) => {
     }
   };
 
-  const createDeliveryPlan = () => {
-    Alert.alert(
-      'Are you sure?',
-      `Do you want to make delivery plan for sto ${selectedList.map(item => item.sto).join(',')}?`,
-      [
-        {
-          text: 'Cancel',
-          onPress: () => null,
-          style: 'cancel',
-        },
-        { text: 'OK', onPress: () => createDN() },
-      ]);
-  };
-
   if (search !== '') {
     dpList = dpList.filter(
       dp =>
@@ -324,7 +301,6 @@ const DeliveryPlan = ({ navigation }) => {
 
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">
-      <CustomToast />
       {outlets ? (
         <View className="flex-1 h-full px-4">
           <View className="screen-header flex-row items-center mb-4">
@@ -362,7 +338,7 @@ const DeliveryPlan = ({ navigation }) => {
                         onPress={() => toggleCheckAll()}
                       >
                         <CheckBox
-                          tintColors={isAllChecked ? '#56D342' : '#ffffff'}
+                          tintColors={'#ffffff'}
                           value={isAllChecked}
                           onValueChange={() => toggleCheckAll()}
                         />
@@ -381,22 +357,20 @@ const DeliveryPlan = ({ navigation }) => {
                   </>
                 ))}
               </View>
-              {isLoading ? <ActivityIndicator /> : (
-                <FlatList
-                  data={dpList}
-                  renderItem={renderItem}
-                  keyExtractor={item => item.sto}
-                  initialNumToRender={10}
-                  refreshControl={
-                    <RefreshControl
-                      colors={["#fff"]}
-                      onRefresh={onRefresh}
-                      progressBackgroundColor="#000"
-                      refreshing={refreshing}
-                    />
-                  }
-                />
-              )}
+              <FlatList
+                data={dpList}
+                renderItem={renderItem}
+                keyExtractor={item => item.sto}
+                initialNumToRender={10}
+                refreshControl={
+                  <RefreshControl
+                    colors={["#fff"]}
+                    onRefresh={onRefresh}
+                    progressBackgroundColor="#000"
+                    refreshing={refreshing}
+                  />
+                }
+              />
             </View>
 
             {selectedList.length > 0 && (
@@ -404,7 +378,7 @@ const DeliveryPlan = ({ navigation }) => {
                 {isButtonLoading ? <ButtonLoading styles='bg-theme rounded-md p-5' /> :
                   <ButtonLg
                     title="Mark as delivery ready"
-                    onPress={() => createDeliveryPlan()}
+                    onPress={() => setDialogVisible(true)}
                   />
                 }
               </View>
@@ -426,7 +400,6 @@ const DeliveryPlan = ({ navigation }) => {
       <Modal
         isOpen={modalVisible}
         withInput={true}
-        // withCloseButton={false}
         modalHeader="Choose outlet"
         onPress={() => setModalVisible(false)}
       >
@@ -464,6 +437,25 @@ const DeliveryPlan = ({ navigation }) => {
           </View>
         </View>
       </Modal>
+      <Dialog
+        isOpen={dialogVisible}
+        modalHeader="Are you sure?"
+        modalSubHeader="Do you want to make delivery plan with selected sto?"
+        onClose={() => setDialogVisible(false)}
+        onSubmit={() => createDN()}
+        leftButtonText="cancel"
+        rightButtonText="proceed"
+      />
+      <Dialog
+        isOpen={outletDialogVisible}
+        modalHeader="Are you sure?"
+        modalSubHeader="Delivery plan will be generated with selected outlets"
+        onClose={() => setOutletDialogVisible(false)}
+        onSubmit={() => confirmModal()}
+        leftButtonText="cancel"
+        rightButtonText="proceed"
+      />
+      <CustomToast />
     </SafeAreaView>
   );
 };

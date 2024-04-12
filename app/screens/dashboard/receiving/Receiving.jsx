@@ -12,7 +12,7 @@ import { getStorage } from '../../../../hooks/useStorage';
 import { dateRange, toast } from '../../../../utils';
 import SunmiScanner from '../../../../utils/sunmi/scanner';
 
-const Receiving = ({ navigation, route }) => {
+const Receiving = ({ navigation }) => {
   const isFocused = useIsFocused();
   const [isLoading, setIsLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -135,7 +135,7 @@ const Receiving = ({ navigation, route }) => {
     toast(`Loading time: ${time.toFixed(2)} Seconds`);
   };
 
-  if (barcode !== '' && pressMode === 'false') {
+  if (barcode !== '') {
     const poItem = poList.find(item => item.po === barcode);
     if (poItem) {
       navigation.replace('PurchaseOrder', { po_id: barcode });

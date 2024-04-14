@@ -1,37 +1,33 @@
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, FlatList, Image, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, FlatList, Image, RefreshControl, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
 import { NotPickingIcon, PickingIcon } from '../../../../constant/icons';
 import { getStorage } from '../../../../hooks/useStorage';
-import { toast } from '../../../../utils';
 
 const Picking = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [user, setUser] = useState({});
   const [token, setToken] = useState('');
-  let [notPickedData, setNotPickedData] = useState([]);
-  let [pickedData, setPickedData] = useState([]);
-  const [page, setPage] = useState(1);
-  const [totalPage, setTotalPage] = useState(0);
+  const [assignedData, setAssignedData] = useState([]);
+  const [notPicked, setNotPicked] = useState([]);
+  const [picked, setPicked] = useState([]);
   const tableHeader = ['STO', 'SKU', 'Outlet Code', 'Status'];
-  const API_URL = 'https://shwapnooperation.onrender.com/api/sto-tracking';
+  const API_URL = 'https://shwapnooperation.onrender.com/api/sto-tracking?pageSize=500&filterBy=supplyingPlant&';
 
   useEffect(() => {
-    const getUserInfo = async () => {
-      setIsLoading(true);
+    const getAsyncStorage = async () => {
       await getStorage('token', setToken, 'string');
       await getStorage('user', setUser, 'object');
-      setIsLoading(false);
     }
-    getUserInfo();
+    getAsyncStorage();
   }, []);
 
-  const getInDnList = async () => {
-    setIsLoading(true);
+  const getStoData = async () => {
     try {
-      await fetch(API_URL + `?pageSize=500&currentPage=${page}`, {
+      await fetch(API_URL + `value=${user?.site}`, {
         method: 'GET',
         headers: {
           authorization: token,
@@ -40,40 +36,51 @@ const Picking = ({ navigation }) => {
         .then(response => response.json())
         .then(data => {
           if (data.status) {
-            const notPicked = data.items.filter(item => item.status === 'picker assigned' || item.status === 'picker packer assigned'
-              && item.supplyingPlant === user?.site);
+            setAssignedData(data.items);
+            const notPicked = data.items.filter(item => item.status === 'picker assigned' || item.status === 'picker packer assigned');
             const picked = data.items.filter(item => item.status === 'picked');
-            setNotPickedData([...notPickedData, ...notPicked]);
-            setPickedData([...pickedData, ...picked]);
-            setTotalPage(data.totalPages);
-            setIsLoading(false);
+            setNotPicked(notPicked);
+            setPicked(picked);
           } else {
             Toast.show({
               type: 'customError',
               text1: data.message,
             });
-            setIsLoading(false);
           }
         })
-        .catch(error => toast(error.message));
+        .catch(error => {
+          Toast.show({
+            type: 'customError',
+            text1: error.message.toString(),
+          });
+        });
     } catch (error) {
-      console.log(error);
+      Toast.show({
+        type: 'customError',
+        text1: error.message.toString(),
+      });
     }
   };
 
+  const getAssignedTask = async () => {
+    setIsLoading(true);
+    await getStoData();
+    setIsLoading(false);
+  }
+
   useFocusEffect(
     useCallback(() => {
-      if (token) {
-        getInDnList();
+      if (token && user?.site) {
+        getAssignedTask();
       }
-    }, [token, page])
+    }, [token, user?.site])
   );
 
-  const loadMoreItem = () => {
-    if (totalPage >= page) {
-      setPage(prev => prev + 1);
-    } else {
-      setIsLoading(false);
+  const onRefresh = async () => {
+    if (token && user?.site) {
+      setRefreshing(true);
+      await getStoData();
+      setRefreshing(false);
     }
   };
 
@@ -119,27 +126,24 @@ const Picking = ({ navigation }) => {
     </TouchableOpacity>
   );
 
-  notPickedData = [...new Set(notPickedData)];
-  pickedData = [...new Set(pickedData)];
-
   let tabInfo = [
     {
       id: 1,
       name: 'not picked',
-      count: notPickedData.length,
+      count: notPicked.length,
       icon: NotPickingIcon,
     },
     {
       id: 2,
       name: 'picked',
-      count: pickedData.length,
+      count: picked.length,
       icon: PickingIcon,
     },
   ]
 
   const [active, setActive] = useState(tabInfo[0]);
 
-  if (isLoading) {
+  if (isLoading && assignedData.length === 0) {
     return (
       <View className="w-full h-screen justify-center px-3">
         <ActivityIndicator size="large" color="#EB4B50" />
@@ -150,9 +154,18 @@ const Picking = ({ navigation }) => {
     )
   }
 
+  if (assignedData.length === 0) {
+    return (
+      <View className="w-full h-full justify-center px-3">
+        <Text className="text-black text-xl text-center font-semibold font-mono mt-5">
+          No task assigned yet
+        </Text>
+      </View>
+    )
+  }
+
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">
-      <CustomToast />
       <View className="flex-1 px-4">
         <View className="screen-header flex-row items-center mb-4">
           <Text className="text-lg flex-1 text-sh text-center font-semibold capitalize">
@@ -183,7 +196,7 @@ const Picking = ({ navigation }) => {
         <View className="tab-content flex-1 justify-between py-5">
           {active?.name === 'not picked' ? (
             <>
-              {notPickedData.length ? (
+              {notPicked.length > 0 ? (
                 <View className="table h-full pb-2">
                   <View className="flex-row bg-th text-center mb-2 py-2">
                     {tableHeader.map(th => (
@@ -193,12 +206,18 @@ const Picking = ({ navigation }) => {
                     ))}
                   </View>
                   <FlatList
-                    data={notPickedData}
+                    data={notPicked}
                     renderItem={pickingRenderItem}
                     keyExtractor={item => item._id}
-                    onEndReached={loadMoreItem}
-                    ListFooterComponent={isLoading && <ActivityIndicator />}
-                    onEndReachedThreshold={0}
+                    initialNumToRender={10}
+                    refreshControl={
+                      <RefreshControl
+                        colors={["#fff"]}
+                        onRefresh={onRefresh}
+                        progressBackgroundColor="#000"
+                        refreshing={refreshing}
+                      />
+                    }
                   />
                 </View>
               ) : (
@@ -214,7 +233,7 @@ const Picking = ({ navigation }) => {
 
           {active?.name === 'picked' ? (
             <>
-              {pickedData.length ? (
+              {picked.length > 0 ? (
                 <View className="table h-full pb-2">
                   <View className="flex-row bg-th text-center mb-2 py-2">
                     {tableHeader.map(th => (
@@ -224,12 +243,18 @@ const Picking = ({ navigation }) => {
                     ))}
                   </View>
                   <FlatList
-                    data={pickedData}
+                    data={picked}
                     renderItem={pickedRenderItem}
                     keyExtractor={item => item._id}
-                    onEndReached={loadMoreItem}
-                    ListFooterComponent={isLoading && <ActivityIndicator />}
-                    onEndReachedThreshold={0}
+                    initialNumToRender={10}
+                    refreshControl={
+                      <RefreshControl
+                        colors={["#fff"]}
+                        onRefresh={onRefresh}
+                        progressBackgroundColor="#000"
+                        refreshing={refreshing}
+                      />
+                    }
                   />
                 </View>
               ) : (
@@ -243,6 +268,7 @@ const Picking = ({ navigation }) => {
           ) : null}
         </View>
       </View>
+      <CustomToast />
     </SafeAreaView>
   );
 };

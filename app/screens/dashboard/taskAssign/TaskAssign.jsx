@@ -9,18 +9,23 @@ import { getStorage } from '../../../../hooks/useStorage';
 const TaskAssign = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [user, setUser] = useState({});
   const [token, setToken] = useState('');
   let [taskList, setTaskList] = useState([]);
   const tableHeader = ['STO ID', 'SKU', 'Outlet Code', 'Status'];
-  const API_URL = 'https://shwapnooperation.onrender.com/api/sto-tracking?pageSize=200';
+  const API_URL = 'https://shwapnooperation.onrender.com/api/sto-tracking?pageSize=200&filterBy=supplyingPlant&';
 
   useEffect(() => {
-    getStorage('token', setToken, 'string');
+    const getAsyncStorage = async () => {
+      await getStorage('token', setToken, 'string');
+      await getStorage('user', setUser, 'object');
+    }
+    getAsyncStorage();
   }, []);
 
   const getInDnList = async () => {
     try {
-      await fetch(API_URL, {
+      await fetch(API_URL + `value=${user?.site}`, {
         method: 'GET',
         headers: {
           authorization: token,
@@ -29,7 +34,8 @@ const TaskAssign = ({ navigation }) => {
         .then(response => response.json())
         .then(data => {
           if (data.status) {
-            const serverData = data.items.filter(item => item.status === 'in dn' || item.status === 'picker assigned');
+            let status = ['in dn', 'picker assigned'];
+            const serverData = data.items.filter(item => status.some(elem => elem === item.status));
             setTaskList(serverData);
           } else {
             Toast.show({
@@ -59,16 +65,18 @@ const TaskAssign = ({ navigation }) => {
         await getInDnList();
         setIsLoading(false);
       };
-      if (token) {
+      if (token && user?.site) {
         getTaskList();
       }
-    }, [token])
+    }, [token, user?.site])
   );
 
   const onRefresh = async () => {
-    setRefreshing(true);
-    await getInDnList();
-    setRefreshing(false);
+    if (token && user?.site) {
+      setRefreshing(true);
+      await getInDnList();
+      setRefreshing(false);
+    }
   };
 
   const renderItem = ({ item, index }) => (

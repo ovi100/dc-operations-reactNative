@@ -12,11 +12,13 @@ import useAppContext from '../../../../hooks/useAppContext';
 import { getStorage } from '../../../../hooks/useStorage';
 import { toast } from '../../../../utils';
 import SunmiScanner from '../../../../utils/sunmi/scanner';
+import Dialog from '../../../../components/Dialog';
 
 const PurchaseOrder = ({ navigation, route }) => {
   const { startScan, stopScan } = SunmiScanner;
   const [isLoading, setIsLoading] = useState(false);
   const [isButtonLoading, setIsButtonLoading] = useState(false);
+  const [dialogVisible, setDialogVisible] = useState(false);
   const [pressMode, setPressMode] = useState(false);
   const [barcode, setBarcode] = useState('');
   const [token, setToken] = useState('');
@@ -336,17 +338,6 @@ const PurchaseOrder = ({ navigation, route }) => {
     }
   }
 
-  const postGRN = () => {
-    Alert.alert('Are you sure?', 'GRN will be created', [
-      {
-        text: 'Cancel',
-        onPress: () => null,
-        style: 'cancel',
-      },
-      { text: 'OK', onPress: () => createGRN(GRNByPo) },
-    ]);
-  }
-
   if (isLoading) {
     return (
       <View className="w-full h-screen justify-center px-3">
@@ -411,7 +402,7 @@ const PurchaseOrder = ({ navigation, route }) => {
                 {isButtonLoading ? <ButtonLoading styles='bg-theme rounded-md p-5' /> :
                   <ButtonLg
                     title="Create GRN"
-                    onPress={() => postGRN()}
+                    onPress={() => setDialogVisible(true)}
                   />
                 }
               </View>
@@ -420,6 +411,15 @@ const PurchaseOrder = ({ navigation, route }) => {
         </View>
       </View>
       <CustomToast />
+      <Dialog
+        isOpen={dialogVisible}
+        modalHeader="Are you sure?"
+        modalSubHeader="GRN will be created"
+        onClose={() => setDialogVisible(false)}
+        onSubmit={() => createGRN(GRNByPo)}
+        leftButtonText="cancel"
+        rightButtonText="proceed"
+      />
     </SafeAreaView >
   );
 };

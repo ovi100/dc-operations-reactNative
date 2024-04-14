@@ -29,12 +29,12 @@ const Receiving = ({ navigation }) => {
   const postObject = { ...dateObject, site: user?.site };
 
   useEffect(() => {
-    const getUserInfo = async () => {
+    const getAsyncStorage = async () => {
       await getStorage('token', setToken, 'string');
       await getStorage('user', setUser, 'object');
       await getStorage('pressMode', setPressMode);
     }
-    getUserInfo();
+    getAsyncStorage();
   }, []);
 
   useEffect(() => {
@@ -80,7 +80,7 @@ const Receiving = ({ navigation }) => {
                 }
               })
               .catch(error => {
-                console.log(error)
+                console.log(error);
                 Toast.show({
                   type: 'customError',
                   text1: error.message.toString(),

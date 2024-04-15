@@ -24,11 +24,14 @@ const Audit = ({ navigation }) => {
   const [token, setToken] = useState('');
   const [shelveData, setShelveData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const API_URL = 'https://shwapnooperation.onrender.com/api/product-shelving/';
+  const API_URL = 'https://shwapnooperation.onrender.com/api/product-shelving/in-shelf?filterBy=site&';
 
   useEffect(() => {
-    getStorage('user', setUser, 'object');
-    getStorage('token', setToken);
+    const getAsyncStorage = async () => {
+      await getStorage('token', setToken, 'string');
+      await getStorage('user', setUser, 'object');
+    }
+    getAsyncStorage();
   }, []);
 
   // custom functions
@@ -60,7 +63,7 @@ const Audit = ({ navigation }) => {
   const getShelveData = async () => {
     try {
       setIsLoading(true);
-      await fetch(API_URL + `in-shelf?filterBy=site&value=${user?.site}&pageSize=500`, {
+      await fetch(API_URL + `value=${user?.site}&pageSize=500`, {
         method: 'GET',
         headers: {
           authorization: token,
@@ -98,10 +101,10 @@ const Audit = ({ navigation }) => {
 
   useFocusEffect(
     useCallback(() => {
-      if (token) {
+      if (token && user?.site) {
         getShelveData();
       }
-    }, [token]),
+    }, [token, user?.site]),
   );
 
   const [searchQuery, setSearchQuery] = useState('');

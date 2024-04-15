@@ -21,7 +21,10 @@ const AssignToBin = ({ navigation, route }) => {
   const API_URL = 'https://shelves-backend.onrender.com/api/bins/';
 
   useEffect(() => {
-    getStorage('token', setToken);
+    const getAsyncStorage = async () => {
+      await getStorage('token', setToken, 'string');
+    }
+    getAsyncStorage();
   }, []);
 
   const getBin = async (code) => {

@@ -1,24 +1,25 @@
-import { useFocusEffect } from '@react-navigation/native';
-import React, { useCallback, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Image, SafeAreaView, Text, TextInput, TouchableWithoutFeedback, View } from 'react-native';
 import Toast from 'react-native-toast-message';
+import CustomToast from '../../../../components/CustomToast';
 import { ButtonLg, ButtonLoading } from '../../../../components/buttons';
 import { BoxIcon } from '../../../../constant/icons';
 import { getStorage } from '../../../../hooks/useStorage';
 import { toast } from '../../../../utils';
 
 const ShelveArticle = ({ navigation, route }) => {
-  const { _id, bins, code, description, quantity, receivedQuantity } = route.params;
+  const { _id, bins, code, description, receivedQuantity } = route.params;
   const [isButtonLoading, setIsButtonLoading] = useState(false);
-  const [newQuantity, setNewQuantity] = useState(receivedQuantity);
+  const [newQuantity, setNewQuantity] = useState(Number(receivedQuantity));
   const [token, setToken] = useState('');
-  const API_URL = 'https://shwapnooperation.onrender.com/api/product-shelving/';
+  const API_URL = 'https://shwapnooperation.onrender.com/api/product-shelving/in-shelf/';
 
-  useFocusEffect(
-    useCallback(() => {
-      getStorage('token', setToken, 'string');
-    }, []),
-  );
+  useEffect(() => {
+    const getAsyncStorage = async () => {
+      await getStorage('token', setToken, 'string');
+    }
+    getAsyncStorage();
+  }, []);
 
   const shelveArticle = async () => {
     if (newQuantity > receivedQuantity) {
@@ -27,12 +28,14 @@ const ShelveArticle = ({ navigation, route }) => {
       const assignToShelveObject = {
         gondola: bins.gondola_id,
         bin: bins.bin_id,
-        quantity: newQuantity,
+        quantity: Number(newQuantity),
       };
+
+      console.log(_id, assignToShelveObject);
 
       try {
         setIsButtonLoading(true);
-        await fetch(API_URL + `in-shelf/${_id}`, {
+        await fetch(API_URL + _id, {
           method: 'POST',
           headers: {
             authorization: token,
@@ -42,9 +45,10 @@ const ShelveArticle = ({ navigation, route }) => {
         })
           .then(response => response.json())
           .then(data => {
+            console.log(data);
             if (data.status) {
               Toast.show({
-                type: 'customInfo',
+                type: 'customSuccess',
                 text1: data.message,
               });
               setTimeout(() => {
@@ -83,16 +87,19 @@ const ShelveArticle = ({ navigation, route }) => {
           <View className="text items-center">
             <TouchableWithoutFeedback>
               <View className="flex-row">
-                <Text className="text-base text-sh font-medium capitalize">
+                <Text className="text-xl text-sh font-medium capitalize">
                   shelving article
                 </Text>
-                <Text className="text-base text-sh font-bold capitalize">
+                <Text className="text-xl text-sh font-bold capitalize">
                   {' ' + code}
                 </Text>
               </View>
             </TouchableWithoutFeedback>
-            <Text className="text-sm text-sh text-right font-medium capitalize">
+            <Text className="text-lg text-sh text-right font-medium capitalize my-1.5">
               {description}
+            </Text>
+            <Text className="text-lg text-sh text-right font-medium">
+              {bins.bin_id}
             </Text>
           </View>
         </View>
@@ -118,9 +125,7 @@ const ShelveArticle = ({ navigation, route }) => {
               selectionColor="#5D80C5"
               keyboardType="numeric"
               value={newQuantity.toString()}
-              onChangeText={value => {
-                setNewQuantity(value);
-              }}
+              onChangeText={value => setNewQuantity(value)}
             />
           </View>
         </View>
@@ -131,6 +136,7 @@ const ShelveArticle = ({ navigation, route }) => {
           }
         </View>
       </View>
+      <CustomToast />
     </SafeAreaView>
   );
 };

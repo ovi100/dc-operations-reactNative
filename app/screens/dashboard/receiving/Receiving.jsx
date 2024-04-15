@@ -17,7 +17,7 @@ const Receiving = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [pressMode, setPressMode] = useState(false);
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState({});
   const [token, setToken] = useState('');
   const [barcode, setBarcode] = useState('');
   let [poList, setPoList] = useState([]);
@@ -25,7 +25,7 @@ const Receiving = ({ navigation }) => {
   const tableHeader = ['Purchase Order ID', 'SKU'];
   const API_URL = 'https://shwapnooperation.onrender.com/';
   const { startScan, stopScan } = SunmiScanner;
-  const dateObject = dateRange(5);
+  const dateObject = dateRange(15);
   const postObject = { ...dateObject, site: user?.site };
 
   useEffect(() => {

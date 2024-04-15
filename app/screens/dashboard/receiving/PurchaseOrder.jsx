@@ -1,18 +1,18 @@
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
-  ActivityIndicator, Alert,
+  ActivityIndicator,
   DeviceEventEmitter, FlatList,
   SafeAreaView, Text, TouchableHighlight, TouchableOpacity, View
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
+import Dialog from '../../../../components/Dialog';
 import { ButtonLg, ButtonLoading } from '../../../../components/buttons';
 import useAppContext from '../../../../hooks/useAppContext';
 import { getStorage } from '../../../../hooks/useStorage';
 import { toast } from '../../../../utils';
 import SunmiScanner from '../../../../utils/sunmi/scanner';
-import Dialog from '../../../../components/Dialog';
 
 const PurchaseOrder = ({ navigation, route }) => {
   const { startScan, stopScan } = SunmiScanner;
@@ -215,7 +215,7 @@ const PurchaseOrder = ({ navigation, route }) => {
   if (barcode !== '') {
     const getArticleBarcode = async (barcode) => {
       try {
-        await fetch('https://shelves-backend-1.onrender.com/api/barcodes/material/' + barcode, {
+        await fetch('https://shelves-backend-1.onrender.com/api/barcodes/barcode/' + barcode, {
           method: 'GET',
           headers: {
             authorization: token,
@@ -225,7 +225,7 @@ const PurchaseOrder = ({ navigation, route }) => {
           .then(response => response.json())
           .then(result => {
             if (result.status) {
-              const isValidBarcode = result.data.barcodes.some(item => item === barcode);
+              const isValidBarcode = result.data.barcode.includes(barcode);
               const poItem = articles.find(item => item.material === result.data.material);
 
               if (poItem && isValidBarcode) {

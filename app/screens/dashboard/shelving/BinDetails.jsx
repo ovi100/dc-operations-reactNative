@@ -1,19 +1,56 @@
-import { useIsFocused } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
-import { Alert, DeviceEventEmitter, FlatList, SafeAreaView, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, DeviceEventEmitter, FlatList, SafeAreaView, Text, View } from 'react-native';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
-import EmptyBox from '../../../../components/animations/EmptyBox';
-import { ButtonLg } from '../../../../components/buttons';
+import Scan from '../../../../components/animations/Scan';
+import { getStorage } from '../../../../hooks/useStorage';
 import SunmiScanner from '../../../../utils/sunmi/scanner';
 
 const BinDetails = ({ navigation, route }) => {
-  const isFocused = useIsFocused();
-  const { bins, code, description } = route.params;
+  const { code, description } = route.params;
+  const [isLoading, setIsLoading] = useState(false);
+  const [isAssigning, setIsAssigning] = useState(false);
   const tableHeader = ['Bin ID', 'Gondola ID'];
+  const [token, setToken] = useState('');
+  const [bins, setBins] = useState([]);
   const [barcode, setBarcode] = useState('');
   const isBinsFound = Boolean(bins.length);
   const { startScan, stopScan } = SunmiScanner;
+  const API_URL = 'https://shelves-backend.onrender.com/api/bins/';
+
+  useEffect(() => {
+    const getAsyncStorage = async () => {
+      await getStorage('token', setToken, 'string');
+    }
+    getAsyncStorage();
+  }, []);
+
+  const getBins = async (code) => {
+    await fetch(API_URL + `product/${code}`, {
+      method: 'GET',
+      headers: {
+        authorization: token,
+        'Content-Type': 'application/json',
+      }
+    })
+      .then(response => response.json())
+      .then(result => {
+        if (result.status) {
+          setBins(result.bins);
+        } else {
+          Toast.show({
+            type: 'customError',
+            text1: result.message,
+          });
+        }
+      });
+  }
+
+  useEffect(() => {
+    if (token && code) {
+      getBins(code);
+    }
+  }, [token, code]);
 
   useEffect(() => {
     startScan();
@@ -26,44 +63,114 @@ const BinDetails = ({ navigation, route }) => {
       stopScan();
       DeviceEventEmitter.removeAllListeners('ScanDataReceived');
     };
-  }, [isFocused]);
+  }, []);
 
   const renderItem = ({ item, index }) => (
     <View className="flex-row border border-tb rounded-lg mt-2.5 p-4" key={index}>
       <Text
         className="flex-1 text-black text-center"
         numberOfLines={1}>
-        {item.bin_id}
+        {item.bin_ID}
       </Text>
       <Text
         className="flex-1 text-black text-center"
         numberOfLines={1}>
-        {item.gondola_id}
+        {item.gondola_ID}
       </Text>
     </View>
   );
 
-  const assignToNew = () => {
-    navigation.replace('AssignToBin', { ...route.params })
+  const addArticleToBin = async () => {
+    const assignToBinObject = {
+      binID: barcode,
+      newProducts: [
+        {
+          article_code: code,
+          article_name: description
+        }
+      ]
+    };
+
+    try {
+      await fetch(API_URL + 'addProducts', {
+        method: 'POST',
+        headers: {
+          authorization: token,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(assignToBinObject),
+      })
+        .then(response => response.json())
+        .then(async data => {
+          if (data.status) {
+            Toast.show({
+              type: 'customSuccess',
+              text1: data.message,
+            });
+            await fetch(API_URL + barcode, {
+              method: 'GET',
+              headers: {
+                authorization: token,
+                'Content-Type': 'application/json',
+              }
+            })
+              .then(res => res.json())
+              .then(result => {
+                if (result.status) {
+                  navigation.replace('ShelveArticle', { ...route.params, bins: { bin_id: result.bin.bin_ID, gondola_id: result.bin.gondola_ID } })
+                } else {
+                  Toast.show({
+                    type: 'customError',
+                    text1: result.message,
+                  });
+                }
+              });
+          } else {
+            Toast.show({
+              type: 'customError',
+              text1: data.message,
+            });
+          }
+        })
+        .catch(error => {
+          Toast.show({
+            type: 'customError',
+            text1: error.message.toString(),
+          });
+        });
+    } catch (error) {
+      Toast.show({
+        type: 'customError',
+        text1: error.message.toString(),
+      });
+    }
+  }
+
+  const assignToBin = async () => {
+    if (token) {
+      setIsAssigning(true);
+      await addArticleToBin();
+      setIsAssigning(false);
+    }
   }
 
   if (barcode !== '') {
-    const binItem = bins.find(item => item.bin_id === barcode);
+    const binItem = bins.find(item => item.bin_ID === barcode);
     if (binItem) {
-      navigation.replace('ShelveArticle', { ...route.params, bins: { bin_id: binItem.bin_id, gondola_id: binItem.gondola_id } });
+      navigation.replace('ShelveArticle', { ...route.params, bins: { bin_id: binItem.bin_ID, gondola_id: binItem.gondola_ID } });
     } else {
-      const isBinExist = async (code) => {
+      const checkBin = async (code) => {
         await fetch(`https://shelves-backend.onrender.com/api/bins/checkBin/${code}`)
           .then(res => res.json())
           .then(result => {
             if (result.status) {
-              Alert.alert('Are you sure?', 'assign to new bin', [
+              Alert.alert('Are you sure?', 'Assign article to bin', [
                 {
                   text: 'Cancel',
                   onPress: () => null,
                   style: 'cancel',
                 },
-                { text: 'OK', onPress: () => assignToNew() },
+                { text: 'OK', onPress: () => assignToBin() },
               ]);
             } else {
               Toast.show({
@@ -73,9 +180,31 @@ const BinDetails = ({ navigation, route }) => {
             }
           });
       };
-      isBinExist(barcode);
+      checkBin(barcode);
     }
     setBarcode('');
+  }
+
+  if (isLoading && bins.length === 0) {
+    return (
+      <View className="w-full h-screen justify-center px-3">
+        <ActivityIndicator size="large" color="#EB4B50" />
+        <Text className="mt-4 text-gray-400 text-base text-center">
+          Loading bins data. Please wait.....
+        </Text>
+      </View>
+    )
+  }
+
+  if (isAssigning) {
+    return (
+      <View className="w-full h-screen justify-center px-3">
+        <ActivityIndicator size="large" color="#EB4B50" />
+        <Text className="mt-4 text-gray-400 text-base text-center">
+          Assigning to bin. Please wait.....
+        </Text>
+      </View>
+    )
   }
 
   return (
@@ -91,7 +220,7 @@ const BinDetails = ({ navigation, route }) => {
                 {' ' + code}
               </Text>
             </View>
-            <Text className="text-sm text-sh text-right font-medium capitalize">
+            <Text className="text-sm text-sh text-center font-medium capitalize">
               {description}
             </Text>
           </View>
@@ -116,13 +245,13 @@ const BinDetails = ({ navigation, route }) => {
             )
             : (
               <View className="h-full justify-center pb-2">
-                <EmptyBox />
                 <Text className="text-xl font-bold text-center mb-5">
                   No bins found for this product
                 </Text>
-                <View className="button mb-20">
-                  <ButtonLg title="Assign to bin" onPress={() => navigation.replace('AssignToBin', { ...route.params })} />
-                </View>
+                <Scan />
+                <Text className="text-xl font-bold text-center mt-5">
+                  Please scan a bin barcode to assign the product
+                </Text>
               </View>
             )
           }

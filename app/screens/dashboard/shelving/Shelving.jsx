@@ -2,6 +2,7 @@ import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Button,
   DeviceEventEmitter,
   FlatList,
   RefreshControl,
@@ -28,13 +29,16 @@ const Shelving = ({ navigation }) => {
   const { startScan, stopScan } = SunmiScanner;
 
   useEffect(() => {
-    getStorage('token', setToken, 'string');
+    const getAsyncStorage = async () => {
+      await getStorage('token', setToken, 'string');
+    }
+    getAsyncStorage();
   }, []);
 
   useEffect(() => {
     startScan();
     DeviceEventEmitter.addListener('ScanDataReceived', data => {
-      console.log(data.code);
+      console.log(data.code)
       setBarcode(data.code);
     });
 
@@ -122,13 +126,14 @@ const Shelving = ({ navigation }) => {
     await getPartiallyInShelfData();
   }
 
+  const getShelvingList = async () => {
+    setIsLoading(true);
+    await getShelvingData();
+    setIsLoading(false);
+  };
+
   useFocusEffect(
     useCallback(() => {
-      const getShelvingList = async () => {
-        setIsLoading(true);
-        await getShelvingData();
-        setIsLoading(false);
-      };
       if (token) {
         getShelvingList();
       }
@@ -148,7 +153,7 @@ const Shelving = ({ navigation }) => {
   if (barcode !== '') {
     const getArticleBarcode = async (barcode) => {
       try {
-        await fetch('https://shelves-backend-1.onrender.com/api/barcodes/material/' + barcode, {
+        await fetch('https://shelves-backend-1.onrender.com/api/barcodes/barcode/' + barcode, {
           method: 'GET',
           headers: {
             authorization: token,
@@ -158,7 +163,7 @@ const Shelving = ({ navigation }) => {
           .then(response => response.json())
           .then(result => {
             if (result.status) {
-              const isValidBarcode = result.data.barcodes.some(item => item === barcode);
+              const isValidBarcode = result.data.barcode.includes(barcode);
               const article = articles.find(item => item.code === result.data.material);
 
               if (article && isValidBarcode) {
@@ -179,16 +184,15 @@ const Shelving = ({ navigation }) => {
             }
           })
           .catch(error => {
-            console.log(error.message);
             Toast.show({
               type: 'customError',
-              text1: 'API request failed',
+              text1: error.message.toString(),
             });
           });
       } catch (error) {
         Toast.show({
           type: 'customError',
-          text1: 'Unable to fetch data',
+          text1: error.message.toString(),
         });
       }
     };
@@ -209,17 +213,12 @@ const Shelving = ({ navigation }) => {
       </View>
       <View className="w-2/5">
         {item.bins.length > 0 ? (
-          <>
-            {item.bins.map((bin, i) => (
-              <Text
-                key={i}
-                className="text-black text-center mb-1 last:mb-0"
-                numberOfLines={1}>
-                {bin.bin_id}
-              </Text>
-            ))}
-          </>
-        ) : (<Text className="text-black text-center">Don't have any bin</Text>)}
+          <Text
+            className="text-black text-center mb-1 last:mb-0"
+            numberOfLines={1}>
+            {item.bins[0].bin_id}
+          </Text>
+        ) : (<Text className="text-black text-center">No bin has been assigned</Text>)}
       </View>
       <Text className="w-[15%] text-black text-center" numberOfLines={1}>
         {item.receivedQuantity}
@@ -244,6 +243,9 @@ const Shelving = ({ navigation }) => {
         <Text className="text-base font-bold text-center">
           No product is ready for shelving!
         </Text>
+        <View className="w-1/4 mx-auto mt-5">
+          <Button title='Retry' onPress={() => getShelvingList()} />
+        </View>
       </View>
     )
   }

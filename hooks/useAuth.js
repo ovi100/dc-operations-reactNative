@@ -30,14 +30,14 @@ const useAuth = () => {
       }
 
       const data = await response.json();
-      if(data.status){
+      if (data.status) {
         setUser(data.user);
         setUserSite(data.user.site);
         setToken(data.token);
         setStorage('token', data.token);
         setStorage('user', data.user);
         setStorage('usersite', data.user.site);
-      } else{
+      } else {
         Toast.show({
           type: 'customError',
           text1: data.message,

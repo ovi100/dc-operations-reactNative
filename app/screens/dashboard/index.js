@@ -1,6 +1,6 @@
 import { Link } from '@react-navigation/native';
-import React, { useEffect, useState } from 'react';
-import { Image, SafeAreaView, Text, View } from 'react-native';
+import React from 'react';
+import { ActivityIndicator, Image, SafeAreaView, Text, View } from 'react-native';
 import { ButtonProfile } from '../../../components/buttons';
 import {
   ChildPackingIcon,
@@ -12,15 +12,12 @@ import {
   ShelvingIcon,
   TaskAssignIcon,
 } from '../../../constant/icons';
-import { getStorage } from '../../../hooks/useStorage';
+import useAppContext from '../../../hooks/useAppContext';
 
 const Home = ({navigation}) => {
-  const [user, setUser] = useState({});
+  const {authInfo} = useAppContext();
+  const {user} = authInfo;
   let filteredLinks;
-
-  useEffect(() => {
-    getStorage('user', setUser, 'object');
-  }, []);
 
   const navLinks = [
     {
@@ -28,73 +25,90 @@ const Home = ({navigation}) => {
       icon: ReceivingIcon,
       screen: 'Receiving',
       role: 'receiver',
+      access: 'receiving-access',
     },
     {
       name: 'Shelving',
       icon: ShelvingIcon,
       screen: 'Shelving',
       role: 'shelver',
+      access: 'shelving-access',
     },
     {
       name: 'Delivery Plan',
       icon: DeliveryPlanIcon,
       screen: 'DeliveryPlan',
       role: 'delivery-planner',
+      access: 'delivery-plan-access',
     },
     {
       name: 'Task Assign',
       icon: TaskAssignIcon,
       screen: 'TaskAssign',
       role: 'task-assigner',
+      access: 'task-assign-access',
     },
     {
       name: 'Picking',
       icon: PickingIcon,
       screen: 'Picking',
       role: 'picker',
+      access: 'picking-access',
     },
     {
       name: 'Child Packing',
       icon: ChildPackingIcon,
       screen: 'ChildPacking',
       role: 'packer',
+      access: 'packing-access',
     },
     // {
     //   name: 'Master Packing',
     //   icon: MasterPackingIcon,
     //   screen: 'MasterPacking',
     //   role: 'packer',
+    //   access:'packing-access'
     // },
     {
       name: 'Final Delivery Note',
       icon: DeliveryNoteIcon,
       screen: 'DeliveryNote',
       role: 'DN charge',
+      access: 'delivery-note-access',
     },
     {
       name: 'Audit',
       icon: ReturnIcon,
       screen: 'Audit',
       role: 'audit',
+      access: 'audit-access',
     },
     // {
     //   name: 'Return',
     //   icon: ReturnIcon,
     //   screen: 'Return',
     //   role: 'returner',
+    //   access:'return-access'
     // },
-    // {
-    //   name: 'Print',
-    //   icon: PrinterIcon,
-    //   screen: 'Print',
-    //   role: 'printer',
-    // }
   ];
 
-  if (user?.role === 'super-admin') {
+  if (user?.hasPermission.includes('*')) {
     filteredLinks = navLinks;
   } else {
-    filteredLinks = navLinks.filter(link => link.role === user.role);
+    filteredLinks = navLinks.filter(link =>
+      user?.hasPermission.some(item => item === link.access),
+    );
+  }
+
+  if (!user) {
+    return (
+      <View className="w-full h-screen justify-center px-3">
+        <ActivityIndicator size="large" color="#EB4B50" />
+        <Text className="mt-4 text-gray-400 text-base text-center">
+          Checking user permission. Please wait......
+        </Text>
+      </View>
+    );
   }
 
   return (

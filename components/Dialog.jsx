@@ -23,7 +23,7 @@ const Dialog = ({ isOpen, modalHeader, modalSubHeader, onClose, onSubmit, leftBu
             <View className="action-button flex-row items-center justify-around">
               <View className="button py-3">
                 <TouchableOpacity onPress={onClose}>
-                  <Text className="bg-blue-600 text-white text-base font-bold rounded px-3 py-1">
+                  <Text className="bg-rose-600 text-white text-base font-bold rounded px-3 py-2 capitalize">
                     {leftButtonText}
                   </Text>
                 </TouchableOpacity>
@@ -31,7 +31,7 @@ const Dialog = ({ isOpen, modalHeader, modalSubHeader, onClose, onSubmit, leftBu
               <View className="separator w-[1px] h-full bg-gray-300"></View>
               <View className="button py-3">
                 <TouchableOpacity onPress={onSubmit}>
-                  <Text className="bg-blue-600 text-white text-base font-bold rounded px-3 py-1">
+                  <Text className="bg-green-600 text-white text-base font-bold rounded px-3 py-2 capitalize">
                     {rightButtonText}
                   </Text>
                 </TouchableOpacity>

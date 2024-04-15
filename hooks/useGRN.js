@@ -1,13 +1,12 @@
-import {useEffect, useState} from 'react';
-import {toast} from '../utils';
-import {setStorage} from './useStorage';
+import { useState } from 'react';
+import { toast } from '../utils';
 
 const useGRN = () => {
   const [grnItems, setGrnItems] = useState([]);
 
-  useEffect(() => {
-    setStorage('grnItems', grnItems);
-  }, [setGrnItems]);
+  // useEffect(() => {
+  //   setStorage('grnItems', grnItems);
+  // }, [setGrnItems]);
 
   const addToGRN = article => {
     const index = grnItems.findIndex(

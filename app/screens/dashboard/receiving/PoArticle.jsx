@@ -10,11 +10,10 @@ import { ButtonLg, ButtonLoading } from '../../../../components/buttons';
 import { BoxIcon } from '../../../../constant/icons';
 import useAppContext from '../../../../hooks/useAppContext';
 import { getStorage } from '../../../../hooks/useStorage';
-import { toast } from '../../../../utils';
 
 const PoArticle = ({ navigation, route }) => {
   const {
-    description, material, barcode, po, poItem, quantity,
+    description, material, po, poItem, quantity,
     receivingPlant, storageLocation, unit
   } = route.params;
   const [isLoading, setIsLoading] = useState(false);
@@ -100,9 +99,10 @@ const PoArticle = ({ navigation, route }) => {
         })
           .then(response => response.json())
           .then(data => {
+            console.log('server response', data);
             if (data.status) {
               Toast.show({
-                type: 'customInfo',
+                type: 'customSuccess',
                 text1: data.message,
               });
               addToGRN(grnItem);
@@ -118,11 +118,17 @@ const PoArticle = ({ navigation, route }) => {
             }
           })
           .catch(error => {
-            toast(error.message);
+            Toast.show({
+              type: 'customError',
+              text1: error.message.toString(),
+            });
             setIsButtonLoading(false);
           });
       } catch (error) {
-        toast(error.message);
+        Toast.show({
+          type: 'customError',
+          text1: error.message.toString(),
+        });
         setIsButtonLoading(false);
       }
     }

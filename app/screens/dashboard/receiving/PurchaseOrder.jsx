@@ -24,21 +24,23 @@ const PurchaseOrder = ({ navigation, route }) => {
   const [token, setToken] = useState('');
   const [poStatus, setPoStatus] = useState('');
   const [articles, setArticles] = useState([]);
-  const [grnItems, setAsGrnItems] = useState([]);
+  // const [grnItems, setAsGrnItems] = useState([]);
   const tableHeader = ['Article ID', 'Article Name', 'Quantity'];
   const API_URL = 'https://shwapnooperation.onrender.com/';
   const { po_id } = route.params;
   const { GRNInfo } = useAppContext();
-  const { setGrnItems } = GRNInfo;
+  const { grnItems, setGrnItems } = GRNInfo;
 
   useEffect(() => {
     const getAsyncStorage = async () => {
       await getStorage('token', setToken, 'string');
       await getStorage('pressMode', setPressMode);
-      await getStorage('grnItems', setAsGrnItems, 'object');
+      // await getStorage('grnItems', setAsGrnItems, 'object');
     }
     getAsyncStorage();
   }, []);
+
+  console.log('GRN Items', grnItems);
 
   useEffect(() => {
     startScan();
@@ -72,7 +74,7 @@ const PurchaseOrder = ({ navigation, route }) => {
         .catch(error => {
           Toast.show({
             type: 'customError',
-            text1: "could not fetch API",
+            text1: error.message.toString(),
           });
         });
     } catch (error) {
@@ -264,6 +266,7 @@ const PurchaseOrder = ({ navigation, route }) => {
   const GRNByPo = grnItems.filter(grnItem => grnItem.po == po_id);
 
   const createGRN = async (grnList) => {
+    setDialogVisible(false);
     setIsButtonLoading(true);
     try {
       await fetch(API_URL + 'bapi/grn/from-po/create', {

@@ -4,16 +4,15 @@ import { ActivityIndicator, FlatList, Image, RefreshControl, SafeAreaView, Text,
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
 import { NotPickingIcon, PickingIcon } from '../../../../constant/icons';
-import { getStorage } from '../../../../hooks/useStorage';
+import { getStorage, setStorage } from '../../../../hooks/useStorage';
 
 const Picking = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [user, setUser] = useState({});
+  const [stoTrackingInfo, setStoTrackingInfo] = useState({});
   const [token, setToken] = useState('');
   const [assignedData, setAssignedData] = useState([]);
-  const [notPicked, setNotPicked] = useState([]);
-  const [picked, setPicked] = useState([]);
   const tableHeader = ['STO', 'SKU', 'Outlet Code', 'Status'];
   const API_URL = 'https://shwapnooperation.onrender.com/api/sto-tracking?pageSize=500&filterBy=supplyingPlant&';
 
@@ -21,6 +20,7 @@ const Picking = ({ navigation }) => {
     const getAsyncStorage = async () => {
       await getStorage('token', setToken, 'string');
       await getStorage('user', setUser, 'object');
+      await getStorage('stoTrackingInfo', setStoTrackingInfo, 'object');
     }
     getAsyncStorage();
   }, []);
@@ -37,10 +37,6 @@ const Picking = ({ navigation }) => {
         .then(data => {
           if (data.status) {
             setAssignedData(data.items);
-            const notPicked = data.items.filter(item => item.status === 'picker assigned' || item.status === 'picker packer assigned');
-            const picked = data.items.filter(item => item.status === 'picked');
-            setNotPicked(notPicked);
-            setPicked(picked);
           } else {
             Toast.show({
               type: 'customError',
@@ -84,11 +80,32 @@ const Picking = ({ navigation }) => {
     }
   };
 
+  const startPicking = (article) => {
+    let stoTrackingInfo;
+    if (assignedData.length > 1) {
+      stoTrackingInfo = {
+        sto: article.sto,
+        stoPickingStartingTime: new Date(),
+        pickingStartingTime: new Date(),
+        status: 'inbound picking',
+      };
+    } else {
+      stoTrackingInfo = {
+        ...stoTrackingInfo,
+        stoPickingEndingTime: new Date(),
+        pickingEndingTime: new Date(),
+        status: 'inbound picked',
+      };
+    }
+    setStorage('stoTrackingInfo', stoTrackingInfo);
+    navigation.replace('PickingSto', { ...article, ...stoTrackingInfo });
+  };
+
   const pickingRenderItem = ({ item, index }) => (
     <TouchableOpacity
       className="flex-row items-center border border-tb rounded-lg mt-2.5 p-4"
       key={index}
-      onPress={() => navigation.push('PickingSto', item)}
+      onPress={() => startPicking(item)}
     >
       <Text className="flex-1 text-black text-center" numberOfLines={1}>
         {item.sto.slice(0, 2) + '...' + item.sto.slice(7, item.sto.length)}
@@ -125,6 +142,9 @@ const Picking = ({ navigation }) => {
       </Text>
     </TouchableOpacity>
   );
+
+  const notPicked = assignedData.filter(item => item.status === 'picker assigned' || item.status === 'picker packer assigned');
+  const picked = assignedData.filter(item => item.status === 'picked');
 
   let tabInfo = [
     {

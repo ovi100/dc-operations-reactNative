@@ -23,6 +23,8 @@ const PickingSto = ({ navigation, route }) => {
     getAsyncStorage();
   }, []);
 
+  console.log('sto picking details', route.params);
+
   useEffect(() => {
     startScan();
     DeviceEventEmitter.addListener('ScanDataReceived', data => {
@@ -82,37 +84,72 @@ const PickingSto = ({ navigation, route }) => {
   );
 
   if (barcode !== '') {
-    const article = articles.find(item => item.material === barcode);
-    if (article) {
-      let data = { ...article, pickingStartingTime: new Date() }
-      navigation.push('PickingStoArticle', data);
-    } else {
-      Toast.show({
-        type: 'customInfo',
-        text1: 'Article not found!',
-      });
-    }
-    setBarcode('');
+    const getArticleBarcode = async (barcode) => {
+      try {
+        await fetch('https://shelves-backend-1.onrender.com/api/barcodes/barcode/' + barcode, {
+          method: 'GET',
+          headers: {
+            authorization: token,
+            'Content-Type': 'application/json',
+          }
+        })
+          .then(response => response.json())
+          .then(result => {
+            if (result.status) {
+              const isValidBarcode = result.data.barcode.includes(barcode);
+              const article = articles.find(item => item.material === result.data.material);
+
+              if (poItem && isValidBarcode) {
+                navigation.replace('PickingStoArticle', article);
+              } else {
+                Toast.show({
+                  type: 'customInfo',
+                  text1: 'Article not found!',
+                });
+              }
+              setBarcode('');
+            } else {
+              Toast.show({
+                type: 'customError',
+                text1: result.message,
+              });
+              setBarcode('');
+            }
+          })
+          .catch(error => {
+            Toast.show({
+              type: 'customError',
+              text1: 'API request failed',
+            });
+          });
+      } catch (error) {
+        Toast.show({
+          type: 'customError',
+          text1: 'Unable to fetch data',
+        });
+      }
+    };
+    getArticleBarcode(barcode);
   }
 
   const renderItem = ({ item, index }) => (
     <View
       key={index}
-      className="flex-row items-center justify-between border border-tb rounded-lg mt-2.5 p-4"
-    // onPress={() => navigation.push('PickingStoArticle', item)}
+      className="flex-row items-center justify-between bg-white border border-tb rounded-lg mt-2.5 p-4"
+    // style={{ elevation: 5 }}
     >
       <Text
-        className="w-1/5 text-black text-sm text-center"
+        className="w-1/5 text-black text-base text-center"
         numberOfLines={1}>
         {item.material}
       </Text>
       <Text
-        className="w-3/5 text-black text-sm text-center"
+        className="w-3/5 text-black text-base text-center"
         numberOfLines={1}>
         {item.description}
       </Text>
       <Text
-        className="w-1/5 text-black text-sm text-center"
+        className="w-1/5 text-black text-base text-center"
         numberOfLines={1}>
         {item.quantity}
       </Text>
@@ -141,13 +178,13 @@ const PickingSto = ({ navigation, route }) => {
         <View className="content flex-1 justify-around mt-5 mb-6">
           <View className="table h-full pb-2">
             <View className="flex-row bg-th text-center mb-2 py-2">
-              <Text className="w-1/5 text-white text-[13px] text-center font-bold">
+              <Text className="w-1/5 text-white text-base text-center font-bold">
                 Article ID
               </Text>
-              <Text className="w-3/5 text-white text-[13px] text-center font-bold">
+              <Text className="w-3/5 text-white text-base text-center font-bold">
                 Article Name
               </Text>
-              <Text className="w-1/5 text-white text-[13px] text-center font-bold">
+              <Text className="w-1/5 text-white text-base text-center font-bold">
                 Quantity
               </Text>
             </View>

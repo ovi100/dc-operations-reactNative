@@ -4,7 +4,7 @@ import { ActivityIndicator, FlatList, Image, RefreshControl, SafeAreaView, Text,
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
 import { NotPickingIcon, PickingIcon } from '../../../../constant/icons';
-import { getStorage, setStorage } from '../../../../hooks/useStorage';
+import { getStorage } from '../../../../hooks/useStorage';
 
 const Picking = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -80,32 +80,11 @@ const Picking = ({ navigation }) => {
     }
   };
 
-  const startPicking = (article) => {
-    let stoTrackingInfo;
-    if (assignedData.length > 1) {
-      stoTrackingInfo = {
-        sto: article.sto,
-        stoPickingStartingTime: new Date(),
-        pickingStartingTime: new Date(),
-        status: 'inbound picking',
-      };
-    } else {
-      stoTrackingInfo = {
-        ...stoTrackingInfo,
-        stoPickingEndingTime: new Date(),
-        pickingEndingTime: new Date(),
-        status: 'inbound picked',
-      };
-    }
-    setStorage('stoTrackingInfo', stoTrackingInfo);
-    navigation.replace('PickingSto', { ...article, ...stoTrackingInfo });
-  };
-
   const pickingRenderItem = ({ item, index }) => (
     <TouchableOpacity
       className="flex-row items-center border border-tb rounded-lg mt-2.5 p-4"
       key={index}
-      onPress={() => startPicking(item)}
+      onPress={() => navigation.push('PickingSto', item)}
     >
       <Text className="flex-1 text-black text-center" numberOfLines={1}>
         {item.sto.slice(0, 2) + '...' + item.sto.slice(7, item.sto.length)}

@@ -2,11 +2,12 @@ import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, DeviceEventEmitter, FlatList, SafeAreaView, Text, View } from 'react-native';
 import Toast from 'react-native-toast-message';
-import { getStorage } from '../../../../../hooks/useStorage';
+import CustomToast from '../../../../../components/CustomToast';
+import { getStorage, setStorage } from '../../../../../hooks/useStorage';
 import SunmiScanner from '../../../../../utils/sunmi/scanner';
 
 const PickingSto = ({ navigation, route }) => {
-  const { sto } = route.params;
+  const { sto, picker, pickerId, packer, packerId } = route.params;
   const [isLoading, setIsLoading] = useState(false);
   const [serverError, setServerError] = useState('');
   const [barcode, setBarcode] = useState('');
@@ -16,19 +17,16 @@ const PickingSto = ({ navigation, route }) => {
   const { startScan, stopScan } = SunmiScanner;
 
   useEffect(() => {
-    getStorage('token', setToken, 'string'); const getAsyncStorage = async () => {
+    const getAsyncStorage = async () => {
       await getStorage('token', setToken, 'string');
-      await getStorage('user', setUser, 'object');
+      // await getStorage('user', setUser, 'object');
     }
     getAsyncStorage();
   }, []);
 
-  console.log('sto picking details', route.params);
-
   useEffect(() => {
     startScan();
     DeviceEventEmitter.addListener('ScanDataReceived', data => {
-      console.log(data.code);
       setBarcode(data.code);
     });
 
@@ -83,6 +81,44 @@ const PickingSto = ({ navigation, route }) => {
     }, [token, sto]),
   );
 
+  const updateTrackingInfo = (article) => {
+    let stoTrackingInfo;
+    let articleTrackingInfo = {
+      sto,
+      inboundPicker: picker,
+      inboundPickerId: pickerId,
+      inboundPacker: packer,
+      inboundPackerId: packerId,
+      inboundPickingStartingTime: new Date(),
+      status: 'inbound picking'
+    };
+    if (articles.length === 1) {
+      stoTrackingInfo = {
+        sto,
+        picker,
+        pickerId,
+        packer,
+        packerId,
+        pickingEndingTime: new Date(),
+        status: 'inbound picked',
+      };
+    } else {
+      stoTrackingInfo = {
+        sto,
+        picker,
+        pickerId,
+        packer,
+        packerId,
+        pickingStartingTime: new Date(),
+        status: 'inbound picking'
+      };
+
+    }
+    setStorage('stoTrackingInfo', stoTrackingInfo);
+    setStorage('articleTrackingInfo', articleTrackingInfo);
+    navigation.push('PickingStoArticle', { ...article, ...stoTrackingInfo });
+  };
+
   if (barcode !== '') {
     const getArticleBarcode = async (barcode) => {
       try {
@@ -99,8 +135,8 @@ const PickingSto = ({ navigation, route }) => {
               const isValidBarcode = result.data.barcode.includes(barcode);
               const article = articles.find(item => item.material === result.data.material);
 
-              if (poItem && isValidBarcode) {
-                navigation.replace('PickingStoArticle', article);
+              if (article && isValidBarcode) {
+                // navigation.push('PickingStoArticle', article);
               } else {
                 Toast.show({
                   type: 'customInfo',
@@ -119,13 +155,13 @@ const PickingSto = ({ navigation, route }) => {
           .catch(error => {
             Toast.show({
               type: 'customError',
-              text1: 'API request failed',
+              text1: error.message,
             });
           });
       } catch (error) {
         Toast.show({
           type: 'customError',
-          text1: 'Unable to fetch data',
+          text1: error.message,
         });
       }
     };
@@ -139,17 +175,17 @@ const PickingSto = ({ navigation, route }) => {
     // style={{ elevation: 5 }}
     >
       <Text
-        className="w-1/5 text-black text-base text-center"
+        className="w-1/5 text-black text-sm text-center"
         numberOfLines={1}>
         {item.material}
       </Text>
       <Text
-        className="w-3/5 text-black text-base text-center"
+        className="w-3/5 text-black text-sm text-center"
         numberOfLines={1}>
         {item.description}
       </Text>
       <Text
-        className="w-1/5 text-black text-base text-center"
+        className="w-1/5 text-black text-sm text-center"
         numberOfLines={1}>
         {item.quantity}
       </Text>
@@ -178,13 +214,13 @@ const PickingSto = ({ navigation, route }) => {
         <View className="content flex-1 justify-around mt-5 mb-6">
           <View className="table h-full pb-2">
             <View className="flex-row bg-th text-center mb-2 py-2">
-              <Text className="w-1/5 text-white text-base text-center font-bold">
+              <Text className="w-1/5 text-white text-sm text-center font-bold">
                 Article ID
               </Text>
-              <Text className="w-3/5 text-white text-base text-center font-bold">
+              <Text className="w-3/5 text-white text-sm text-center font-bold">
                 Article Name
               </Text>
-              <Text className="w-1/5 text-white text-base text-center font-bold">
+              <Text className="w-1/5 text-white text-sm text-center font-bold">
                 Quantity
               </Text>
             </View>
@@ -196,6 +232,7 @@ const PickingSto = ({ navigation, route }) => {
           </View>
         </View>
       </View>
+      <CustomToast />
     </SafeAreaView>
   );
 };

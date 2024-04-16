@@ -45,7 +45,6 @@ const ShelveArticle = ({ navigation, route }) => {
         })
           .then(response => response.json())
           .then(data => {
-            console.log(data);
             if (data.status) {
               Toast.show({
                 type: 'customSuccess',
@@ -53,7 +52,7 @@ const ShelveArticle = ({ navigation, route }) => {
               });
               setTimeout(() => {
                 setIsButtonLoading(false);
-                navigation.navigate('Shelving');
+                navigation.replace('Shelving');
               }, 1500);
             } else {
               Toast.show({

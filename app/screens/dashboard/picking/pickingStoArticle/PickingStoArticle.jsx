@@ -4,93 +4,82 @@ import { Image, SafeAreaView, Text, TextInput, View } from 'react-native';
 import { ButtonBack, ButtonLg, ButtonLoading } from '../../../../../components/buttons';
 import { BoxIcon } from '../../../../../constant/icons';
 import { getStorage } from '../../../../../hooks/useStorage';
-import { toast } from '../../../../../utils';
+import Toast from 'react-native-toast-message';
+import CustomToast from '../../../../../components/CustomToast';
 
 const PickingStoArticle = ({ navigation, route }) => {
   const [isButtonLoading, setIsButtonLoading] = useState(false);
-  const [stoDetails, setStoDetails] = useState({});
   const [token, setToken] = useState('');
   const { sto, material, description, quantity } = route.params;
   const [pickedQuantity, setPickedQuantity] = useState(quantity);
-  const API_URL = 'https://shwapnooperation.onrender.com/api/article-tracking';
-
-  console.log('sto --> article', route.params)
+  const API_URL = 'https://shwapnooperation.onrender.com/api/article-tracking/update';
 
   useEffect(() => {
     getStorage('token', setToken, 'string');
   }, []);
 
-  const getSTODetails = async () => {
+  const updateArticleTracking = async () => {
+    let articleTrackingInfo = {
+      sto,
+      inboundPicker: picker,
+      inboundPickerId: pickerId,
+      inboundPacker: packer,
+      inboundPackerId: packerId,
+      pickedQuantity,
+      inboundPickingEndingTime: new Date(),
+      status: 'inbound picked'
+    };
+
+    console.log('article tracking post data', articleTrackingInfo);
+
     try {
-      await fetch(`https://shwapnooperation.onrender.com/api/sto-tracking?filterBy=sto&value=${sto}`, {
-        method: 'GET',
+      await fetch(API_URL, {
+        method: 'PATCH',
         headers: {
           authorization: token,
+          'Content-Type': 'application/json',
         },
+        body: JSON.stringify(articleTrackingInfo),
       })
         .then(response => response.json())
         .then(data => {
+          console.log('updating article tracking', data);
           if (data.status) {
-            setStoDetails(data.items[0])
+            Toast.show({
+              type: 'customSuccess',
+              text1: result.message,
+            });
           } else {
-            toast(data.message);
+            Toast.show({
+              type: 'customError',
+              text1: data.message,
+            });
           }
         })
-        .catch(error => toast(error.message));
+        .catch(error => {
+          Toast.show({
+            type: 'customError',
+            text1: error.message,
+          });
+        });
     } catch (error) {
-      console.log(error);
-    }
+      Toast.show({
+        type: 'customError',
+        text1: error.message,
+      });
+    } Toast.show({
+      type: 'customError',
+      text1: error.message,
+    });
   };
-
-  useFocusEffect(
-    useCallback(() => {
-      if (token) {
-        getSTODetails();
-      }
-    }, [token])
-  );
-
-  console.log('STO Details', stoDetails)
-
   const addToArticleTracking = async () => {
     if (pickedQuantity > quantity) {
-      toast('Quantity exceed');
+      Toast.show({
+        type: 'customWarn',
+        text1: 'Quantity exceed',
+      });
     } else {
-      let data = {
-        sto,
-        code: material,
-        quantity,
-        name: description,
-        pickedQuantity,
-        pickingEndingTime: new Date(),
-        status: 'inbound picking',
-      }
-      console.log(data);
-
-      try {
-        setIsButtonLoading(true);
-        await fetch(API_URL, {
-          method: 'POST',
-          headers: {
-            authorization: token,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(data),
-        })
-          .then(response => response.json())
-          .then(result => {
-            toast(result.message)
-            setIsButtonLoading(false);
-            navigation.goBack();
-          })
-          .catch(error => {
-            console.log(error);
-            setIsButtonLoading(true);
-          });
-      } catch (error) {
-        console.log(error);
-        setIsButtonLoading(true);
-      }
+      await updateArticleTracking();
     }
   };
 
@@ -150,6 +139,7 @@ const PickingStoArticle = ({ navigation, route }) => {
 
         </View>
       </View>
+      <CustomToast />
     </SafeAreaView>
   );
 };

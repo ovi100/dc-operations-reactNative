@@ -9,6 +9,8 @@ import SunmiScanner from '../../../../../utils/sunmi/scanner';
 const PickingSto = ({ navigation, route }) => {
   const { sto, picker, pickerId, packer, packerId } = route.params;
   const [isLoading, setIsLoading] = useState(false);
+  const [isFirstItem, setIsFirstItem] = useState(true);
+  const [countSKU, setCountSKU] = useState(1);
   const [serverError, setServerError] = useState('');
   const [barcode, setBarcode] = useState('');
   const [token, setToken] = useState('');
@@ -81,42 +83,90 @@ const PickingSto = ({ navigation, route }) => {
     }, [token, sto]),
   );
 
-  const updateTrackingInfo = (article) => {
-    let stoTrackingInfo;
-    let articleTrackingInfo = {
+  const addToArticleTracking = async (article) => {
+    let postData = {
       sto,
-      inboundPicker: picker,
-      inboundPickerId: pickerId,
-      inboundPacker: packer,
-      inboundPackerId: packerId,
-      inboundPickingStartingTime: new Date(),
-      status: 'inbound picking'
+      code: article.material,
+      quantity: article.quantity,
+      name: article.description,
+      picker,
+      pickerId,
+      packer,
+      packerId,
+      pickingStartingTime: new Date(),
+      status: 'inbound picking',
     };
-    if (articles.length === 1) {
-      stoTrackingInfo = {
-        sto,
-        picker,
-        pickerId,
-        packer,
-        packerId,
-        pickingEndingTime: new Date(),
-        status: 'inbound picked',
-      };
-    } else {
-      stoTrackingInfo = {
-        sto,
-        picker,
-        pickerId,
-        packer,
-        packerId,
-        pickingStartingTime: new Date(),
-        status: 'inbound picking'
-      };
 
+    try {
+      await fetch(API_URL + 'api/article-tracking', {
+        method: 'POST',
+        headers: {
+          authorization: token,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(postData),
+      })
+        .then(response => response.json())
+        .then(result => {
+          Toast.show({
+            type: 'customInfo',
+            text1: result.message,
+          });
+        })
+        .catch(error => {
+          Toast.show({
+            type: 'customError',
+            text1: error.message,
+          });
+        });
+    } catch (error) {
+      Toast.show({
+        type: 'customError',
+        text1: error.message,
+      });
     }
-    setStorage('stoTrackingInfo', stoTrackingInfo);
-    setStorage('articleTrackingInfo', articleTrackingInfo);
-    navigation.push('PickingStoArticle', { ...article, ...stoTrackingInfo });
+  }
+
+  const updateStoTracking = async (updateInfo) => {
+    try {
+      await fetch(API_URL + 'api/sto-tracking/update', {
+        method: 'PATCH',
+        headers: {
+          authorization: token,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updateInfo),
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.status) {
+            console.log('updating sto tracking', data);
+            Toast.show({
+              type: 'customSuccess',
+              text1: result.message,
+            });
+          } else {
+            Toast.show({
+              type: 'customError',
+              text1: data.message,
+            });
+          }
+        })
+        .catch(error => {
+          Toast.show({
+            type: 'customError',
+            text1: error.message,
+          });
+        });
+    } catch (error) {
+      Toast.show({
+        type: 'customError',
+        text1: error.message,
+      });
+    } Toast.show({
+      type: 'customError',
+      text1: error.message,
+    });
   };
 
   if (barcode !== '') {
@@ -136,7 +186,36 @@ const PickingSto = ({ navigation, route }) => {
               const article = articles.find(item => item.material === result.data.material);
 
               if (article && isValidBarcode) {
-                // navigation.push('PickingStoArticle', article);
+                setCountSKU(current => current + 1);
+                if (isFirstItem) {
+                  let stoTrackingInfo = {
+                    sto,
+                    picker,
+                    pickerId,
+                    packer,
+                    packerId,
+                    pickingStartingTime: new Date(),
+                    status: 'inbound picking'
+                  };
+                  updateStoTracking(stoTrackingInfo);
+                }
+
+                if (articles.length === 1) {
+                  let stoTrackingInfo = {
+                    sto,
+                    picker,
+                    pickerId,
+                    packer,
+                    packerId,
+                    pickedSku: countSKU,
+                    pickingEndingTime: new Date(),
+                    status: 'inbound picked',
+                  };
+                  updateStoTracking(stoTrackingInfo);
+                }
+                addToArticleTracking(article);
+                setIsFirstItem(false);
+                navigation.push('PickingStoArticle', { ...article, picker, pickerId, packer, packerId });
               } else {
                 Toast.show({
                   type: 'customInfo',
@@ -203,6 +282,8 @@ const PickingSto = ({ navigation, route }) => {
     )
   }
 
+  console.log('articles length', articles.length);
+
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">
       <View className="flex-1 h-full px-2">
@@ -227,7 +308,7 @@ const PickingSto = ({ navigation, route }) => {
             <FlatList
               data={articles}
               renderItem={renderItem}
-              keyExtractor={item => item._id}
+              keyExtractor={item => item.material}
             />
           </View>
         </View>

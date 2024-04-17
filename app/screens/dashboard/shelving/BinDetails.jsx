@@ -14,41 +14,55 @@ const BinDetails = ({ navigation, route }) => {
   const [token, setToken] = useState('');
   const [bins, setBins] = useState([]);
   const [barcode, setBarcode] = useState('');
-  const isBinsFound = Boolean(bins.length);
   const { startScan, stopScan } = SunmiScanner;
   const API_URL = 'https://shelves-backend-dev.onrender.com/api/bins/';
 
   useEffect(() => {
     const getAsyncStorage = async () => {
-      await getStorage('token', setToken, 'string');
+      await getStorage('token', setToken);
     }
     getAsyncStorage();
   }, []);
 
   const getBins = async (code) => {
-    await fetch(API_URL + `product/${code}`, {
-      method: 'GET',
-      headers: {
-        authorization: token,
-        'Content-Type': 'application/json',
-      }
-    })
-      .then(response => response.json())
-      .then(result => {
-        if (result.status) {
-          setBins(result.bins);
-        } else {
+    try {
+      await fetch(API_URL + `product/${code}`, {
+        method: 'GET',
+        headers: {
+          authorization: token,
+          'Content-Type': 'application/json',
+        }
+      })
+        .then(response => response.json())
+        .then(result => {
+          if (result.status) {
+            setBins(result.bins);
+          } else {
+            Toast.show({
+              type: 'customError',
+              text1: result.message,
+            });
+          }
+        })
+        .catch(error => {
           Toast.show({
             type: 'customError',
-            text1: result.message,
-          });
-        }
-      });
+            text1: error.message,
+          })
+        });
+    } catch (error) {
+      Toast.show({
+        type: 'customError',
+        text1: error.message,
+      })
+    }
   }
 
   useEffect(() => {
     if (token && code) {
+      setIsLoading(true);
       getBins(code);
+      setIsLoading(false);
     }
   }, [token, code]);
 
@@ -207,6 +221,8 @@ const BinDetails = ({ navigation, route }) => {
     )
   }
 
+  console.log(!isLoading && bins.length > 0)
+
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">
       <View className="flex-1 px-4">
@@ -227,8 +243,8 @@ const BinDetails = ({ navigation, route }) => {
         </View>
 
         <View className="content flex-1 justify-between py-5">
-          {isBinsFound ?
-            (<View className="table h-full pb-2">
+          {!isLoading && bins.length > 0 ? (
+            <View className="table h-full pb-2">
               <View className="flex-row bg-th text-center mb-2 py-2">
                 {tableHeader.map(th => (
                   <Text className="flex-1 text-white text-center font-bold" key={th}>
@@ -242,18 +258,17 @@ const BinDetails = ({ navigation, route }) => {
                 keyExtractor={item => item._id}
               />
             </View>
-            )
-            : (
-              <View className="h-full justify-center pb-2">
-                <Text className="text-xl font-bold text-center mb-5">
-                  No bins found for this product
-                </Text>
-                <Scan />
-                <Text className="text-xl font-bold text-center mt-5">
-                  Please scan a bin barcode to assign the product
-                </Text>
-              </View>
-            )
+          ) : (
+            <View className="h-full justify-center pb-2">
+              <Text className="text-xl font-bold text-center mb-5">
+                No bins found for this product
+              </Text>
+              <Scan />
+              <Text className="text-xl font-bold text-center mt-5">
+                Please scan a bin barcode to assign the product
+              </Text>
+            </View>
+          )
           }
         </View>
 

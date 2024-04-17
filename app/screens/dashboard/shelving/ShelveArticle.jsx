@@ -37,8 +37,6 @@ const ShelveArticle = ({ navigation, route }) => {
       site: user.site
     };
 
-    console.log(updateStock)
-
     try {
       await fetch(API_URL + 'inventory', {
         method: 'POST',

@@ -24,7 +24,6 @@ const PurchaseOrder = ({ navigation, route }) => {
   const [token, setToken] = useState('');
   const [poStatus, setPoStatus] = useState('');
   const [articles, setArticles] = useState([]);
-  // const [grnItems, setAsGrnItems] = useState([]);
   const tableHeader = ['Article ID', 'Article Name', 'Quantity'];
   const API_URL = 'https://shwapnooperation.onrender.com/';
   const { po_id } = route.params;
@@ -35,12 +34,9 @@ const PurchaseOrder = ({ navigation, route }) => {
     const getAsyncStorage = async () => {
       await getStorage('token', setToken, 'string');
       await getStorage('pressMode', setPressMode);
-      // await getStorage('grnItems', setAsGrnItems, 'object');
     }
     getAsyncStorage();
   }, []);
-
-  console.log('GRN Items', grnItems);
 
   useEffect(() => {
     startScan();
@@ -74,13 +70,13 @@ const PurchaseOrder = ({ navigation, route }) => {
         .catch(error => {
           Toast.show({
             type: 'customError',
-            text1: error.message,
+            text1: error.message.toString(),
           });
         });
     } catch (error) {
       Toast.show({
         type: 'customError',
-        text1: error.message,
+        text1: error.message.toString(),
       });
     }
   };
@@ -128,20 +124,20 @@ const PurchaseOrder = ({ navigation, route }) => {
             .catch(error => {
               Toast.show({
                 type: 'customError',
-                text1: error.message,
+                text1: error.message.toString(),
               });
             });
         } else {
           Toast.show({
             type: 'customError',
-            text1: error.message,
+            text1: error.message.toString(),
           });
         }
       })
       .catch(error => {
         Toast.show({
           type: 'customError',
-          text1: error.message,
+          text1: error.message.toString(),
         });
       });
   };
@@ -250,13 +246,13 @@ const PurchaseOrder = ({ navigation, route }) => {
           .catch(error => {
             Toast.show({
               type: 'customError',
-              text1: error.message,
+              text1: 'API request failed',
             });
           });
       } catch (error) {
         Toast.show({
           type: 'customError',
-          text1: error.message,
+          text1: 'Unable to fetch data',
         });
       }
     };
@@ -313,7 +309,7 @@ const PurchaseOrder = ({ navigation, route }) => {
               .catch(error => {
                 Toast.show({
                   type: 'customError',
-                  text1: error.message,
+                  text1: error.message.toString(),
                 });
                 setIsButtonLoading(false);
               });
@@ -328,14 +324,14 @@ const PurchaseOrder = ({ navigation, route }) => {
         .catch(error => {
           Toast.show({
             type: 'customError',
-            text1: error.message,
+            text1: error.message.toString(),
           });
           setIsButtonLoading(false);
         });
     } catch (error) {
       Toast.show({
         type: 'customError',
-        text1: error.message,
+        text1: error.message.toString(),
       });
       setIsButtonLoading(false);
     }

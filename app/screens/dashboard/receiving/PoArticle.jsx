@@ -65,7 +65,7 @@ const PoArticle = ({ navigation, route }) => {
         movementType: '101',
         movementIndicator: 'B',
         po: po,
-        poItem: Number(poItem),
+        poItem: Number(poItem).toString(),
         material: material,
         plant: receivingPlant,
         storageLocation: storageLocation,
@@ -81,8 +81,8 @@ const PoArticle = ({ navigation, route }) => {
         userId: user._id,
         site: receivingPlant,
         name: '',
-        quantity: quantity,
-        receivedQuantity: newQuantity,
+        quantity,
+        receivedQuantity: Number(newQuantity),
         receivedBy: user.name,
         bins,
       };
@@ -99,7 +99,6 @@ const PoArticle = ({ navigation, route }) => {
         })
           .then(response => response.json())
           .then(data => {
-            console.log('server response', data);
             if (data.status) {
               Toast.show({
                 type: 'customSuccess',
@@ -120,14 +119,14 @@ const PoArticle = ({ navigation, route }) => {
           .catch(error => {
             Toast.show({
               type: 'customError',
-              text1: error.message,
+              text1: error.message.toString(),
             });
             setIsButtonLoading(false);
           });
       } catch (error) {
         Toast.show({
           type: 'customError',
-          text1: error.message,
+          text1: error.message.toString(),
         });
         setIsButtonLoading(false);
       }

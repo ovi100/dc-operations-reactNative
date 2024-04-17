@@ -26,11 +26,11 @@ const Receiving = ({ navigation }) => {
   const API_URL = 'https://shwapnooperation.onrender.com/';
   const { startScan, stopScan } = SunmiScanner;
   const dateObject = dateRange(15);
-  const postObject = { ...dateObject, site: user?.site };
+  const postObject = { ...dateObject, site: user.site };
 
   useEffect(() => {
     const getAsyncStorage = async () => {
-      await getStorage('token', setToken, 'string');
+      await getStorage('token', setToken);
       await getStorage('user', setUser, 'object');
       await getStorage('pressMode', setPressMode);
     }
@@ -72,7 +72,7 @@ const Receiving = ({ navigation }) => {
               .then(releaseData => {
                 if (releaseData.status) {
                   const poList = result.data.po;
-                  const releaseItems = releaseData.items.filter(item => item.receivingPlant === user?.site);
+                  const releaseItems = releaseData.items.filter(item => item.receivingPlant === user.site);
                   let remainingPoItems = poList.filter(poItem => !releaseItems.some(releaseItem => releaseItem.po === poItem.po));
                   setPoList(remainingPoItems);
                 } else {
@@ -83,26 +83,26 @@ const Receiving = ({ navigation }) => {
                 console.log(error);
                 Toast.show({
                   type: 'customError',
-                  text1: error.message,
+                  text1: error.message.toString(),
                 });
               });
           } else {
             Toast.show({
               type: 'customError',
-              text1: error.message,
+              text1: error.message.toString(),
             });
           }
         })
         .catch(error => {
           Toast.show({
             type: 'customError',
-            text1: error.message,
+            text1: error.message.toString(),
           });
         });
     } catch (error) {
       Toast.show({
         type: 'customError',
-        text1: error.message,
+        text1: error.message.toString(),
       });
     }
   };
@@ -119,10 +119,10 @@ const Receiving = ({ navigation }) => {
 
   useFocusEffect(
     useCallback(() => {
-      if (token && user?.site) {
+      if (token && user.site) {
         getPoData();
       }
-    }, [token, user?.site])
+    }, [token, user.site])
   );
 
   const onRefresh = async () => {

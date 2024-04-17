@@ -5,6 +5,7 @@ import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../../components/CustomToast';
 import { getStorage } from '../../../../../hooks/useStorage';
 import SunmiScanner from '../../../../../utils/sunmi/scanner';
+import ServerError from '../../../../../components/animations/ServerError';
 
 const PickingSto = ({ navigation, route }) => {
   const { sto, picker, pickerId, packer, packerId } = route.params;
@@ -21,7 +22,7 @@ const PickingSto = ({ navigation, route }) => {
 
   useEffect(() => {
     const getAsyncStorage = async () => {
-      await getStorage('token', setToken, 'string');
+      await getStorage('token', setToken);
       // await getStorage('user', setUser, 'object');
     }
     getAsyncStorage();
@@ -52,13 +53,12 @@ const PickingSto = ({ navigation, route }) => {
       })
         .then(response => response.json())
         .then(result => {
+          console.log(result);
           if (result.status) {
             setArticles(result.data.items);
             setIsLoading(false);
-            setServerError('');
           } else {
             setIsLoading(false);
-            setServerError(result.message);
           }
         })
         .catch(error => {
@@ -285,14 +285,13 @@ const PickingSto = ({ navigation, route }) => {
     )
   }
 
-  // if (isTracking) {
-  //   return (
-  //     <View className="w-full h-screen justify-center px-3">
-  //       <ActivityIndicator size="large" color="#EB4B50" />
-  //       <Text className="mt-4 text-gray-400 text-base text-center">Loading article details. Please wait......</Text>
-  //     </View>
-  //   )
-  // }
+  if (!isLoading && articles.length === 0) {
+    return (
+      <View className="w-full h-screen justify-center px-3">
+        <ServerError message="No data found!" />
+      </View>
+    )
+  }
 
   console.log('articles length', articles.length);
 

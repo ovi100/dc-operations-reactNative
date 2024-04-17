@@ -5,7 +5,6 @@ import {
   ActivityIndicator,
   Button,
   FlatList,
-  Image,
   Keyboard,
   RefreshControl,
   SafeAreaView,
@@ -17,13 +16,12 @@ import {
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
+import Dialog from '../../../../components/Dialog';
 import Modal from '../../../../components/Modal';
 import ServerError from '../../../../components/animations/ServerError';
 import { ButtonBack, ButtonLg, ButtonLoading } from '../../../../components/buttons';
-import { SearchIcon } from '../../../../constant/icons';
 import { getStorage, setStorage } from '../../../../hooks/useStorage';
 import { dateRange } from '../../../../utils';
-import Dialog from '../../../../components/Dialog';
 
 const DeliveryPlan = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -32,6 +30,7 @@ const DeliveryPlan = ({ navigation }) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [outletDialogVisible, setOutletDialogVisible] = useState(false);
   const [dialogVisible, setDialogVisible] = useState(false);
+  const [user, setUser] = useState({});
   const [token, setToken] = useState('');
   const [outlets, setOutlets] = useState('');
   let [dpList, setDpList] = useState([]);
@@ -45,16 +44,21 @@ const DeliveryPlan = ({ navigation }) => {
   const { from, to } = dateObject;
 
   useEffect(() => {
-    getStorage('token', setToken);
-    getStorage('outlets', setOutlets);
-    setModalVisible(false);
-    setSelectedList([]);
+    const getAsyncStorage = async () => {
+      await getStorage('token', setToken);
+      await getStorage('user', setUser, 'object');
+      await getStorage('outlets', setOutlets);
+      setModalVisible(false);
+      setSelectedList([]);
+      // removeItem('outlets');
+    }
+    getAsyncStorage();
   }, []);
 
   const getDnList = async () => {
     setOutletDialogVisible(false);
     try {
-      await fetch(API_URL + `bapi/sto/list?from=${from}&to=${to}&site=${outlets}`, {
+      await fetch(API_URL + `bapi/sto/list?from=${from}&to=${to}&receivingPlant=${outlets}&supplyingPlant=${user.site}`, {
         method: 'GET',
         headers: {
           authorization: token,
@@ -64,17 +68,19 @@ const DeliveryPlan = ({ navigation }) => {
         .then(response => response.json())
         .then(async result => {
           if (result.status) {
-            await fetch(API_URL + 'api/sto-tracking/in-dn', {
+            await fetch(API_URL + `api/sto-tracking/in-dn?filterBy=supplyingPlant&value=${user.site}&pageSize=500`, {
               method: 'GET',
               headers: {
                 authorization: token,
+                'Content-Type': 'application/json',
               },
             })
               .then(res => res.json())
               .then(inDnData => {
+                console.log('in dn response: ', inDnData)
                 if (inDnData.status) {
                   const dnItems = result.data.sto;
-                  const inDnItems = inDnData.items;
+                  const inDnItems = inDnData.items.filter(item => item.status === 'picker packer assigned');
                   let remainingDnItems = dnItems.filter(
                     dnItem => !inDnItems.some(inDnItem => inDnItem.sto === dnItem.sto)
                   );
@@ -82,26 +88,32 @@ const DeliveryPlan = ({ navigation }) => {
                     return { ...item, selected: false };
                   });
                   setDpList(finalDnList);
-
                 } else {
                   const stoData = result.data.sto;
                   const dpData = stoData.map(item => {
                     return { ...item, selected: false }
                   });
+                  console.log('sto data', stoData)
                   setDpList(dpData);
                 }
               })
+              .catch(error => {
+                Toast.show({
+                  type: 'customError',
+                  text1: error.message,
+                });
+              });
           } else {
             Toast.show({
               type: 'customError',
-              text1: result.message.toString(),
+              text1: result.message,
             });
           }
         })
         .catch(error => {
           Toast.show({
             type: 'customError',
-            text1: error.message.toString(),
+            text1: error.message,
           });
         });
     } catch (error) {
@@ -120,7 +132,7 @@ const DeliveryPlan = ({ navigation }) => {
 
   useFocusEffect(
     useCallback(() => {
-      if (token && outlets) {
+      if (token && outlets && user.site) {
         getDpList();
       }
       else {
@@ -130,7 +142,7 @@ const DeliveryPlan = ({ navigation }) => {
           setModalVisible(true);
         }, 500)
       }
-    }, [token, outlets])
+    }, [token, outlets, user.site])
   );
 
   const onRefresh = async () => {
@@ -211,6 +223,8 @@ const DeliveryPlan = ({ navigation }) => {
     Keyboard.dismiss();
   };
 
+  console.log('selected sto', selectedList.length)
+
   const createDN = async () => {
     if (selectedList.length > 0) {
       setDialogVisible(false);
@@ -287,11 +301,19 @@ const DeliveryPlan = ({ navigation }) => {
     return (
       <View className="w-full h-4/5 justify-center px-3">
         <ServerError message="No data found!" />
-        <View className="button w-1/4 mx-auto mt-4">
+        <View className="button w-1/2 mx-auto mt-4">
           <Button
             title="Retry"
             onPress={() => getDpList()}
           />
+          <View className="my-3"></View>
+          {/* <Button
+            title="Change Outlets"
+            onPress={() => {
+              removeItem('outlets');
+              setModalVisible(true);
+            }}
+          /> */}
         </View>
       </View>
     )
@@ -312,10 +334,9 @@ const DeliveryPlan = ({ navigation }) => {
 
           {/* Search filter */}
           <View className="search flex-row">
-            <View className="input-box relative flex-1">
-              <Image className="absolute top-3 left-3 z-10" source={SearchIcon} />
+            <View className="input-box flex-1">
               <TextInput
-                className="bg-[#F5F6FA] h-[50px] text-black rounded-lg pl-12 pr-4"
+                className="bg-[#F5F6FA] h-[50px] text-black rounded-lg p-4"
                 placeholder="Search by sto or outlet code"
                 inputMode='text'
                 placeholderTextColor="#CBC9D9"
@@ -327,7 +348,7 @@ const DeliveryPlan = ({ navigation }) => {
           </View>
           <View className="content flex-1 mt-3">
             {/* Table data */}
-            <View className={`table ${selectedList.length > 0 ? 'h-[68vh]' : 'h-[77vh]'}`}>
+            <View className={`table ${selectedList.length > 0 ? 'h-[76vh]' : 'h-[77vh]'}`}>
               <View className="flex-row bg-th text-center mb-2 py-2">
                 {tableHeader.map((th) => (
                   <>

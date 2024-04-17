@@ -1,16 +1,15 @@
-import { useFocusEffect } from '@react-navigation/native';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Image, SafeAreaView, Text, TextInput, View } from 'react-native';
+import Toast from 'react-native-toast-message';
+import CustomToast from '../../../../../components/CustomToast';
 import { ButtonBack, ButtonLg, ButtonLoading } from '../../../../../components/buttons';
 import { BoxIcon } from '../../../../../constant/icons';
 import { getStorage } from '../../../../../hooks/useStorage';
-import Toast from 'react-native-toast-message';
-import CustomToast from '../../../../../components/CustomToast';
 
 const PickingStoArticle = ({ navigation, route }) => {
   const [isButtonLoading, setIsButtonLoading] = useState(false);
   const [token, setToken] = useState('');
-  const { sto, material, description, quantity } = route.params;
+  const { sto, material, description, quantity, picker, pickerId, packer, packerId } = route.params;
   const [pickedQuantity, setPickedQuantity] = useState(quantity);
   const API_URL = 'https://shwapnooperation.onrender.com/api/article-tracking/update';
 

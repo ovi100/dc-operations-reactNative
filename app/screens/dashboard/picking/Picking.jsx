@@ -47,13 +47,13 @@ const Picking = ({ navigation }) => {
         .catch(error => {
           Toast.show({
             type: 'customError',
-            text1: error.message.toString(),
+            text1: error.message,
           });
         });
     } catch (error) {
       Toast.show({
         type: 'customError',
-        text1: error.message.toString(),
+        text1: error.message,
       });
     }
   };
@@ -84,7 +84,7 @@ const Picking = ({ navigation }) => {
     <TouchableOpacity
       className="flex-row items-center border border-tb rounded-lg mt-2.5 p-4"
       key={index}
-      onPress={() => navigation.push('PickingSto', item)}
+      onPress={() => navigation.replace('PickingSto', item)}
     >
       <Text className="flex-1 text-black text-center" numberOfLines={1}>
         {item.sto.slice(0, 2) + '...' + item.sto.slice(7, item.sto.length)}

@@ -33,7 +33,7 @@ const PoArticle = ({ navigation, route }) => {
   useEffect(() => {
     const getBins = async (code, site) => {
       setIsLoading(true);
-      await fetch(`https://shelves-backend.onrender.com/api/bins/product/${code}/${site}`)
+      await fetch(`https://shelves-backend-dev.onrender.com/api/bins/product/${code}/${site}`)
         .then(res => res.json())
         .then(result => {
           if (result.status) {
@@ -65,7 +65,7 @@ const PoArticle = ({ navigation, route }) => {
         movementType: '101',
         movementIndicator: 'B',
         po: po,
-        poItem: Number(poItem).toString(),
+        poItem: Number(poItem),
         material: material,
         plant: receivingPlant,
         storageLocation: storageLocation,
@@ -120,14 +120,14 @@ const PoArticle = ({ navigation, route }) => {
           .catch(error => {
             Toast.show({
               type: 'customError',
-              text1: error.message.toString(),
+              text1: error.message,
             });
             setIsButtonLoading(false);
           });
       } catch (error) {
         Toast.show({
           type: 'customError',
-          text1: error.message.toString(),
+          text1: error.message,
         });
         setIsButtonLoading(false);
       }

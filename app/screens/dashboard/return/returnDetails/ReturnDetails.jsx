@@ -60,7 +60,7 @@ const ReturnDetails = ({ navigation, route }) => {
               selectionColor="#5D80C5"
               keyboardType="numeric"
               autoFocus={true}
-              value={newQuantity.toString()}
+              value={newQuantity}
               onChangeText={value => {
                 setNewQuantity(value);
               }}

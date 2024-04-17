@@ -66,13 +66,13 @@ const Shelving = ({ navigation }) => {
         .catch(error => {
           Toast.show({
             type: 'customError',
-            text1: error.message.toString(),
+            text1: error.message,
           });
         });
     } catch (error) {
       Toast.show({
         type: 'customError',
-        text1: error.message.toString(),
+        text1: error.message,
       });
     }
   };
@@ -110,13 +110,13 @@ const Shelving = ({ navigation }) => {
         .catch(error =>
           Toast.show({
             type: 'customError',
-            text1: error.message.toString(),
+            text1: error.message,
           })
         );
     } catch (error) {
       Toast.show({
         type: 'customError',
-        text1: error.message.toString(),
+        text1: error.message,
       });
     }
   }
@@ -153,7 +153,7 @@ const Shelving = ({ navigation }) => {
   if (barcode !== '') {
     const getArticleBarcode = async (barcode) => {
       try {
-        await fetch('https://shelves-backend-1.onrender.com/api/barcodes/barcode/' + barcode, {
+        await fetch('https://shelves-backend-1-kcgr.onrender.com/api/barcodes/barcode/' + barcode, {
           method: 'GET',
           headers: {
             authorization: token,
@@ -178,7 +178,7 @@ const Shelving = ({ navigation }) => {
             } else {
               Toast.show({
                 type: 'customError',
-                text1: result.message.toString(),
+                text1: result.message,
               });
               setBarcode('');
             }
@@ -186,13 +186,13 @@ const Shelving = ({ navigation }) => {
           .catch(error => {
             Toast.show({
               type: 'customError',
-              text1: error.message.toString(),
+              text1: error.message,
             });
           });
       } catch (error) {
         Toast.show({
           type: 'customError',
-          text1: error.message.toString(),
+          text1: error.message,
         });
       }
     };

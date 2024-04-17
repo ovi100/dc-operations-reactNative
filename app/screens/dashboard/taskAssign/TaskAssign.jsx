@@ -17,7 +17,7 @@ const TaskAssign = ({ navigation }) => {
 
   useEffect(() => {
     const getAsyncStorage = async () => {
-      await getStorage('token', setToken, 'string');
+      await getStorage('token', setToken);
       await getStorage('user', setUser, 'object');
     }
     getAsyncStorage();
@@ -25,7 +25,7 @@ const TaskAssign = ({ navigation }) => {
 
   const getInDnList = async () => {
     try {
-      await fetch(API_URL + `value=${user?.site}`, {
+      await fetch(API_URL + `value=${user.site}`, {
         method: 'GET',
         headers: {
           authorization: token,
@@ -40,20 +40,20 @@ const TaskAssign = ({ navigation }) => {
           } else {
             Toast.show({
               type: 'customError',
-              text1: data.message.toString(),
+              text1: data.message,
             });
           }
         })
         .catch(error => {
           Toast.show({
             type: 'customError',
-            text1: error.message.toString(),
+            text1: error.message,
           });
         });
     } catch (error) {
       Toast.show({
         type: 'customError',
-        text1: error.message.toString(),
+        text1: error.message,
       });
     }
   };
@@ -65,10 +65,10 @@ const TaskAssign = ({ navigation }) => {
         await getInDnList();
         setIsLoading(false);
       };
-      if (token && user?.site) {
+      if (token && user.site) {
         getTaskList();
       }
-    }, [token, user?.site])
+    }, [token, user.site])
   );
 
   const onRefresh = async () => {

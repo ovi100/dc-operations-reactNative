@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Image, SafeAreaView, Text, TextInput, TouchableWithoutFeedback, View } from 'react-native';
+import { ActivityIndicator, Image, SafeAreaView, Text, TextInput, TouchableWithoutFeedback, View } from 'react-native';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
 import { ButtonLg, ButtonLoading } from '../../../../components/buttons';
@@ -9,75 +9,137 @@ import { toast } from '../../../../utils';
 
 const ShelveArticle = ({ navigation, route }) => {
   const { _id, bins, code, description, receivedQuantity } = route.params;
+  const [isLoading, setIsLoading] = useState(false);
   const [isButtonLoading, setIsButtonLoading] = useState(false);
   const [newQuantity, setNewQuantity] = useState(Number(receivedQuantity));
+  const [user, setUser] = useState({});
   const [token, setToken] = useState('');
-  const API_URL = 'https://shwapnooperation.onrender.com/api/product-shelving/in-shelf/';
+  const API_URL = 'https://shwapnooperation.onrender.com/api/';
 
   useEffect(() => {
     const getAsyncStorage = async () => {
+      setIsLoading(true);
       await getStorage('token', setToken, 'string');
+      await getStorage('user', setUser, 'object');
+      setIsLoading(false);
     }
     getAsyncStorage();
   }, []);
+
+
+  const updateInventory = async () => {
+    let updateStock = {
+      material: code,
+      description,
+      quantity: Number(newQuantity),
+      gondola: bins.gondola_id,
+      bin: bins.bin_id,
+      site: user.site
+    };
+
+    console.log(updateStock)
+
+    try {
+      await fetch(API_URL + 'inventory', {
+        method: 'POST',
+        headers: {
+          authorization: token,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updateStock),
+      })
+        .then(response => response.json())
+        .then(inventoryData => {
+          if (inventoryData.status) {
+            Toast.show({
+              type: 'customSuccess',
+              text1: inventoryData.message,
+            });
+            setTimeout(() => {
+              setIsButtonLoading(false);
+              navigation.replace('Shelving');
+            }, 1500);
+          } else {
+            Toast.show({
+              type: 'customError',
+              text1: inventoryData.message,
+            });
+          }
+        })
+        .catch(error => {
+          Toast.show({
+            type: 'customError',
+            text1: error.message,
+          });
+        });
+    } catch (error) {
+
+    }
+  };
 
   const shelveArticle = async () => {
     if (newQuantity > receivedQuantity) {
       toast('Quantity exceed');
     } else {
-      const assignToShelveObject = {
-        gondola: bins.gondola_id,
-        bin: bins.bin_id,
-        quantity: Number(newQuantity),
-      };
+      if (user.site) {
+        const assignToShelveObject = {
+          gondola: bins.gondola_id,
+          bin: bins.bin_id,
+          quantity: Number(newQuantity),
+        };
 
-      console.log(_id, assignToShelveObject);
-
-      try {
-        setIsButtonLoading(true);
-        await fetch(API_URL + _id, {
-          method: 'POST',
-          headers: {
-            authorization: token,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(assignToShelveObject),
-        })
-          .then(response => response.json())
-          .then(data => {
-            if (data.status) {
-              Toast.show({
-                type: 'customSuccess',
-                text1: data.message,
-              });
-              setTimeout(() => {
+        try {
+          setIsButtonLoading(true);
+          await fetch(API_URL + 'product-shelving/in-shelf/' + _id, {
+            method: 'POST',
+            headers: {
+              authorization: token,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(assignToShelveObject),
+          })
+            .then(response => response.json())
+            .then(async data => {
+              if (data.status) {
+                Toast.show({
+                  type: 'customSuccess',
+                  text1: data.message,
+                });
+                await updateInventory();
+              } else {
+                Toast.show({
+                  type: 'customError',
+                  text1: data.message,
+                });
                 setIsButtonLoading(false);
-                navigation.replace('Shelving');
-              }, 1500);
-            } else {
+              }
+            })
+            .catch(error => {
               Toast.show({
                 type: 'customError',
-                text1: data.message,
+                text1: error.message,
               });
               setIsButtonLoading(false);
-            }
-          })
-          .catch(error => {
-            Toast.show({
-              type: 'customError',
-              text1: error.message.toString(),
             });
-            setIsButtonLoading(false);
+        } catch (error) {
+          Toast.show({
+            type: 'customError',
+            text1: error.message,
           });
-      } catch (error) {
-        Toast.show({
-          type: 'customError',
-          text1: error.message.toString(),
-        });
-        setIsButtonLoading(false);
+          setIsButtonLoading(false);
+        }
       }
     }
   };
+
+  if (isLoading) {
+    return (
+      <View className="w-full h-screen justify-center px-3">
+        <ActivityIndicator size="large" color="#EB4B50" />
+        <Text className="mt-4 text-gray-400 text-base text-center">Loading article details. Please wait......</Text>
+      </View>
+    )
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">

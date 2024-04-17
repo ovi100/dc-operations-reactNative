@@ -86,14 +86,14 @@ const Audit = ({ navigation }) => {
         .catch(error => {
           Toast.show({
             type: 'customError',
-            text1: error.message.toString(),
+            text1: error.message,
           });
           setIsLoading(false);
         });
     } catch (error) {
       Toast.show({
         type: 'customError',
-        text1: error.message.toString(),
+        text1: error.message,
       });
       setIsLoading(false);
     }

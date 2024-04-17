@@ -48,7 +48,7 @@ const useAuth = () => {
       setIsLoading(false);
       Toast.show({
         type: 'customInfo',
-        text1: error.message.toString(),
+        text1: error.message,
       });
     }
   };

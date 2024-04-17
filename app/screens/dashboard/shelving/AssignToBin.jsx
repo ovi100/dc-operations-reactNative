@@ -18,7 +18,7 @@ const AssignToBin = ({ navigation, route }) => {
   const [isBinExist, setIsBinExist] = useState(false);
   const [token, setToken] = useState('');
   const { startScan, stopScan } = SunmiScanner;
-  const API_URL = 'https://shelves-backend.onrender.com/api/bins/';
+  const API_URL = 'https://shelves-backend-dev.onrender.com/api/bins/';
 
   useEffect(() => {
     const getAsyncStorage = async () => {

@@ -144,8 +144,6 @@ const Profile = ({ navigation }) => {
               </View>
             </View>
             {site !== null && (
-
-
               <View className="site mt-2 px-3">
                 {/* picker select box */}
                 <View className="bg-white border border-solid border-gray-300 rounded">
@@ -153,7 +151,7 @@ const Profile = ({ navigation }) => {
                     selectedValue={selectedSite}
                     onValueChange={site => updateUser(site)}
                     style={{ color: 'black' }}>
-                    <Picker.Item label="Change Site" value="" />
+                    <Picker.Item label={user.site} value={user.site} />
                     {site?.map((item, i) => (
                       <Picker.Item
                         label={item}

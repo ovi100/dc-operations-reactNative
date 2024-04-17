@@ -57,8 +57,8 @@ const toast = message => {
 const formatDateYYYYMMDD = value => {
   const date = new Date(value);
   const year = date.getFullYear();
-  const month = (date.getMonth() + 1).toString().padStart(2, '0');
-  const day = date.getDate().toString().padStart(2, '0');
+  const month = (date.getMonth() + 1).padStart(2, '0');
+  const day = date.getDate().padStart(2, '0');
 
   return `${year}${month}${day}`;
 };
@@ -81,15 +81,15 @@ const dateRange = range => {
 const {width: WINDOW_WIDTH, height: WINDOW_HEIGHT} = Dimensions.get('window');
 
 export {
-  WINDOW_HEIGHT,
-  WINDOW_WIDTH,
-  dateRange,
-  formatDateYYYYMMDD,
-  groupBy,
-  toast,
-  uniqueArray,
-  uniqueArrayOfObjects,
-  validateFile,
-  validateInput
+    WINDOW_HEIGHT,
+    WINDOW_WIDTH,
+    dateRange,
+    formatDateYYYYMMDD,
+    groupBy,
+    toast,
+    uniqueArray,
+    uniqueArrayOfObjects,
+    validateFile,
+    validateInput
 };
 

@@ -74,13 +74,13 @@ const PurchaseOrder = ({ navigation, route }) => {
         .catch(error => {
           Toast.show({
             type: 'customError',
-            text1: error.message.toString(),
+            text1: error.message,
           });
         });
     } catch (error) {
       Toast.show({
         type: 'customError',
-        text1: error.message.toString(),
+        text1: error.message,
       });
     }
   };
@@ -128,20 +128,20 @@ const PurchaseOrder = ({ navigation, route }) => {
             .catch(error => {
               Toast.show({
                 type: 'customError',
-                text1: error.message.toString(),
+                text1: error.message,
               });
             });
         } else {
           Toast.show({
             type: 'customError',
-            text1: error.message.toString(),
+            text1: error.message,
           });
         }
       })
       .catch(error => {
         Toast.show({
           type: 'customError',
-          text1: error.message.toString(),
+          text1: error.message,
         });
       });
   };
@@ -217,7 +217,7 @@ const PurchaseOrder = ({ navigation, route }) => {
   if (barcode !== '') {
     const getArticleBarcode = async (barcode) => {
       try {
-        await fetch('https://shelves-backend-1.onrender.com/api/barcodes/barcode/' + barcode, {
+        await fetch('https://shelves-backend-1-kcgr.onrender.com/api/barcodes/barcode/' + barcode, {
           method: 'GET',
           headers: {
             authorization: token,
@@ -250,13 +250,13 @@ const PurchaseOrder = ({ navigation, route }) => {
           .catch(error => {
             Toast.show({
               type: 'customError',
-              text1: 'API request failed',
+              text1: error.message,
             });
           });
       } catch (error) {
         Toast.show({
           type: 'customError',
-          text1: 'Unable to fetch data',
+          text1: error.message,
         });
       }
     };
@@ -313,7 +313,7 @@ const PurchaseOrder = ({ navigation, route }) => {
               .catch(error => {
                 Toast.show({
                   type: 'customError',
-                  text1: error.message.toString(),
+                  text1: error.message,
                 });
                 setIsButtonLoading(false);
               });
@@ -328,14 +328,14 @@ const PurchaseOrder = ({ navigation, route }) => {
         .catch(error => {
           Toast.show({
             type: 'customError',
-            text1: error.message.toString(),
+            text1: error.message,
           });
           setIsButtonLoading(false);
         });
     } catch (error) {
       Toast.show({
         type: 'customError',
-        text1: error.message.toString(),
+        text1: error.message,
       });
       setIsButtonLoading(false);
     }

@@ -3,14 +3,15 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, DeviceEventEmitter, FlatList, SafeAreaView, Text, View } from 'react-native';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../../components/CustomToast';
-import { getStorage, setStorage } from '../../../../../hooks/useStorage';
+import { getStorage } from '../../../../../hooks/useStorage';
 import SunmiScanner from '../../../../../utils/sunmi/scanner';
 
 const PickingSto = ({ navigation, route }) => {
   const { sto, picker, pickerId, packer, packerId } = route.params;
   const [isLoading, setIsLoading] = useState(false);
+  // const [isTracking, setIsTracking] = useState(false);
   const [isFirstItem, setIsFirstItem] = useState(true);
-  const [countSKU, setCountSKU] = useState(1);
+  // const [countSKU, setCountSKU] = useState(1);
   const [serverError, setServerError] = useState('');
   const [barcode, setBarcode] = useState('');
   const [token, setToken] = useState('');
@@ -63,13 +64,13 @@ const PickingSto = ({ navigation, route }) => {
         .catch(error => {
           Toast.show({
             type: 'customError',
-            text1: error.message.toString(),
+            text1: error.message,
           });
         });
     } catch (error) {
       Toast.show({
         type: 'customError',
-        text1: error.message.toString(),
+        text1: error.message,
       });
     }
 
@@ -108,6 +109,7 @@ const PickingSto = ({ navigation, route }) => {
       })
         .then(response => response.json())
         .then(result => {
+          console.log('article post tracking response', result)
           Toast.show({
             type: 'customInfo',
             text1: result.message,
@@ -172,7 +174,7 @@ const PickingSto = ({ navigation, route }) => {
   if (barcode !== '') {
     const getArticleBarcode = async (barcode) => {
       try {
-        await fetch('https://shelves-backend-1.onrender.com/api/barcodes/barcode/' + barcode, {
+        await fetch('https://shelves-backend-1-kcgr.onrender.com/api/barcodes/barcode/' + barcode, {
           method: 'GET',
           headers: {
             authorization: token,
@@ -186,7 +188,7 @@ const PickingSto = ({ navigation, route }) => {
               const article = articles.find(item => item.material === result.data.material);
 
               if (article && isValidBarcode) {
-                setCountSKU(current => current + 1);
+                let countSKU = 1;
                 if (isFirstItem) {
                   let stoTrackingInfo = {
                     sto,
@@ -215,7 +217,7 @@ const PickingSto = ({ navigation, route }) => {
                 }
                 addToArticleTracking(article);
                 setIsFirstItem(false);
-                navigation.push('PickingStoArticle', { ...article, picker, pickerId, packer, packerId });
+                navigation.replace('PickingStoArticle', { ...article, picker, pickerId, packer, packerId });
               } else {
                 Toast.show({
                   type: 'customInfo',
@@ -243,6 +245,7 @@ const PickingSto = ({ navigation, route }) => {
           text1: error.message,
         });
       }
+      // setIsTracking(false);
     };
     getArticleBarcode(barcode);
   }
@@ -281,6 +284,15 @@ const PickingSto = ({ navigation, route }) => {
       </View>
     )
   }
+
+  // if (isTracking) {
+  //   return (
+  //     <View className="w-full h-screen justify-center px-3">
+  //       <ActivityIndicator size="large" color="#EB4B50" />
+  //       <Text className="mt-4 text-gray-400 text-base text-center">Loading article details. Please wait......</Text>
+  //     </View>
+  //   )
+  // }
 
   console.log('articles length', articles.length);
 

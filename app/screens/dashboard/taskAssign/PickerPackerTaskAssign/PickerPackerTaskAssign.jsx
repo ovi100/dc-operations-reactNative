@@ -2,9 +2,10 @@ import { Picker } from '@react-native-picker/picker';
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback, useEffect, useState } from 'react';
 import { SafeAreaView, Text, View } from 'react-native';
+import Toast from 'react-native-toast-message';
+import CustomToast from '../../../../../components/CustomToast';
 import { ButtonBack, ButtonLg } from '../../../../../components/buttons';
 import { getStorage } from '../../../../../hooks/useStorage';
-import { toast } from '../../../../../utils';
 
 const PickerPackerTaskAssign = ({ navigation, route }) => {
   const { sto } = route.params;
@@ -60,43 +61,22 @@ const PickerPackerTaskAssign = ({ navigation, route }) => {
     const assignedPicker = pickers.find(item => item.name === selectedPicker);
     const assignedPacker = packers.find(item => item.name === selectedPacker);
     let data = {};
-    if (selectedPicker) {
-      if (assignedPicker && assignedPacker) {
-        data = {
-          sto: sto,
-          picker: assignedPicker.name,
-          pickerId: assignedPicker._id,
-          packer: assignedPacker.name,
-          packerId: assignedPacker._id,
-          status: 'picker packer assigned'
-        };
-      }
-      else if (assignedPicker) {
-        data = {
-          sto: sto,
-          picker: assignedPicker.name,
-          pickerId: assignedPicker._id,
-          status: 'picker assigned'
-        };
-      } else if (assignedPacker) {
-        data = {
-          sto: sto,
-          packer: assignedPacker.name,
-          packerId: assignedPacker._id,
-          status: 'picker packer assigned'
-        };
-      }
-      else {
-        toast('please select picker or picker')
-        return;
-      }
-    }
-    else {
-      toast('select picker first')
+    if (assignedPicker && assignedPacker) {
+      data = {
+        sto: sto,
+        picker: assignedPicker.name,
+        pickerId: assignedPicker._id,
+        packer: assignedPacker.name,
+        packerId: assignedPacker._id,
+        status: 'picker packer assigned'
+      };
+    } else {
+      Toast.show({
+        type: 'customError',
+        text1: 'please select picker and picker',
+      });
       return;
     }
-
-    console.log('task data', data);
 
     try {
       await fetch(API_URL + 'sto-tracking/update', {
@@ -110,17 +90,31 @@ const PickerPackerTaskAssign = ({ navigation, route }) => {
         .then(response => response.json())
         .then(data => {
           if (data.status) {
-            toast(data.message);
+            Toast.show({
+              type: 'customSuccess',
+              text1: data.message,
+            });
             setTimeout(() => {
               navigation.goBack();
             }, 1000);
           } else {
-            toast(data.message);
+            Toast.show({
+              type: 'customError',
+              text1: data.message,
+            });
           }
         })
-        .catch(error => toast(error.message));
+        .catch(error => {
+          Toast.show({
+            type: 'customError',
+            text1: error.message,
+          });
+        });
     } catch (error) {
-      toast(error.message);
+      Toast.show({
+        type: 'customError',
+        text1: error.message,
+      });
     }
   };
 
@@ -188,6 +182,7 @@ const PickerPackerTaskAssign = ({ navigation, route }) => {
           </View>
         </View>
       </View>
+      <CustomToast />
     </SafeAreaView>
   );
 };

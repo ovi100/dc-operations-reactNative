@@ -16,7 +16,7 @@ const BinDetails = ({ navigation, route }) => {
   const [barcode, setBarcode] = useState('');
   const isBinsFound = Boolean(bins.length);
   const { startScan, stopScan } = SunmiScanner;
-  const API_URL = 'https://shelves-backend.onrender.com/api/bins/';
+  const API_URL = 'https://shelves-backend-dev.onrender.com/api/bins/';
 
   useEffect(() => {
     const getAsyncStorage = async () => {
@@ -135,13 +135,13 @@ const BinDetails = ({ navigation, route }) => {
         .catch(error => {
           Toast.show({
             type: 'customError',
-            text1: error.message.toString(),
+            text1: error.message,
           });
         });
     } catch (error) {
       Toast.show({
         type: 'customError',
-        text1: error.message.toString(),
+        text1: error.message,
       });
     }
   }
@@ -160,11 +160,11 @@ const BinDetails = ({ navigation, route }) => {
       navigation.replace('ShelveArticle', { ...route.params, bins: { bin_id: binItem.bin_ID, gondola_id: binItem.gondola_ID } });
     } else {
       const checkBin = async (code) => {
-        await fetch(`https://shelves-backend.onrender.com/api/bins/checkBin/${code}`)
+        await fetch(`https://shelves-backend-dev.onrender.com/api/bins/checkBin/${code}`)
           .then(res => res.json())
           .then(result => {
             if (result.status) {
-              Alert.alert('Are you sure?', 'Assign article to bin', [
+              Alert.alert('Are you sure?', `Assign article to bin ${barcode}`, [
                 {
                   text: 'Cancel',
                   onPress: () => null,

@@ -83,26 +83,26 @@ const Receiving = ({ navigation }) => {
                 console.log(error);
                 Toast.show({
                   type: 'customError',
-                  text1: error.message.toString(),
+                  text1: error.message,
                 });
               });
           } else {
             Toast.show({
               type: 'customError',
-              text1: error.message.toString(),
+              text1: error.message,
             });
           }
         })
         .catch(error => {
           Toast.show({
             type: 'customError',
-            text1: error.message.toString(),
+            text1: error.message,
           });
         });
     } catch (error) {
       Toast.show({
         type: 'customError',
-        text1: error.message.toString(),
+        text1: error.message,
       });
     }
   };

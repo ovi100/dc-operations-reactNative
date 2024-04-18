@@ -81,7 +81,7 @@ const ShelveArticle = ({ navigation, route }) => {
     } else {
       if (user.site) {
         const assignToShelveObject = {
-          gondola: bins.gondola_id,
+          gondola: bins.gondola_id ? bins.gondola_id : '',
           bin: bins.bin_id,
           quantity: Number(newQuantity),
         };

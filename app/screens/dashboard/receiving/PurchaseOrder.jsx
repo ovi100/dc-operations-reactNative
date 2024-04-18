@@ -70,13 +70,13 @@ const PurchaseOrder = ({ navigation, route }) => {
         .catch(error => {
           Toast.show({
             type: 'customError',
-            text1: error.message.toString(),
+            text1: error.message,
           });
         });
     } catch (error) {
       Toast.show({
         type: 'customError',
-        text1: error.message.toString(),
+        text1: error.message,
       });
     }
   };
@@ -92,6 +92,7 @@ const PurchaseOrder = ({ navigation, route }) => {
     })
       .then(response => response.json())
       .then(async result => {
+        console.log(result)
         if (result.status) {
           await fetch(API_URL + 'api/product-shelving/ready',
             {
@@ -124,20 +125,20 @@ const PurchaseOrder = ({ navigation, route }) => {
             .catch(error => {
               Toast.show({
                 type: 'customError',
-                text1: error.message.toString(),
+                text1: error.message,
               });
             });
         } else {
           Toast.show({
             type: 'customError',
-            text1: error.message.toString(),
+            text1: error.message,
           });
         }
       })
       .catch(error => {
         Toast.show({
           type: 'customError',
-          text1: error.message.toString(),
+          text1: error.message,
         });
       });
   };
@@ -309,7 +310,7 @@ const PurchaseOrder = ({ navigation, route }) => {
               .catch(error => {
                 Toast.show({
                   type: 'customError',
-                  text1: error.message.toString(),
+                  text1: error.message,
                 });
                 setIsButtonLoading(false);
               });
@@ -324,14 +325,14 @@ const PurchaseOrder = ({ navigation, route }) => {
         .catch(error => {
           Toast.show({
             type: 'customError',
-            text1: error.message.toString(),
+            text1: error.message,
           });
           setIsButtonLoading(false);
         });
     } catch (error) {
       Toast.show({
         type: 'customError',
-        text1: error.message.toString(),
+        text1: error.message,
       });
       setIsButtonLoading(false);
     }

@@ -77,7 +77,6 @@ const DeliveryPlan = ({ navigation }) => {
             })
               .then(res => res.json())
               .then(inDnData => {
-                console.log('in dn response: ', inDnData)
                 if (inDnData.status) {
                   const dnItems = result.data.sto;
                   const inDnItems = inDnData.items.filter(item => item.status === 'picker packer assigned');
@@ -119,7 +118,7 @@ const DeliveryPlan = ({ navigation }) => {
     } catch (error) {
       Toast.show({
         type: 'customError',
-        text1: error.message.toString(),
+        text1: error.message,
       });
     }
   };
@@ -262,14 +261,14 @@ const DeliveryPlan = ({ navigation }) => {
             .catch(error => {
               Toast.show({
                 type: 'customError',
-                text1: error.message.toString(),
+                text1: error.message,
               });
             });
         })
       } catch (error) {
         Toast.show({
           type: 'customError',
-          text1: error.message.toString(),
+          text1: error.message,
         });
       }
     } else {

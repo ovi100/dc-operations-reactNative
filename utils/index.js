@@ -4,13 +4,18 @@ const validateInput = (type, value) => {
   if (!value) {
     return `${type.charAt(0).toUpperCase() + type.slice(1)} is required`;
   } else {
+    let regex;
     if (type === 'email') {
-      const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!regex.test(value)) {
-        return 'invalid email address';
-      } else {
-        return null;
-      }
+      regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    } else if (type === 'name') {
+      regex = /^[a-zA-Z ]+$/;
+    } else {
+      regex = /s*/;
+    }
+    if (!regex.test(value)) {
+      return `Invalid ${type}`;
+    } else {
+      return null;
     }
   }
 };
@@ -81,15 +86,15 @@ const dateRange = range => {
 const {width: WINDOW_WIDTH, height: WINDOW_HEIGHT} = Dimensions.get('window');
 
 export {
-    WINDOW_HEIGHT,
-    WINDOW_WIDTH,
-    dateRange,
-    formatDateYYYYMMDD,
-    groupBy,
-    toast,
-    uniqueArray,
-    uniqueArrayOfObjects,
-    validateFile,
-    validateInput
+  WINDOW_HEIGHT,
+  WINDOW_WIDTH,
+  dateRange,
+  formatDateYYYYMMDD,
+  groupBy,
+  toast,
+  uniqueArray,
+  uniqueArrayOfObjects,
+  validateFile,
+  validateInput
 };
 

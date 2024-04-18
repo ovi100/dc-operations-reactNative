@@ -46,7 +46,7 @@ const PickingStoArticle = ({ navigation, route }) => {
           if (data.status) {
             Toast.show({
               type: 'customSuccess',
-              text1: result.message,
+              text1: data.message,
             });
           } else {
             Toast.show({

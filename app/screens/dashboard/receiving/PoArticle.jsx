@@ -119,14 +119,14 @@ const PoArticle = ({ navigation, route }) => {
           .catch(error => {
             Toast.show({
               type: 'customError',
-              text1: error.message.toString(),
+              text1: error.message,
             });
             setIsButtonLoading(false);
           });
       } catch (error) {
         Toast.show({
           type: 'customError',
-          text1: error.message.toString(),
+          text1: error.message,
         });
         setIsButtonLoading(false);
       }

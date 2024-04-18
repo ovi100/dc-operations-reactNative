@@ -8,12 +8,12 @@ const useAuth = () => {
   const [user, setUser] = useState(null);
   const [userSite, setUserSite] = useState([]);
   const [token, setToken] = useState(null);
-  const API_URL = 'https://shwapnooperation.onrender.com/';
+  const API_URL = 'https://shwapnooperation.onrender.com/api/user';
 
   const login = async (email, password) => {
     setIsLoading(true);
     try {
-      const response = await fetch(API_URL + 'api/user/login', {
+      const response = await fetch(API_URL + '/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -53,6 +53,49 @@ const useAuth = () => {
     }
   };
 
+  const register = async (name, email, password) => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({name, email, password}),
+      });
+
+      if (!response.ok) {
+        Toast.show({
+          type: 'customError',
+          text1: 'Check your internet connection',
+        });
+        setIsLoading(false);
+      }
+
+      const data = await response.json();
+      console.log(data);
+      if (data.status) {
+        Toast.show({
+          type: 'customSuccess',
+          text1: data.message,
+        });
+        setIsLoading(false);
+      } else {
+        Toast.show({
+          type: 'customError',
+          text1: data.message,
+        });
+        setIsLoading(false);
+      }
+    } catch (error) {
+      Toast.show({
+        type: 'customInfo',
+        text1: error.message,
+      });
+      setIsLoading(false);
+    }
+  };
+
   const logout = () => {
     setUser(null);
     setUserSite([]);
@@ -88,6 +131,7 @@ const useAuth = () => {
   }, []);
 
   const authInfo = {
+    register,
     login,
     logout,
     isLoading,

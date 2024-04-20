@@ -92,7 +92,6 @@ const DeliveryPlan = ({ navigation }) => {
                   const dpData = stoData.map(item => {
                     return { ...item, selected: false }
                   });
-                  console.log('sto data', stoData)
                   setDpList(dpData);
                 }
               })

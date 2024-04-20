@@ -2,14 +2,16 @@ import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Image, SafeAreaView, Text, TextInput,
+  TouchableOpacity,
   TouchableWithoutFeedback, View
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
 import { ButtonLg, ButtonLoading } from '../../../../components/buttons';
-import { BoxIcon } from '../../../../constant/icons';
+import { BoxIcon, CalendarIcon } from '../../../../constant/icons';
 import useAppContext from '../../../../hooks/useAppContext';
 import { getStorage } from '../../../../hooks/useStorage';
+import DatePicker from 'react-native-date-picker'
 
 const PoArticle = ({ navigation, route }) => {
   const {
@@ -20,11 +22,14 @@ const PoArticle = ({ navigation, route }) => {
   const [isButtonLoading, setIsButtonLoading] = useState(false);
   const [bins, setBins] = useState([]);
   const [newQuantity, setNewQuantity] = useState(quantity);
+  const [batchNo, setBatchNo] = useState('');
   const [token, setToken] = useState('');
-  const API_URL = 'https://shwapnooperation.onrender.com/api/';
   const { GRNInfo, authInfo } = useAppContext();
   const { user } = authInfo;
   const { addToGRN } = GRNInfo;
+  const API_URL = 'https://shwapnooperation.onrender.com/api/';
+  const [expiryDate, setExpiryDate] = useState(new Date())
+  const [openDatePicker, setOpenDatePicker] = useState(false)
 
   useEffect(() => {
     getStorage('token', setToken, 'string');
@@ -142,6 +147,8 @@ const PoArticle = ({ navigation, route }) => {
     )
   }
 
+  console.log(expiryDate, batchNo);
+
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">
       <View className="flex-1 px-4">
@@ -149,15 +156,15 @@ const PoArticle = ({ navigation, route }) => {
           <View className="text items-center">
             <TouchableWithoutFeedback>
               <View className="flex-row">
-                <Text className="text-base text-sh font-medium capitalize">
+                <Text className="text-lg text-sh font-medium capitalize">
                   receiving article
                 </Text>
-                <Text className="text-base text-sh font-bold capitalize">
+                <Text className="text-lg text-sh font-bold capitalize">
                   {' ' + material}
                 </Text>
               </View>
             </TouchableWithoutFeedback>
-            <Text className="text-sm text-sh text-right font-medium capitalize">
+            <Text className="text-base text-sh text-right font-medium capitalize">
               {description}
             </Text>
           </View>
@@ -188,6 +195,51 @@ const PoArticle = ({ navigation, route }) => {
                 setNewQuantity(value);
               }}
             />
+          </View>
+        </View>
+
+        {/* Product Box */}
+        <View className="product-box bg-[#FEFBFB] border border-[#F2EFEF] rounded mt-3 p-5">
+          <View className="box-header flex-row items-center justify-between">
+            <View>
+              <Text className="text-xl text-[#2E2C3B] font-medium capitalize">
+                #Batch No.
+              </Text>
+            </View>
+            <View className="date-picker">
+              <TouchableOpacity onPress={() => setOpenDatePicker(true)}>
+                <View className="flex-row items-center bg-black rounded-md p-2">
+                  <Image className="w-6 h-6 mr-3" source={CalendarIcon} />
+                  <Text className="font-bold text-white">Select Expiry Date</Text>
+                </View>
+              </TouchableOpacity>
+              <DatePicker
+                theme='dark'
+                modal
+                title="Expiry Date"
+                minimumDate={new Date()}
+                open={openDatePicker}
+                mode='date'
+                date={expiryDate}
+                onConfirm={(date) => {
+                  setOpenDatePicker(false)
+                  setExpiryDate(date)
+                }}
+                onCancel={() => setOpenDatePicker(false)}
+              />
+            </View>
+          </View>
+          <View className="input-box mt-6">
+            <TextInput
+              className="bg-[#F5F6FA] border border-t-0 border-black/25 h-[50px] text-[#5D80C5] rounded-2xl mb-3 px-4"
+              placeholder="Enter batch number"
+              placeholderTextColor="#5D80C5"
+              selectionColor="#5D80C5"
+              keyboardType="numeric"
+              value={batchNo}
+              onChangeText={value => setBatchNo(value)}
+            />
+
           </View>
         </View>
 

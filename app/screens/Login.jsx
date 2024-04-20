@@ -5,7 +5,6 @@ import {
   StatusBar,
   Text,
   TextInput,
-  TouchableOpacity,
   TouchableWithoutFeedback,
   View
 } from 'react-native';
@@ -109,14 +108,12 @@ const Login = ({ navigation }) => {
                 }}
               />
               {password && (
-                <TouchableOpacity
-                  className="absolute right-3 top-4"
-                  onPress={toggleType}>
+                <TouchableWithoutFeedback onPress={toggleType}>
                   <Image
-                    className="w-6 h-6"
+                    className="w-6 h-6 absolute right-3 top-4"
                     source={inputType ? EyeInvisibleIcon : EyeVisibleIcon}
                   />
-                </TouchableOpacity>
+                </TouchableWithoutFeedback>
               )}
 
               {passwordError && (

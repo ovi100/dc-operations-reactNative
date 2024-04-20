@@ -24,7 +24,7 @@ const PurchaseOrder = ({ navigation, route }) => {
   const [token, setToken] = useState('');
   const [poStatus, setPoStatus] = useState('');
   const [articles, setArticles] = useState([]);
-  const tableHeader = ['Article ID', 'Article Name', 'Quantity'];
+  const tableHeader = ['Article Code', 'Article Name', 'Quantity'];
   const API_URL = 'https://shwapnooperation.onrender.com/';
   const { po_id } = route.params;
   const { GRNInfo } = useAppContext();
@@ -92,7 +92,6 @@ const PurchaseOrder = ({ navigation, route }) => {
     })
       .then(response => response.json())
       .then(async result => {
-        console.log(result)
         if (result.status) {
           await fetch(API_URL + 'api/product-shelving/ready',
             {
@@ -167,20 +166,20 @@ const PurchaseOrder = ({ navigation, route }) => {
         <TouchableOpacity onPress={() => navigation.replace('PoArticle', item)}>
           <View
             key={index}
-            className="flex-row border border-tb rounded-lg mt-2.5 p-4"
+            className="flex-row items-center border border-tb rounded-lg mt-2.5 p-4"
           >
             <Text
-              className="flex-1 text-black text-center"
+              className="text-black"
               numberOfLines={1}>
               {item.material}
             </Text>
             <Text
-              className="flex-1 text-black text-center"
-              numberOfLines={1}>
+              className="flex-1 h-9 leading-9 text-black text-center"
+              numberOfLines={2}>
               {item.description}
             </Text>
             <Text
-              className="flex-1 text-black text-center"
+              className="text-black text-center"
               numberOfLines={1}>
               {item.quantity}
             </Text>
@@ -189,20 +188,20 @@ const PurchaseOrder = ({ navigation, route }) => {
       ) : (
         <View
           key={index}
-          className="flex-row border border-tb rounded-lg mt-2.5 p-4"
+          className="flex-row items-center border border-tb rounded-lg mt-2.5 p-4"
         >
           <Text
-            className="flex-1 text-black text-center"
+            className="w-1/5 text-black text-left"
             numberOfLines={1}>
             {item.material}
           </Text>
           <Text
-            className="flex-1 text-black text-center"
-            numberOfLines={1}>
+            className="w-3/5 h-9 leading-9 text-black text-center"
+            numberOfLines={2}>
             {item.description}
           </Text>
           <Text
-            className="flex-1 text-black text-center"
+            className="w-1/5 text-black text-right"
             numberOfLines={1}>
             {item.quantity}
           </Text>
@@ -376,9 +375,9 @@ const PurchaseOrder = ({ navigation, route }) => {
         <View className="content">
           <>
             <View className={`table ${GRNByPo.length > 0 ? 'h-[70vh]' : 'h-[80vh]'}`}>
-              <View className="flex-row bg-th text-center mb-2 py-2">
+              <View className="flex-row justify-between bg-th text-center mb-2 p-2">
                 {tableHeader.map(th => (
-                  <Text className="flex-1 text-white text-center font-bold" key={th}>
+                  <Text className="text-white text-center font-bold" key={th}>
                     {th}
                   </Text>
                 ))}

@@ -4,7 +4,6 @@ import {
   Image,
   Text,
   TouchableOpacity,
-  TouchableWithoutFeedback,
   View,
 } from 'react-native';
 import {
@@ -17,11 +16,11 @@ import styles from '../../styles/button';
 
 const ButtonLoading = ({styles}) => {
   return (
-    <TouchableWithoutFeedback>
+    <TouchableOpacity>
       <View className={styles}>
         <ActivityIndicator size="small" color="#ffffff" />
       </View>
-    </TouchableWithoutFeedback>
+    </TouchableOpacity>
   );
 };
 

@@ -2,10 +2,10 @@ import ArrowLeftWhiteIcon from './arrow-left-white-icon.png';
 import ArrowLeftIcon from './arrow-left.png';
 import AvatarImage from './avatar.png';
 import LoginBGImage from './background.png';
-import BarcodeIcon from './barcode-icon.png';
 import BoxIcon from './box-icon.png';
 import CameraIcon from './camera-icon.png';
 import ChildPackingIcon from './child-packing-icon.png';
+import CalendarIcon from './calendar-icon.png';
 import CloseIcon from './close-icon.png';
 import DeliveryNoteIcon from './delivery-note-icon.png';
 import DeliveryPlanIcon from './delivery-plan-icon.png';
@@ -26,11 +26,9 @@ import PrinterIcon from './printer-icon.png';
 import ProfileIcon from './profile-icon.png';
 import ReceivingIcon from './receiving-icon.png';
 import ReturnIcon from './return-icon.png';
-import ScanIcon from './scan-icon.png';
 import ScannerIcon from './scanner-icon.png';
 import SearchIcon from './search-icon.png';
 import ShelvingIcon from './shelving-icon.png';
-import SuccessIcon from './success-icon.png';
 import TaskAssignIcon from './task-assign-icon.png';
 import UserIcon from './user-icon.png';
 import WarehouseIcon from './warehouse-icon.png';
@@ -40,11 +38,11 @@ export {
   ArrowLeftIcon,
   ArrowLeftWhiteIcon,
   AvatarImage,
-  BarcodeIcon,
   BoxIcon,
   CameraIcon,
   ChildPackingIcon,
   CloseIcon,
+  CalendarIcon,
   DeliveryNoteIcon,
   DeliveryPlanIcon,
   Dk02Icon,
@@ -65,12 +63,10 @@ export {
   ProfileIcon,
   ReceivingIcon,
   ReturnIcon,
-  ScanIcon,
   ScannerIcon,
   SearchIcon,
   ShelvingIcon,
   SwitchIcon,
-  SuccessIcon,
   TaskAssignIcon,
   UserIcon,
   WarehouseIcon

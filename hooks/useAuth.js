@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
-import { Alert } from 'react-native';
+import {useEffect, useState} from 'react';
+import {Alert} from 'react-native';
 import Toast from 'react-native-toast-message';
-import { getStorage, removeAll, setStorage } from './useStorage';
+import {getStorage, removeAll, setStorage} from './useStorage';
 
 const useAuth = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -53,48 +53,6 @@ const useAuth = () => {
     }
   };
 
-  const register = async (name, email, password) => {
-    setIsLoading(true);
-    try {
-      const response = await fetch(API_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({name, email, password}),
-      });
-
-      if (!response.ok) {
-        Toast.show({
-          type: 'customError',
-          text1: 'Check your internet connection',
-        });
-        setIsLoading(false);
-      }
-
-      const data = await response.json();
-      console.log(data);
-      if (data.status) {
-        Toast.show({
-          type: 'customSuccess',
-          text1: data.message,
-        });
-        setIsLoading(false);
-      } else {
-        Toast.show({
-          type: 'customError',
-          text1: data.message,
-        });
-        setIsLoading(false);
-      }
-    } catch (error) {
-      Toast.show({
-        type: 'customInfo',
-        text1: error.message,
-      });
-      setIsLoading(false);
-    }
-  };
 
   const logout = () => {
     setUser(null);
@@ -131,7 +89,6 @@ const useAuth = () => {
   }, []);
 
   const authInfo = {
-    register,
     login,
     logout,
     isLoading,

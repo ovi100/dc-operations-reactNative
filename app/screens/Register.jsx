@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
-import { Image, SafeAreaView, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
-import { ButtonLoading, ButtonLogin } from '../../components/buttons';
+import { ActivityIndicator, Image, SafeAreaView, Text, TextInput, TouchableWithoutFeedback, View } from 'react-native';
+import { ButtonLogin } from '../../components/buttons';
 import { EyeInvisibleIcon, EyeVisibleIcon } from '../../constant/icons';
-import useAppContext from '../../hooks/useAppContext';
 import styles from '../../styles/button';
 import { validateInput } from '../../utils';
+import Toast from 'react-native-toast-message';
+import CustomToast from '../../components/CustomToast';
 
 const Register = ({ navigation }) => {
-  const { authInfo } = useAppContext();
-  const { register, isLoading } = authInfo;
+  const [isLoading, setIsLoading] = useState(false);
   const [inputType, setInputType] = useState(false);
   const [name, setName] = useState('');
   const [nameError, setNameError] = useState(null);
@@ -16,10 +16,56 @@ const Register = ({ navigation }) => {
   const [emailError, setEmailError] = useState(null);
   const [password, setPassword] = useState('');
   const [passwordError, setPasswordError] = useState(null);
-
+  const API_URL = 'https://shwapnooperation.onrender.com/api/user';
 
   const toggleType = () => {
     setInputType(current => !current);
+  };
+
+  const register = async (name, email, password) => {
+    try {
+      setIsLoading(true);
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name, email, password }),
+      });
+
+      if (!response.ok) {
+        Toast.show({
+          type: 'customError',
+          text1: 'Check your internet connection',
+        });
+        setIsLoading(false);
+      }
+
+      const data = await response.json();
+      if (data.status) {
+        Toast.show({
+          type: 'customSuccess',
+          text1: data.message,
+        });
+
+        setTimeout(() => {
+          setIsLoading(false);
+          navigation.push('Login');
+        }, 1500);
+      } else {
+        Toast.show({
+          type: 'customError',
+          text1: data.message,
+        });
+        setIsLoading(false);
+      }
+    } catch (error) {
+      setIsLoading(false);
+      Toast.show({
+        type: 'customInfo',
+        text1: error.message,
+      });
+    }
   };
 
   const handleRegister = () => {
@@ -28,13 +74,12 @@ const Register = ({ navigation }) => {
     setPasswordError(validateInput('password', password));
     if (name && email && password) {
       register(name, email, password);
-      navigation.push('Login');
     }
   };
 
   return (
     <SafeAreaView className="bg-white h-full">
-      <View className="flex-1 items-center justify-center m-5">
+      <View className="mx-5 mt-20">
         <View className="w-full rounded-2xl px-3 mb-4">
           <View className="name relative">
             <TextInput
@@ -91,14 +136,12 @@ const Register = ({ navigation }) => {
               }}
             />
             {password && (
-              <TouchableOpacity
-                className="absolute right-3 top-4"
-                onPress={toggleType}>
+              <TouchableWithoutFeedback onPress={toggleType}>
                 <Image
-                  className="w-6 h-6"
+                  className="w-6 h-6 absolute right-3 top-4"
                   source={inputType ? EyeInvisibleIcon : EyeVisibleIcon}
                 />
-              </TouchableOpacity>
+              </TouchableWithoutFeedback>
             )}
 
             {passwordError && (
@@ -111,7 +154,11 @@ const Register = ({ navigation }) => {
 
         <View className="buttons w-full px-3">
           {isLoading ? (
-            <ButtonLoading buttonStyles={styles.buttonLoginLoading} />
+            <TouchableWithoutFeedback>
+              <View className="h-[55px] items-center justify-center bg-[#AC3232] rounded-md">
+                <ActivityIndicator size="small" color="#ffffff" />
+              </View>
+            </TouchableWithoutFeedback>
           ) : (
             <>
               <ButtonLogin
@@ -129,6 +176,7 @@ const Register = ({ navigation }) => {
           )}
         </View>
       </View>
+      <CustomToast />
     </SafeAreaView>
   )
 }

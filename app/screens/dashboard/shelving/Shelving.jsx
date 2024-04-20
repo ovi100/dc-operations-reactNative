@@ -207,7 +207,7 @@ const Shelving = ({ navigation }) => {
         <Text className="text-xs text-black" numberOfLines={1}>
           {item.code}
         </Text>
-        <Text className="text-black text-base mt-1" numberOfLines={2}>
+        <Text className="w-36 text-black text-base mt-1" numberOfLines={2}>
           {item.description}
         </Text>
       </View>
@@ -220,7 +220,7 @@ const Shelving = ({ navigation }) => {
           </Text>
         ) : (<Text className="text-black text-center">No bin has been assigned</Text>)}
       </View>
-      <Text className="w-[15%] text-black text-center" numberOfLines={1}>
+      <Text className="w-[15%] text-black text-right" numberOfLines={1}>
         {item.receivedQuantity}
       </Text>
     </View>

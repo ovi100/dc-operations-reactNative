@@ -1,14 +1,13 @@
 import React from 'react';
 import { Image, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
-import Toast from 'react-native-toast-message';
-import { ButtonProfile } from '../../../components/buttons';
-import { Dk02Icon, Dk11Icon } from '../../../constant/icons';
-import useAppContext from '../../../hooks/useAppContext';
-import { setStorage } from '../../../hooks/useStorage';
+import { Dk02Icon, Dk11Icon } from '../../../../constant/icons';
+import useAppContext from '../../../../hooks/useAppContext';
+import { ButtonProfile } from '../../../../components/buttons';
+import { setStorage } from '../../../../hooks/useStorage';
 
-const SiteModal = ({ navigation }) => {
+const SiteChoose = ({ navigation }) => {
   const { authInfo } = useAppContext();
-  const { user, setUser, logout } = authInfo;
+  const { user, setUser } = authInfo;
   let sites;
   const siteList = [
     {
@@ -34,11 +33,7 @@ const SiteModal = ({ navigation }) => {
   ];
 
   if (user.site?.length === 0) {
-    Toast.show({
-      type: 'customInfo',
-      text1: "You don't have any site",
-    });
-    logout();
+    navigation.navigate('NoSite');
     return;
   }
 
@@ -88,4 +83,4 @@ const SiteModal = ({ navigation }) => {
 }
 
 
-export default SiteModal;
+export default SiteChoose;

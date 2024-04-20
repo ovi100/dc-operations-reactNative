@@ -1,7 +1,7 @@
-import { Link } from '@react-navigation/native';
+import {Link} from '@react-navigation/native';
 import React from 'react';
-import { ActivityIndicator, Image, SafeAreaView, Text, View } from 'react-native';
-import { ButtonProfile } from '../../../components/buttons';
+import {ActivityIndicator, Image, SafeAreaView, Text, View} from 'react-native';
+import {ButtonProfile} from '../../../components/buttons';
 import {
   ChildPackingIcon,
   DeliveryNoteIcon,
@@ -20,6 +20,13 @@ const Home = ({navigation}) => {
   let filteredLinks;
 
   const navLinks = [
+    {
+      name: 'Audit',
+      icon: ReturnIcon,
+      screen: 'Audit',
+      role: 'audit',
+      access: 'audit-access',
+    },
     {
       name: 'Receiving',
       icon: ReceivingIcon,
@@ -75,13 +82,6 @@ const Home = ({navigation}) => {
       screen: 'DeliveryNote',
       role: 'DN charge',
       access: 'delivery-note-access',
-    },
-    {
-      name: 'Audit',
-      icon: ReturnIcon,
-      screen: 'Audit',
-      role: 'audit',
-      access: 'audit-access',
     },
     // {
     //   name: 'Return',

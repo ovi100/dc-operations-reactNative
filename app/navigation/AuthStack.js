@@ -20,9 +20,6 @@ const AuthStack = () => {
           title: 'Registration',
           headerTitleAlign: 'center',
           headerShadowVisible: false,
-          // headerStyle: {
-          //   backgroundColor: '#edf2fa',
-          // },
         }}
       />
     </Stack.Navigator>

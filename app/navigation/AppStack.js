@@ -1,15 +1,16 @@
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import React from 'react';
 // screens
 import useAppContext from '../../hooks/useAppContext';
 import Home from '../screens/dashboard';
-import SiteModal from '../screens/dashboard/SiteModal';
+import SiteChoose from '../screens/dashboard/site/SiteChoose';
+import NoSite from '../screens/dashboard/site/NoSite';
 import Audit from '../screens/dashboard/audit/Audit';
-import ChildPacking from '../screens/dashboard/childPacking/ChildPacking';
-import QualityCheck from '../screens/dashboard/childPacking/qualityCheck/QualityCheck';
+import ChildPacking from '../screens/dashboard/packing/ChildPacking';
+import MasterPacking from '../screens/dashboard/packing/MasterPacking';
+import QualityCheck from '../screens/dashboard/packing/qualityCheck/QualityCheck';
 import DeliveryNote from '../screens/dashboard/deliveryNote/DeliveryNote';
 import DeliveryPlan from '../screens/dashboard/deliveryPlan/DeliveryPlan';
-import MasterPacking from '../screens/dashboard/masterPacking/MasterPacking';
 import Picking from '../screens/dashboard/picking/Picking';
 import PickedSto from '../screens/dashboard/picking/pickedSTO/PickedSto';
 import PickingSto from '../screens/dashboard/picking/pickingSTO/PickingSto';
@@ -35,7 +36,7 @@ const AppStack = () => {
   const {authInfo} = useAppContext();
   const {user} = authInfo;
 
-  const routes = [
+  const screens = [
     {id: 'home', name: 'Home', component: Home},
     {id: 'audit', name: 'Audit', component: Audit},
     {id: 'profile', name: 'Profile', component: Profile},
@@ -72,19 +73,19 @@ const AppStack = () => {
   ];
 
   return (
-    <Stack.Navigator initialRouteName="SiteModal">
+    <Stack.Navigator initialRouteName="SiteChoose">
       {user && typeof user.site !== 'string' && (
-        <Stack.Group
-          screenOptions={{headerShown: false, presentation: 'modal'}}>
-          <Stack.Screen name="SiteModal" component={SiteModal} />
+        <Stack.Group screenOptions={{headerShown: false}}>
+          <Stack.Screen name="SiteChoose" component={SiteChoose} />
+          <Stack.Screen name="NoSite" component={NoSite} />
         </Stack.Group>
       )}
       <Stack.Group screenOptions={{headerShown: false}}>
-        {routes.map(route => (
+        {screens.map(screen => (
           <Stack.Screen
-            key={route.id}
-            name={route.name}
-            component={route.component}
+            key={screen.id}
+            name={screen.name}
+            component={screen.component}
             options={{
               headerShown: false,
             }}

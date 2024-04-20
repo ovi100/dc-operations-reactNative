@@ -20,28 +20,13 @@ import styles from '../../styles/button';
 import { validateInput } from '../../utils';
 
 const Login = ({ navigation }) => {
-  const [keyboardStatus, setKeyboardStatus] = useState(false);
   const { authInfo } = useAppContext();
-  const { login, isLoading } = authInfo;
+  const { login } = authInfo;
   const [inputType, setInputType] = useState(false);
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState(null);
   const [password, setPassword] = useState('');
   const [passwordError, setPasswordError] = useState(null);
-
-  useEffect(() => {
-    const showKeyboard = Keyboard.addListener('keyboardDidShow', () => {
-      setKeyboardStatus(true);
-    });
-    const hideKeyboard = Keyboard.addListener('keyboardDidHide', () => {
-      setKeyboardStatus(false);
-    });
-
-    return () => {
-      showKeyboard.remove();
-      hideKeyboard.remove();
-    };
-  }, []);
 
   const toggleType = () => {
     setInputType(current => !current);
@@ -58,11 +43,10 @@ const Login = ({ navigation }) => {
   return (
     <View className="bg-white h-full w-full">
       <StatusBar backgroundColor="#000" barStyle="light-content" />
-      <Image className="h-full w-full absolute -top-2" source={LoginBGImage} />
+      <Image className="h-full w-full absolute -top-8" source={LoginBGImage} />
 
       {/* title and form */}
-      <View className={`h-full w-full flex justify-around pt-40 ${keyboardStatus ? 'pb-0' : 'pb-10'
-        }`}>
+      <View className={`h-full w-full flex justify-around pt-40`}>
         {/* title */}
         <View className={'flex items-center'}>
           <Text className="text-white font-bold tracking-wider text-5xl">
@@ -71,7 +55,7 @@ const Login = ({ navigation }) => {
         </View>
 
         {/* form */}
-        <View className={`flex items-center mx-5 ${keyboardStatus ? 'mt-5' : ''}`}>
+        <View className={`flex items-center mx-5`}>
           <View className="w-full rounded-2xl px-3 mb-4">
             <View className="email relative">
               <TextInput
@@ -125,23 +109,17 @@ const Login = ({ navigation }) => {
           </View>
 
           <View className="w-full px-3">
-            {isLoading ? (
-              <ButtonLoading buttonStyles={styles.buttonLoginLoading} />
-            ) : (
-              <>
-                <ButtonLogin
-                  title="Login"
-                  buttonStyles={styles.buttonLogin}
-                  textStyles={styles.lgText}
-                  onPress={emailError || passwordError ? null : handleLogin}
-                />
-                <View className="text-center mt-5">
-                  <TouchableWithoutFeedback onPress={() => navigation.push('Register')}>
-                    <Text className="text-center text-blue-600 text-lg">Don't have account?</Text>
-                  </TouchableWithoutFeedback>
-                </View>
-              </>
-            )}
+            <ButtonLogin
+              title="Login"
+              buttonStyles={styles.buttonLogin}
+              textStyles={styles.lgText}
+              onPress={emailError || passwordError ? null : handleLogin}
+            />
+            <View className="text-center mt-5">
+              <TouchableWithoutFeedback onPress={() => navigation.push('Register')}>
+                <Text className="text-center text-blue-600 text-lg">Don't have account?</Text>
+              </TouchableWithoutFeedback>
+            </View>
           </View>
         </View>
       </View>

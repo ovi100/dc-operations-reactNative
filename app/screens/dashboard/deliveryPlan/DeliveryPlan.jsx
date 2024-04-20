@@ -20,7 +20,7 @@ import Dialog from '../../../../components/Dialog';
 import Modal from '../../../../components/Modal';
 import ServerError from '../../../../components/animations/ServerError';
 import { ButtonBack, ButtonLg, ButtonLoading } from '../../../../components/buttons';
-import { getStorage, setStorage } from '../../../../hooks/useStorage';
+import { getStorage, setStorage, removeItem } from '../../../../hooks/useStorage';
 import { dateRange } from '../../../../utils';
 
 const DeliveryPlan = ({ navigation }) => {
@@ -50,7 +50,6 @@ const DeliveryPlan = ({ navigation }) => {
       await getStorage('outlets', setOutlets);
       setModalVisible(false);
       setSelectedList([]);
-      // removeItem('outlets');
     }
     getAsyncStorage();
   }, []);
@@ -68,7 +67,7 @@ const DeliveryPlan = ({ navigation }) => {
         .then(response => response.json())
         .then(async result => {
           if (result.status) {
-            await fetch(API_URL + `api/sto-tracking/in-dn?filterBy=supplyingPlant&value=${user.site}&pageSize=500`, {
+            await fetch(API_URL + `api/sto-tracking?filterBy=supplyingPlant&value=${user.site}&pageSize=500`, {
               method: 'GET',
               headers: {
                 authorization: token,
@@ -133,13 +132,6 @@ const DeliveryPlan = ({ navigation }) => {
       if (token && outlets && user.site) {
         getDpList();
       }
-      else {
-        setIsLoading(true);
-        setTimeout(() => {
-          setIsLoading(false);
-          setModalVisible(true);
-        }, 500)
-      }
     }, [token, outlets, user.site])
   );
 
@@ -172,9 +164,9 @@ const DeliveryPlan = ({ navigation }) => {
 
   const renderItem = ({ item, index }) => (
     <TouchableOpacity
-      className="flex-row items-center border border-tb rounded-lg mt-2.5 p-4"
+      className="flex-row items-center justify-between border border-tb rounded-lg mt-2.5 p-4"
       onPress={() => handelCheckbox(item)} key={index}>
-      <View className="flex-1 flex-row items-center">
+      <View className="flex-row items-center w-1/3">
         <CheckBox
           tintColors={item.selected ? '#56D342' : '#ffffff'}
           value={item.selected}
@@ -184,11 +176,11 @@ const DeliveryPlan = ({ navigation }) => {
           {item.sto}
         </Text>
       </View>
-      <Text className="flex-1 text-black text-center" numberOfLines={1}>
+      <Text className="w-1/3 text-black text-center" numberOfLines={1}>
         {item.sku}
       </Text>
-      <Text className="flex-1 text-black text-center" numberOfLines={1}>
-        {item.supplyingPlant}
+      <Text className="w-1/3 text-black text-right pr-4" numberOfLines={1}>
+        {item.receivingPlant}
       </Text>
     </TouchableOpacity>
   );
@@ -220,8 +212,6 @@ const DeliveryPlan = ({ navigation }) => {
     setSelectedList([]);
     Keyboard.dismiss();
   };
-
-  console.log('selected sto', selectedList.length)
 
   const createDN = async () => {
     if (selectedList.length > 0) {
@@ -305,13 +295,13 @@ const DeliveryPlan = ({ navigation }) => {
             onPress={() => getDpList()}
           />
           <View className="my-3"></View>
-          {/* <Button
+          <Button
             title="Change Outlets"
             onPress={() => {
               removeItem('outlets');
               setModalVisible(true);
             }}
-          /> */}
+          />
         </View>
       </View>
     )
@@ -347,27 +337,27 @@ const DeliveryPlan = ({ navigation }) => {
           <View className="content flex-1 mt-3">
             {/* Table data */}
             <View className={`table ${selectedList.length > 0 ? 'h-[76vh]' : 'h-[77vh]'}`}>
-              <View className="flex-row bg-th text-center mb-2 py-2">
+              <View className="flex-row items-center justify-between bg-gray-400 text-center mb-2 px-3 py-2">
                 {tableHeader.map((th) => (
                   <>
                     {th.split(' ')[1] === 'ID' ? (
                       <TouchableOpacity
                         key={th}
-                        className="flex-1 flex-row items-center justify-center"
+                        className="flex-row items-center w-1/3"
                         onPress={() => toggleCheckAll()}
                       >
                         <CheckBox
-                          tintColors={'#ffffff'}
+                          tintColors='#ffffff'
                           value={isAllChecked}
                           onValueChange={() => toggleCheckAll()}
                         />
-                        <Text className="text-white text-center font-bold ml-2.5" numberOfLines={1}>
+                        <Text className="text-white text-center font-bold ml-1.5" numberOfLines={1}>
                           {th}
                         </Text>
                       </TouchableOpacity>
                     ) : (
                       <Text
-                        className="flex-1 text-white text-center font-bold"
+                        className="w-1/3 text-white text-center font-bold"
                         key={th}>
                         {th}
                       </Text>

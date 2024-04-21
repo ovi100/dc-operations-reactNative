@@ -25,7 +25,7 @@ const Receiving = ({ navigation }) => {
   const tableHeader = ['Purchase Order ID', 'SKU'];
   const API_URL = 'https://shwapnooperation.onrender.com/';
   const { startScan, stopScan } = SunmiScanner;
-  const dateObject = dateRange(15);
+  const dateObject = dateRange(1);
   const postObject = { ...dateObject, site: user.site };
 
   useEffect(() => {
@@ -61,6 +61,7 @@ const Receiving = ({ navigation }) => {
       })
         .then(response => response.json())
         .then(async result => {
+          console.log('received response', result);
           if (result.status) {
             await fetch(API_URL + 'api/po-tracking?pageSize=500&filterBy=status&value=pending for release', {
               method: 'GET',

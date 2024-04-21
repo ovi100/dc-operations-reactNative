@@ -3,17 +3,15 @@ import ArrowLeftIcon from './arrow-left.png';
 import AvatarImage from './avatar.png';
 import LoginBGImage from './background.png';
 import BoxIcon from './box-icon.png';
+import CalendarIcon from './calendar-icon.png';
 import CameraIcon from './camera-icon.png';
 import ChildPackingIcon from './child-packing-icon.png';
-import CalendarIcon from './calendar-icon.png';
 import CloseIcon from './close-icon.png';
 import DeliveryNoteIcon from './delivery-note-icon.png';
 import DeliveryPlanIcon from './delivery-plan-icon.png';
 import EmailIcon from './email-icon.png';
 import EyeInvisibleIcon from './eye-invisible-icon.png';
 import EyeVisibleIcon from './eye-visible-icon.png';
-import Dk02Icon from './icon-dk02.png';
-import Dk11Icon from './icon-dk11.png';
 import IdIcon from './id-icon.png';
 import ImageIcon from './image-icon.png';
 import InfoIcon from './info-icon.png';
@@ -29,24 +27,20 @@ import ReturnIcon from './return-icon.png';
 import ScannerIcon from './scanner-icon.png';
 import SearchIcon from './search-icon.png';
 import ShelvingIcon from './shelving-icon.png';
+import SitesIcon from './site-icon.jpg';
+import SwitchIcon from './switch-icon.png';
 import TaskAssignIcon from './task-assign-icon.png';
 import UserIcon from './user-icon.png';
 import WarehouseIcon from './warehouse-icon.png';
-import SwitchIcon from './switch-icon.png';
 
 export {
   ArrowLeftIcon,
   ArrowLeftWhiteIcon,
   AvatarImage,
-  BoxIcon,
-  CameraIcon,
+  BoxIcon, CalendarIcon, CameraIcon,
   ChildPackingIcon,
-  CloseIcon,
-  CalendarIcon,
-  DeliveryNoteIcon,
+  CloseIcon, DeliveryNoteIcon,
   DeliveryPlanIcon,
-  Dk02Icon,
-  Dk11Icon,
   EmailIcon,
   EyeInvisibleIcon,
   EyeVisibleIcon,
@@ -66,6 +60,7 @@ export {
   ScannerIcon,
   SearchIcon,
   ShelvingIcon,
+  SitesIcon,
   SwitchIcon,
   TaskAssignIcon,
   UserIcon,

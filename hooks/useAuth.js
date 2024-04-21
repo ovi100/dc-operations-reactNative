@@ -1,13 +1,15 @@
-import {useEffect, useState} from 'react';
-import {Alert} from 'react-native';
+import { useEffect, useState } from 'react';
+import { Alert } from 'react-native';
 import Toast from 'react-native-toast-message';
-import {getStorage, removeAll, setStorage} from './useStorage';
+import useActivity from './useActivity';
+import { getStorage, removeAll, setStorage } from './useStorage';
 
 const useAuth = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState(null);
   const [userSite, setUserSite] = useState([]);
   const [token, setToken] = useState(null);
+  const {createActivity} = useActivity();
   const API_URL = 'https://shwapnooperation.onrender.com/api/user';
 
   const login = async (email, password) => {
@@ -37,6 +39,12 @@ const useAuth = () => {
         setStorage('token', data.token);
         setStorage('user', data.user);
         setStorage('usersite', data.user.site);
+        // activity
+        await createActivity(
+          data.user._id,
+          'login',
+          `${data.user.name} logged in`,
+        );
       } else {
         Toast.show({
           type: 'customError',
@@ -52,7 +60,6 @@ const useAuth = () => {
       });
     }
   };
-
 
   const logout = () => {
     setUser(null);

@@ -20,7 +20,7 @@ import Dialog from '../../../../components/Dialog';
 import Modal from '../../../../components/Modal';
 import ServerError from '../../../../components/animations/ServerError';
 import { ButtonBack, ButtonLg, ButtonLoading } from '../../../../components/buttons';
-import { getStorage, setStorage, removeItem } from '../../../../hooks/useStorage';
+import { getStorage, setStorage } from '../../../../hooks/useStorage';
 import { dateRange } from '../../../../utils';
 
 const DeliveryPlan = ({ navigation }) => {
@@ -293,14 +293,6 @@ const DeliveryPlan = ({ navigation }) => {
           <Button
             title="Retry"
             onPress={() => getDpList()}
-          />
-          <View className="my-3"></View>
-          <Button
-            title="Change Outlets"
-            onPress={() => {
-              removeItem('outlets');
-              setModalVisible(true);
-            }}
           />
         </View>
       </View>

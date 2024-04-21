@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   Image,
-  Keyboard,
   StatusBar,
   Text,
   TextInput,
@@ -9,7 +8,7 @@ import {
   View
 } from 'react-native';
 import CustomToast from '../../components/CustomToast';
-import { ButtonLoading, ButtonLogin } from '../../components/buttons';
+import { ButtonLogin } from '../../components/buttons';
 import {
   EyeInvisibleIcon,
   EyeVisibleIcon,

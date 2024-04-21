@@ -8,7 +8,6 @@ import {
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
 import Dialog from '../../../../components/Dialog';
-import { ButtonLg, ButtonLoading } from '../../../../components/buttons';
 import useAppContext from '../../../../hooks/useAppContext';
 import { getStorage } from '../../../../hooks/useStorage';
 import { toast } from '../../../../utils';
@@ -169,17 +168,17 @@ const PurchaseOrder = ({ navigation, route }) => {
             className="flex-row items-center border border-tb rounded-lg mt-2.5 p-4"
           >
             <Text
-              className="text-black"
+              className="w-1/5 text-black"
               numberOfLines={1}>
               {item.material}
             </Text>
             <Text
-              className="flex-1 h-9 leading-9 text-black text-center"
+              className="w-3/5 h-9 leading-9 text-black text-center"
               numberOfLines={2}>
               {item.description}
             </Text>
             <Text
-              className="text-black text-center"
+              className="w-1/5 text-black text-center"
               numberOfLines={1}>
               {item.quantity}
             </Text>
@@ -374,7 +373,7 @@ const PurchaseOrder = ({ navigation, route }) => {
         </View>
         <View className="content">
           <>
-            <View className={`table ${GRNByPo.length > 0 ? 'h-[70vh]' : 'h-[80vh]'}`}>
+            <View className={`table ${GRNByPo.length > 0 ? 'h-[70vh]' : 'h-[92vh]'}`}>
               <View className="flex-row justify-between bg-th text-center mb-2 p-2">
                 {tableHeader.map(th => (
                   <Text className="text-white text-center font-bold" key={th}>
@@ -396,7 +395,7 @@ const PurchaseOrder = ({ navigation, route }) => {
               )}
 
             </View>
-            {Boolean(GRNByPo.length) && (
+            {/* {Boolean(GRNByPo.length) && (
               <View className="button">
                 {isButtonLoading ? <ButtonLoading styles='bg-theme rounded-md p-5' /> :
                   <ButtonLg
@@ -405,7 +404,7 @@ const PurchaseOrder = ({ navigation, route }) => {
                   />
                 }
               </View>
-            )}
+            )} */}
           </>
         </View>
       </View>

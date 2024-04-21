@@ -1,16 +1,14 @@
-import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React from 'react';
 // screens
 import useAppContext from '../../hooks/useAppContext';
 import Home from '../screens/dashboard';
-import SiteChoose from '../screens/dashboard/site/SiteChoose';
-import NoSite from '../screens/dashboard/site/NoSite';
 import Audit from '../screens/dashboard/audit/Audit';
+import DeliveryNote from '../screens/dashboard/deliveryNote/DeliveryNote';
+import DeliveryPlan from '../screens/dashboard/deliveryPlan/DeliveryPlan';
 import ChildPacking from '../screens/dashboard/packing/ChildPacking';
 import MasterPacking from '../screens/dashboard/packing/MasterPacking';
 import QualityCheck from '../screens/dashboard/packing/qualityCheck/QualityCheck';
-import DeliveryNote from '../screens/dashboard/deliveryNote/DeliveryNote';
-import DeliveryPlan from '../screens/dashboard/deliveryPlan/DeliveryPlan';
 import Picking from '../screens/dashboard/picking/Picking';
 import PickedSto from '../screens/dashboard/picking/pickedSTO/PickedSto';
 import PickingSto from '../screens/dashboard/picking/pickingSTO/PickingSto';
@@ -25,6 +23,7 @@ import AssignToBin from '../screens/dashboard/shelving/AssignToBin';
 import BinDetails from '../screens/dashboard/shelving/BinDetails';
 import ShelveArticle from '../screens/dashboard/shelving/ShelveArticle';
 import Shelving from '../screens/dashboard/shelving/Shelving';
+import SiteChoose from '../screens/dashboard/site/SiteChoose';
 import PickerPackerTaskAssign from '../screens/dashboard/taskAssign/PickerPackerTaskAssign/PickerPackerTaskAssign';
 import TaskAssign from '../screens/dashboard/taskAssign/TaskAssign';
 import ChangePassword from '../screens/dashboard/userProfile/ChangePassword';
@@ -77,7 +76,6 @@ const AppStack = () => {
       {user && typeof user.site !== 'string' && (
         <Stack.Group screenOptions={{headerShown: false}}>
           <Stack.Screen name="SiteChoose" component={SiteChoose} />
-          <Stack.Screen name="NoSite" component={NoSite} />
         </Stack.Group>
       )}
       <Stack.Group screenOptions={{headerShown: false}}>

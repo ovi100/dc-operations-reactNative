@@ -2,12 +2,14 @@ import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   DeviceEventEmitter, FlatList,
   SafeAreaView, Text, TouchableHighlight, TouchableOpacity, View
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
 import Dialog from '../../../../components/Dialog';
+import { ButtonLg, ButtonLoading } from '../../../../components/buttons';
 import useAppContext from '../../../../hooks/useAppContext';
 import { getStorage } from '../../../../hooks/useStorage';
 import { toast } from '../../../../utils';
@@ -21,7 +23,6 @@ const PurchaseOrder = ({ navigation, route }) => {
   const [pressMode, setPressMode] = useState(false);
   const [barcode, setBarcode] = useState('');
   const [token, setToken] = useState('');
-  const [poStatus, setPoStatus] = useState('');
   const [articles, setArticles] = useState([]);
   const tableHeader = ['Article Code', 'Article Name', 'Quantity'];
   const API_URL = 'https://shwapnooperation.onrender.com/';
@@ -49,37 +50,6 @@ const PurchaseOrder = ({ navigation, route }) => {
     };
   }, []);
 
-  const getPoStatus = async () => {
-    try {
-      setIsLoading(true);
-      await fetch(API_URL + `api/po-tracking?filterBy=po&value=${po_id}`, {
-        method: 'GET',
-        headers: {
-          authorization: token,
-        },
-      })
-        .then(res => res.json())
-        .then(result => {
-          if (result.status) {
-            setPoStatus(result.items[0].status);
-          } else {
-            setPoStatus(result.message);
-          }
-        })
-        .catch(error => {
-          Toast.show({
-            type: 'customError',
-            text1: error.message,
-          });
-        });
-    } catch (error) {
-      Toast.show({
-        type: 'customError',
-        text1: error.message,
-      });
-    }
-  };
-
   const getPoList = async () => {
     await fetch(API_URL + 'bapi/po/display', {
       method: 'POST',
@@ -105,14 +75,20 @@ const PurchaseOrder = ({ navigation, route }) => {
               if (shelveData.status) {
                 const poItems = result.data.items;
                 const shItems = shelveData.items;
-                let remainingPoItems = poItems.filter(
-                  poItem =>
-                    !shItems.some(
-                      shItem =>
-                        shItem.po === poItem.po &&
-                        shItem.code === poItem.material
-                    )
-                );
+                let remainingPoItems = poItems.map(poItem => {
+                  const matchedShItem = shItems.find(
+                    shItem => shItem.code === poItem.material && shItem.po === poItem.po
+                  );
+                  if (matchedShItem) {
+                    return {
+                      ...poItem,
+                      quantity: poItem.quantity - matchedShItem.receivedQuantity,
+                    };
+                  } else {
+                    return poItem;
+                  }
+                }).filter(item => item.quantity !== 0);
+                // remainingPoItems = remainingPoItems.filter(item => item.quantity !== 0);
                 setArticles(remainingPoItems);
               }
               else {
@@ -146,7 +122,6 @@ const PurchaseOrder = ({ navigation, route }) => {
       const getPoInfo = async () => {
         const start = performance.now();
         setIsLoading(true);
-        await getPoStatus();
         await getPoList();
         setIsLoading(false);
         const end = performance.now();
@@ -345,16 +320,6 @@ const PurchaseOrder = ({ navigation, route }) => {
     )
   }
 
-  if (poStatus === 'pending for release' && GRNByPo.length === 0) {
-    return (
-      <View className="w-full h-4/5 justify-center px-3">
-        <Text className="text-blue-800 text-lg text-center font-semibold font-mono mt-5">
-          {po_id} is {poStatus}
-        </Text>
-      </View>
-    )
-  }
-
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">
       <View className="flex-1 h-full px-4">
@@ -373,7 +338,7 @@ const PurchaseOrder = ({ navigation, route }) => {
         </View>
         <View className="content">
           <>
-            <View className={`table ${GRNByPo.length > 0 ? 'h-[70vh]' : 'h-[92vh]'}`}>
+            <View className={`table ${GRNByPo.length > 0 ? 'h-[84vh]' : 'h-[92vh]'}`}>
               <View className="flex-row justify-between bg-th text-center mb-2 p-2">
                 {tableHeader.map(th => (
                   <Text className="text-white text-center font-bold" key={th}>
@@ -395,16 +360,16 @@ const PurchaseOrder = ({ navigation, route }) => {
               )}
 
             </View>
-            {/* {Boolean(GRNByPo.length) && (
+            {Boolean(GRNByPo.length) && (
               <View className="button">
                 {isButtonLoading ? <ButtonLoading styles='bg-theme rounded-md p-5' /> :
                   <ButtonLg
-                    title="Create GRN"
-                    onPress={() => setDialogVisible(true)}
+                    title="Generate GRN"
+                    onPress={() => Alert.alert('Generate GRN')}
                   />
                 }
               </View>
-            )} */}
+            )}
           </>
         </View>
       </View>

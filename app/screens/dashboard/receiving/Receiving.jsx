@@ -15,6 +15,7 @@ import SunmiScanner from '../../../../utils/sunmi/scanner';
 const Receiving = ({ navigation }) => {
   const isFocused = useIsFocused();
   const [isLoading, setIsLoading] = useState(false);
+  const [isCheckingPo, setIsCheckingPo] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [pressMode, setPressMode] = useState(false);
   const [user, setUser] = useState({});
@@ -25,7 +26,7 @@ const Receiving = ({ navigation }) => {
   const tableHeader = ['Purchase Order ID', 'SKU'];
   const API_URL = 'https://shwapnooperation.onrender.com/';
   const { startScan, stopScan } = SunmiScanner;
-  const dateObject = dateRange(1);
+  const dateObject = dateRange(7);
   const postObject = { ...dateObject, site: user.site };
 
   useEffect(() => {
@@ -61,32 +62,15 @@ const Receiving = ({ navigation }) => {
       })
         .then(response => response.json())
         .then(async result => {
-          console.log('received response', result);
           if (result.status) {
-            await fetch(API_URL + 'api/po-tracking?pageSize=500&filterBy=status&value=pending for release', {
-              method: 'GET',
-              headers: {
-                authorization: token,
-              },
-            })
-              .then(res => res.json())
-              .then(releaseData => {
-                if (releaseData.status) {
-                  const poList = result.data.po;
-                  const releaseItems = releaseData.items.filter(item => item.receivingPlant === user.site);
-                  let remainingPoItems = poList.filter(poItem => !releaseItems.some(releaseItem => releaseItem.po === poItem.po));
-                  setPoList(remainingPoItems);
-                } else {
-                  setPoList(result.data.po);
-                }
-              })
-              .catch(error => {
-                console.log(error);
-                Toast.show({
-                  type: 'customError',
-                  text1: error.message,
-                });
-              });
+            const poData = result.data.po;
+            setPoList([...poData, {
+              po: "3000000011",
+              createdOnSAP: "20240420",
+              supplyingPlant: "",
+              receivingPlant: "DK11",
+              sku: 2
+            }]);
           } else {
             Toast.show({
               type: 'customError',
@@ -136,10 +120,58 @@ const Receiving = ({ navigation }) => {
     toast(`Loading time: ${time.toFixed(2)} Seconds`);
   };
 
+  const checkPo = async (po) => {
+    try {
+      await fetch(API_URL + 'bapi/po/released', {
+        method: 'POST',
+        headers: {
+          authorization: token,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ po }),
+      })
+        .then(response => response.json())
+        .then(result => {
+          if (result.status) {
+            if (result.data.poReleasedStatus) {
+              navigation.replace('PurchaseOrder', { po_id: po });
+            } else {
+              Toast.show({
+                type: 'customError',
+                text1: result.data.poReleased,
+              });
+            }
+          } else {
+            Toast.show({
+              type: 'customError',
+              text1: result.message.trim(),
+            });
+          }
+        })
+        .catch(error => {
+          Toast.show({
+            type: 'customError',
+            text1: error.message,
+          });
+        });
+    } catch (error) {
+      Toast.show({
+        type: 'customError',
+        text1: error.message,
+      });
+    }
+  };
+
+  const getPoDetails = async (po) => {
+    setIsCheckingPo(true);
+    await checkPo(po);
+    setIsCheckingPo(false);
+  };
+
   if (barcode !== '') {
     const poItem = poList.find(item => item.po === barcode);
     if (poItem) {
-      navigation.replace('PurchaseOrder', { po_id: barcode });
+      getPoDetails(barcode);
     } else {
       Toast.show({
         type: 'customInfo',
@@ -152,7 +184,7 @@ const Receiving = ({ navigation }) => {
   const renderItem = ({ item, index }) => (
     <>
       {pressMode === 'true' ? (
-        <TouchableOpacity onPress={() => navigation.replace('PurchaseOrder', { po_id: item.po })}>
+        <TouchableOpacity onPress={() => getPoDetails(item.po)}>
           <View
             key={index}
             className="flex-row border border-tb rounded-lg mt-2.5 p-4"
@@ -205,7 +237,7 @@ const Receiving = ({ navigation }) => {
   if (poList.length === 0) {
     return (
       <View className="w-full h-screen justify-center px-3">
-        <ServerError message="No data found!" />
+        <ServerError message="No PO found!" />
         <View className="button w-1/4 mx-auto mt-4">
           <Button
             title="Retry"
@@ -218,62 +250,69 @@ const Receiving = ({ navigation }) => {
 
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">
-      <View className="flex-1 px-4">
-        <View className="screen-header flex-row items-center justify-center mb-4">
-          {pressMode === 'true' ? (
-            <TouchableHighlight onPress={() => null}>
+      {isCheckingPo ? (
+        <View className="w-full h-screen justify-center px-3">
+          <ActivityIndicator size="large" color="#EB4B50" />
+          <Text className="mt-4 text-gray-400 text-base text-center">Checking po. Please wait......</Text>
+        </View>
+      ) : (
+        <View className="flex-1 px-4">
+          <View className="screen-header flex-row items-center justify-center mb-4">
+            {pressMode === 'true' ? (
+              <TouchableHighlight onPress={() => null}>
+                <Text className="text-lg text-sh font-semibold capitalize">
+                  receiving screen
+                </Text>
+              </TouchableHighlight>
+            ) : (
               <Text className="text-lg text-sh font-semibold capitalize">
                 receiving screen
               </Text>
-            </TouchableHighlight>
-          ) : (
-            <Text className="text-lg text-sh font-semibold capitalize">
-              receiving screen
-            </Text>
-          )}
-        </View>
+            )}
+          </View>
 
-        {/* Search filter */}
-        <View className="search flex-row">
-          <View className="input-box relative flex-1">
-            <TextInput
-              className="bg-[#F5F6FA] h-[50px] text-black rounded-lg px-4"
-              placeholder="Search by purchase order"
-              keyboardType="phone-pad"
-              placeholderTextColor="#CBC9D9"
-              selectionColor="#CBC9D9"
-              // autoFocus={pressMode === 'true' ? true : false}
-              onChangeText={value => setSearch(value)}
-              value={search}
-            />
-          </View>
-        </View>
-        <View className="content flex-1 justify-between py-5">
-          <View className="table h-full pb-2">
-            <View className="flex-row bg-th text-center mb-2 py-2">
-              {tableHeader.map(th => (
-                <Text className="flex-1 text-white text-center font-bold" key={th}>
-                  {th}
-                </Text>
-              ))}
+          {/* Search filter */}
+          <View className="search flex-row">
+            <View className="input-box relative flex-1">
+              <TextInput
+                className="bg-[#F5F6FA] h-[50px] text-black rounded-lg px-4"
+                placeholder="Search by purchase order"
+                keyboardType="phone-pad"
+                placeholderTextColor="#CBC9D9"
+                selectionColor="#CBC9D9"
+                // autoFocus={pressMode === 'true' ? true : false}
+                onChangeText={value => setSearch(value)}
+                value={search}
+              />
             </View>
-            <FlatList
-              data={poList}
-              renderItem={renderItem}
-              keyExtractor={item => item.po}
-              initialNumToRender={10}
-              refreshControl={
-                <RefreshControl
-                  colors={["#fff"]}
-                  onRefresh={onRefresh}
-                  progressBackgroundColor="#000"
-                  refreshing={refreshing}
-                />
-              }
-            />
+          </View>
+          <View className="content flex-1 justify-between py-5">
+            <View className="table h-full pb-2">
+              <View className="flex-row bg-th text-center mb-2 py-2">
+                {tableHeader.map(th => (
+                  <Text className="flex-1 text-white text-center font-bold" key={th}>
+                    {th}
+                  </Text>
+                ))}
+              </View>
+              <FlatList
+                data={poList}
+                renderItem={renderItem}
+                keyExtractor={item => item.po}
+                initialNumToRender={10}
+                refreshControl={
+                  <RefreshControl
+                    colors={["#fff"]}
+                    onRefresh={onRefresh}
+                    progressBackgroundColor="#000"
+                    refreshing={refreshing}
+                  />
+                }
+              />
+            </View>
           </View>
         </View>
-      </View>
+      )}
       <CustomToast />
     </SafeAreaView>
   );

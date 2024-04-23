@@ -58,13 +58,17 @@ const BinDetails = ({ navigation, route }) => {
     }
   }
 
+  const getBinsInfo = async () => {
+    setIsLoading(true);
+    await getBins(code);
+    setIsLoading(false);
+  }
+
   useEffect(() => {
-    if (token && code) {
-      setIsLoading(true);
-      getBins(code);
-      setIsLoading(false);
+    if (token && route.params) {
+      getBinsInfo();
     }
-  }, [token, code]);
+  }, [token, route.params]);
 
   useEffect(() => {
     startScan();
@@ -199,7 +203,7 @@ const BinDetails = ({ navigation, route }) => {
     setBarcode('');
   }
 
-  if (isLoading && bins.length === 0) {
+  if (isLoading) {
     return (
       <View className="w-full h-screen justify-center px-3">
         <ActivityIndicator size="large" color="#EB4B50" />
@@ -220,8 +224,6 @@ const BinDetails = ({ navigation, route }) => {
       </View>
     )
   }
-
-  console.log(!isLoading && bins.length > 0)
 
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">

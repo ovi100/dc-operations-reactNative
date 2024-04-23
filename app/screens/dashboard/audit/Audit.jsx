@@ -1,154 +1,145 @@
-import { useFocusEffect } from '@react-navigation/native';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
+  Image,
+  Keyboard,
   SafeAreaView,
   Text,
   TextInput,
   TouchableOpacity,
-  View
+  View,
 } from 'react-native';
+import Toast from 'react-native-toast-message';
+import CustomToast from '../../../../components/CustomToast';
+import { ButtonBack } from '../../../../components/buttons';
+import { BoxIcon, ClosedBoxIcon, EmptyBoxIcon } from '../../../../constant/icons';
 import { getStorage } from '../../../../hooks/useStorage';
 
-
-// components
-import Toast from 'react-native-toast-message';
-import ServerError from '../../../../components/animations/ServerError';
-import { ButtonBack } from '../../../../components/buttons';
-
-
 const Audit = ({ navigation }) => {
-  // states
   const [user, setUser] = useState(null);
   const [token, setToken] = useState('');
   const [shelveData, setShelveData] = useState([]);
+  const [searchResult, setSearchResult] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const API_URL = 'https://shwapnooperation.onrender.com/api/product-shelving/in-shelf?filterBy=site&';
+  const API_URL = 'https://shwapnooperation.onrender.com/api/inventory?filterBy=material&';
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     const getAsyncStorage = async () => {
-      await getStorage('token', setToken, 'string');
+      await getStorage('token', setToken);
       await getStorage('user', setUser, 'object');
-    }
+    };
     getAsyncStorage();
   }, []);
 
-  // custom functions
-  const makeOrganizedData = (data) => {
-    let organizedData = {};
+  const mergeQuantities = (data) => {
+    let mergedItems = {};
 
     data.forEach(item => {
-      item.inShelf.forEach(shelfItem => {
-        const key = shelfItem.gondola + shelfItem.bin + item.code;
+      const key = item.material + '_' + item.site;
 
-        if (organizedData[key]) {
-          organizedData[key].quantity += shelfItem.quantity;
-        } else {
-          organizedData[key] = {
-            key: shelfItem.gondola + shelfItem.bin + item.code,
-            code: item.code,
-            description: item.description,
-            quantity: shelfItem.quantity,
-            bin: shelfItem.bin,
-            gondola: shelfItem.gondola,
-          };
-        }
-      });
+      if (mergedItems[key]) {
+        mergedItems[key].quantity += item.quantity;
+        mergedItems[key].onHold += item.onHold;
+      } else {
+        mergedItems[key] = {
+          material: item.material,
+          description: item.description,
+          quantity: item.quantity,
+          onHold: item.onHold,
+          site: item.site,
+          bin: item.bin,
+          key: key,
+        };
+      }
     });
 
-    return Object.values(organizedData);
+    return Object.values(mergedItems);
   }
 
-  const getShelveData = async () => {
+  const fetchData = async () => {
+    setSearchResult(null);
+    setShelveData([]);
+    if (searchQuery.trim() === '') {
+      return;
+    }
+    setIsLoading(true);
+
     try {
-      setIsLoading(true);
-      await fetch(API_URL + `value=${user?.site}&pageSize=500`, {
+      const response = await fetch(API_URL + `value=${searchQuery}`, {
         method: 'GET',
         headers: {
           authorization: token,
           'Content-Type': 'application/json',
         },
-      })
-        .then(response => response.json())
-        .then(result => {
-          if (result.status) {
-            setShelveData(makeOrganizedData(result.items));
-            setIsLoading(false);
-          } else {
-            Toast.show({
-              type: 'customError',
-              text1: result.message,
-            });
-            setIsLoading(false);
-          }
-        })
-        .catch(error => {
-          Toast.show({
-            type: 'customError',
-            text1: error.message,
-          });
-          setIsLoading(false);
+      });
+
+      const data = await response.json();
+      if (data.status) {
+        const filteredData = data.items.filter(item => item.site === user.site);
+        setShelveData(filteredData);
+        const mergedData = mergeQuantities(filteredData);
+        setSearchResult(mergedData);
+      } else {
+        setSearchResult([]);
+        Toast.show({
+          type: 'customError',
+          text1: data.message,
         });
+      }
     } catch (error) {
       Toast.show({
         type: 'customError',
-        text1: error.message,
+        text1: data.message,
       });
+    } finally {
       setIsLoading(false);
+      Keyboard.dismiss();
     }
   };
 
-  useFocusEffect(
-    useCallback(() => {
-      if (token && user?.site) {
-        getShelveData();
-      }
-    }, [token, user?.site]),
+  const topHeader = () => (
+    <View className="border-gray-200 border-b  py-2 bg-th">
+      <View className={`flex-row justify-around  items-center px-3`}>
+        <Text className={` text-white  font-bold`}>Quantity</Text>
+        <Text className={` text-white  font-bold`}>Site</Text>
+      </View>
+    </View>
   );
 
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedProduct, setSelectedProduct] = useState(null);
-
-  const filteredData = shelveData.filter(item =>
-    item.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    item.code.toLowerCase().includes(searchQuery.toLowerCase())
+  const renderTopItem = ({ item }) => (
+    <View
+      className={`flex-row mx-2 justify-around  border-b border-gray-200 py-2 items-center`}>
+      <Text className={`px-2 text-black font-medium`}>{item.quantity}</Text>
+      <Text className={`px-2 text-black font-medium`}>{item.site}</Text>
+    </View>
   );
 
-  const renderItem = ({ item }) => (
-    <TouchableOpacity onPress={() => handleSelectProduct(item)}>
-      <Text className="text-black py-3 px-3  
-       rounded" >{item.code} - {item.description}</Text>
-    </TouchableOpacity>
+  const renderDetailedItem = ({ item }) => (
+    <View
+      className={`flex-row mx-2 justify-between  border-b border-gray-200 py-3 items-center`}>
+      <Text className={`px-2 text-sm text-black font-medium`}>{item.gondola}</Text>
+      <Text className={`px-2 text-sm text-black font-medium `}>{item.bin}</Text>
+      <Text className={`px-2 text-sm text-black font-medium w-16`}>
+        {item.quantity}
+      </Text>
+    </View>
   );
 
-  const handleSearchQuery = (e) => {
-    setSelectedProduct(null)
-    setSearchQuery(e)
-  }
+  const detailedHeader = () => (
+    <View className="border-gray-200 border-b  py-2 bg-th">
+      <View className={`flex-row justify-between  items-center px-2`}>
+        <Text className={`px-2 text-white  font-bold`}>Gondola</Text>
+        <Text className={`px2 text-white   font-bold`}>Bin</Text>
+        <Text className={`px-2 text-white  font-bold`}>Quantity</Text>
+      </View>
+    </View>
+  );
 
-  const handleSelectProduct = product => {
-    setSelectedProduct(product);
-    setSearchQuery(product.code)
+  const handleSearchQuery = e => {
+    setSearchQuery(e);
   };
-
-  if (isLoading) {
-    return (
-      <View className="w-full h-screen justify-center px-3">
-        <ActivityIndicator size="large" color="#EB4B50" />
-        <Text className="mt-4 text-gray-400 text-base text-center">Loading audit data. Please wait......</Text>
-      </View>
-    )
-  }
-
-  if (!shelveData || shelveData.length === 0) {
-    return (
-      <View className="h-3/4 flex-1 items-center justify-center">
-        <ServerError />
-        <Text className="text-sh text-lg">No data available</Text>
-      </View>
-    );
-  }
 
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">
@@ -156,58 +147,97 @@ const Audit = ({ navigation }) => {
         <View className="screen-header flex flex-row items-center justify-between mb-4">
           <ButtonBack navigation={navigation} />
           <Text className="text-lg text-sh text-center font-semibold capitalize">
-            Audit Screen
+            Audit
           </Text>
-          <Text className="invisible w-2"></Text>
+
+          <Text className="invisible mx-2"></Text>
         </View>
         <View style={{ flex: 1 }}>
+          <View className="flex flex-row justify-between  mb-4">
+            <TextInput
+              className="bg-[#F5F6FA] h-[50px] text-black rounded-lg px-4 flex-1  mr-2"
+              placeholder="Search Product by Code"
+              keyboardType="phone-pad"
+              placeholderTextColor="#CBC9D9"
+              selectionColor="#CBC9D9"
+              onChangeText={e => handleSearchQuery(e)}
+              value={searchQuery}
+            />
+            <TouchableOpacity
+              onPress={() => fetchData()}
+              className="bg-red-600 flex justify-center items-center px-6 rounded">
+              <Text className="text-white font-medium">SEARCH</Text>
+            </TouchableOpacity>
+          </View>
 
-          <TextInput
-            className="py-2 px-3 border mb-4 rounded-md text-slate-900 "
-            placeholderTextColor="#333"
-            placeholder="Search Product by code or name..."
-            onChangeText={(e) => handleSearchQuery(e)}
-            value={searchQuery}
-          />
+          {isLoading && (
+            <View className="w-full h-[500px] justify-center px-3">
+              <ActivityIndicator size="large" color="#EB4B50" />
+              <Text className="mt-4 text-gray-400 text-base text-center">
+                Loading audit data. Please wait......
+              </Text>
+            </View>
+          )}
 
+          {searchQuery && searchResult?.length > 0 && (
+            <View>
+              <View className="flex gap-3 justify-center items-center mt-2 mb-2">
+                <Text className="text-slate-500 font-medium text-sm bg-slate-100 px-3 py-1 rounded-full">
+                  {searchResult[0].material}
+                </Text>
+                <Text className="text-slate-900 font-medium text-xl">
+                  {searchResult[0].description}
+                </Text>
+              </View>
+              <View className="flex flex-row justify-start items-center gap-2  mt-4 mb-2">
+                <Image className="w-6 h-6" source={BoxIcon} />
+                <Text className="text-slate-800 font-medium text-base">
+                  Summary View
+                </Text>
+              </View>
+              <View className="border border-gray-600 rounded">
+                <FlatList
+                  data={searchResult}
+                  renderItem={renderTopItem}
+                  keyExtractor={item => item.key}
+                  ListHeaderComponent={topHeader}
+                />
+              </View>
 
-          {searchQuery && !selectedProduct &&
-            <View className="border border-gray-600 rounded">
-              <FlatList
-                data={filteredData}
-                renderItem={renderItem}
-                keyExtractor={item => item.key}
-                initialNumToRender={10}
-                keyboardShouldPersistTaps="always"
-              />
-            </View>}
-          {searchQuery && selectedProduct && (
-            <View className="p-4 shadow border-[0.5px  rounded-md text-slate-800">
-              <View className="mb-3 border-b-[0.5px]">
-                <Text className="text-slate-600 font-medium">Code:</Text>
-                <Text className="text-slate-800 text-2xl font-bold mb-3">{selectedProduct?.code}</Text>
+              <View className="flex flex-row justify-start items-center gap-2  mt-4 mb-2">
+                <Image className='w-6 h-6' source={BoxIcon} />
+                <Text className="text-slate-800 font-medium text-base">Detailed View</Text>
+
               </View>
-              <View className="mb-3 border-b-[0.5px]">
-                <Text className="text-slate-800 font-medium">Description:</Text>
-                <Text className="text-slate-800 text-2xl font-bold mb-3">{selectedProduct?.description}</Text>
-              </View>
-              <View className="mb-3 border-b-[0.5px]">
-                <Text className="text-slate-600 font-medium">Quantity:</Text>
-                <Text className="text-slate-800 text-2xl font-bold mb-3">{selectedProduct?.quantity}</Text>
-              </View>
-              <View className="mb-3 border-b-[0.5px]">
-                <Text className="text-slate-600 font-medium">Bin:</Text>
-                <Text className="text-slate-800 text-2xl font-bold mb-3">{selectedProduct?.bin}</Text>
-              </View>
-              <View className="mb-3 border-b-[0.5px]">
-                <Text className="text-slate-600 font-medium">Gondola:</Text>
-                <Text className="text-slate-800 text-2xl font-bold mb-3">{selectedProduct?.gondola}</Text>
+              <View className="border border-gray-600 rounded">
+                <FlatList
+                  data={shelveData}
+                  renderItem={renderDetailedItem}
+                  keyExtractor={item => {
+                    `${item.gondola} + ${item.bin} + ${item.quantity}`;
+                  }}
+                  ListHeaderComponent={detailedHeader}
+                />
               </View>
             </View>
           )}
-        </View>
 
+          {searchQuery && searchResult?.length <= 0 && (
+            <View className="flex justify-center items-center gap-3 mt-10">
+              <Image className='w-32 h-32' source={EmptyBoxIcon} />
+              <Text className="text-black text-lg font-medium">No Product found</Text>
+            </View>
+          )}
+
+          {searchResult === null && (
+            <View className="flex justify-center items-center gap-3 mt-10">
+              <Image className='w-32 h-32' source={ClosedBoxIcon} />
+              <Text className="text-black text-lg font-medium">Search and Audit Products</Text>
+            </View>
+          )}
+        </View>
       </View>
+      <CustomToast />
     </SafeAreaView>
   );
 };

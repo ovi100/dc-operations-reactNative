@@ -7,9 +7,11 @@ import CalendarIcon from './calendar-icon.png';
 import CameraIcon from './camera-icon.png';
 import ChildPackingIcon from './child-packing-icon.png';
 import CloseIcon from './close-icon.png';
+import ClosedBoxIcon from './closed-box-icon.png';
 import DeliveryNoteIcon from './delivery-note-icon.png';
 import DeliveryPlanIcon from './delivery-plan-icon.png';
 import EmailIcon from './email-icon.png';
+import EmptyBoxIcon from './empty-box-icon.png';
 import EyeInvisibleIcon from './eye-invisible-icon.png';
 import EyeVisibleIcon from './eye-visible-icon.png';
 import IdIcon from './id-icon.png';
@@ -37,11 +39,16 @@ export {
   ArrowLeftIcon,
   ArrowLeftWhiteIcon,
   AvatarImage,
-  BoxIcon, CalendarIcon, CameraIcon,
+  BoxIcon,
+  CalendarIcon,
+  CameraIcon,
   ChildPackingIcon,
-  CloseIcon, DeliveryNoteIcon,
+  CloseIcon,
+  ClosedBoxIcon,
+  DeliveryNoteIcon,
   DeliveryPlanIcon,
   EmailIcon,
+  EmptyBoxIcon,
   EyeInvisibleIcon,
   EyeVisibleIcon,
   IdIcon,

@@ -1,6 +1,6 @@
 {
   "name": "dcoperations",
-  "version": "0.0.1",
+  "version": "0.0.10",
   "private": true,
   "scripts": {
     "android": "react-native run-android",
@@ -20,7 +20,7 @@
     "lottie-react-native": "^6.6.0",
     "nativewind": "^2.0.11",
     "react": "18.2.0",
-    "react-native": "0.73.7",
+    "react-native": "0.74.0",
     "react-native-date-picker": "^5.0.1",
     "react-native-gesture-handler": "^2.14.1",
     "react-native-image-picker": "^5.3.1",

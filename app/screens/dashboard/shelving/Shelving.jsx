@@ -8,6 +8,7 @@ import {
   RefreshControl,
   SafeAreaView,
   Text,
+  TouchableOpacity,
   View
 } from 'react-native';
 import Toast from 'react-native-toast-message';
@@ -19,6 +20,7 @@ const Shelving = ({ navigation }) => {
   const isFocused = useIsFocused();
   const [isLoading, setIsLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [pressMode, setPressMode] = useState(false);
   const [token, setToken] = useState('');
   const [barcode, setBarcode] = useState('');
   let articles = [];
@@ -31,6 +33,7 @@ const Shelving = ({ navigation }) => {
   useEffect(() => {
     const getAsyncStorage = async () => {
       await getStorage('token', setToken, 'string');
+      await getStorage('pressMode', setPressMode);
     }
     getAsyncStorage();
   }, []);
@@ -200,30 +203,62 @@ const Shelving = ({ navigation }) => {
   }
 
   const renderItem = ({ item, index }) => (
-    <View
-      key={index}
-      className="flex-row items-center justify-between border border-tb rounded-lg mt-2.5 p-3">
-      <View className="w-[45%]">
-        <Text className="text-xs text-black" numberOfLines={1}>
-          {item.code}
-        </Text>
-        <Text className="w-36 text-black text-base mt-1" numberOfLines={2}>
-          {item.description}
-        </Text>
-      </View>
-      <View className="w-2/5">
-        {item.bins.length > 0 ? (
-          <Text
-            className="text-black text-center mb-1 last:mb-0"
-            numberOfLines={1}>
-            {item.bins[0].bin_id}
+    <>
+      {pressMode === 'true' ? (
+        <TouchableOpacity onPress={() => navigation.replace('BinDetails', item)}>
+          <View
+            key={index}
+            className="flex-row items-center justify-between border border-tb rounded-lg mt-2.5 p-3">
+            <View className="w-[45%]">
+              <Text className="text-xs text-black" numberOfLines={1}>
+                {item.code}
+              </Text>
+              <Text className="w-36 text-black text-base mt-1" numberOfLines={2}>
+                {item.description}
+              </Text>
+            </View>
+            <View className="w-2/5">
+              {item.bins.length > 0 ? (
+                <Text
+                  className="text-black text-center mb-1 last:mb-0"
+                  numberOfLines={1}>
+                  {item.bins[0].bin_id}
+                </Text>
+              ) : (<Text className="text-black text-center">No bin has been assigned</Text>)}
+            </View>
+            <Text className="w-[15%] text-black text-right" numberOfLines={1}>
+              {item.receivedQuantity}
+            </Text>
+          </View>
+        </TouchableOpacity>
+      ) : (
+        <View
+          key={index}
+          className="flex-row items-center justify-between border border-tb rounded-lg mt-2.5 p-3">
+          <View className="w-[45%]">
+            <Text className="text-xs text-black" numberOfLines={1}>
+              {item.code}
+            </Text>
+            <Text className="w-36 text-black text-base mt-1" numberOfLines={2}>
+              {item.description}
+            </Text>
+          </View>
+          <View className="w-2/5">
+            {item.bins.length > 0 ? (
+              <Text
+                className="text-black text-center mb-1 last:mb-0"
+                numberOfLines={1}>
+                {item.bins[0].bin_id}
+              </Text>
+            ) : (<Text className="text-black text-center">No bin has been assigned</Text>)}
+          </View>
+          <Text className="w-[15%] text-black text-right" numberOfLines={1}>
+            {item.receivedQuantity}
           </Text>
-        ) : (<Text className="text-black text-center">No bin has been assigned</Text>)}
-      </View>
-      <Text className="w-[15%] text-black text-right" numberOfLines={1}>
-        {item.receivedQuantity}
-      </Text>
-    </View>
+        </View>
+      )}
+    </>
+
   );
 
   if (isLoading && articles.length === 0) {

@@ -64,13 +64,7 @@ const Receiving = ({ navigation }) => {
         .then(async result => {
           if (result.status) {
             const poData = result.data.po;
-            setPoList([...poData, {
-              po: "3000000011",
-              createdOnSAP: "20240420",
-              supplyingPlant: "",
-              receivingPlant: "DK11",
-              sku: 2
-            }]);
+            setPoList(poData);
           } else {
             Toast.show({
               type: 'customError',
@@ -187,15 +181,15 @@ const Receiving = ({ navigation }) => {
         <TouchableOpacity onPress={() => getPoDetails(item.po)}>
           <View
             key={index}
-            className="flex-row border border-tb rounded-lg mt-2.5 p-4"
+            className="flex-row justify-around border border-tb rounded-lg mt-2.5 p-4"
           >
             <Text
-              className="flex-1 text-black text-center"
+              className="text-black text-center"
               numberOfLines={1} >
               {item.po}
             </Text>
             <Text
-              className="flex-1 text-black text-center"
+              className="text-black text-center"
               numberOfLines={1}>
               {item.sku}
             </Text>
@@ -204,15 +198,15 @@ const Receiving = ({ navigation }) => {
       ) : (
         <View
           key={index}
-          className="flex-row border border-tb rounded-lg mt-2.5 p-4"
+          className="flex-row justify-around border border-tb rounded-lg mt-2.5 p-4"
         >
           <Text
-            className="flex-1 text-black text-center"
+            className="text-black text-center"
             numberOfLines={1} >
             {item.po}
           </Text>
           <Text
-            className="flex-1 text-black text-center"
+            className="text-black text-center"
             numberOfLines={1}>
             {item.sku}
           </Text>
@@ -288,9 +282,9 @@ const Receiving = ({ navigation }) => {
           </View>
           <View className="content flex-1 justify-between py-5">
             <View className="table h-full pb-2">
-              <View className="flex-row bg-th text-center mb-2 py-2">
+              <View className="flex-row justify-around bg-gray-400 mb-2 px-3 py-2">
                 {tableHeader.map(th => (
-                  <Text className="flex-1 text-white text-center font-bold" key={th}>
+                  <Text className="text-white font-bold" key={th}>
                     {th}
                   </Text>
                 ))}

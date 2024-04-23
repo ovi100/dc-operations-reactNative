@@ -2,8 +2,8 @@ import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   DeviceEventEmitter, FlatList,
+  RefreshControl,
   SafeAreaView, Text, TouchableHighlight, TouchableOpacity, View
 } from 'react-native';
 import Toast from 'react-native-toast-message';
@@ -16,23 +16,26 @@ import { toast } from '../../../../utils';
 import SunmiScanner from '../../../../utils/sunmi/scanner';
 
 const PurchaseOrder = ({ navigation, route }) => {
+  const { po_id } = route.params;
   const { startScan, stopScan } = SunmiScanner;
   const [isLoading, setIsLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [isButtonLoading, setIsButtonLoading] = useState(false);
   const [dialogVisible, setDialogVisible] = useState(false);
   const [pressMode, setPressMode] = useState(false);
   const [barcode, setBarcode] = useState('');
+  const [user, setUser] = useState({});
   const [token, setToken] = useState('');
   const [articles, setArticles] = useState([]);
   const tableHeader = ['Article Code', 'Article Name', 'Quantity'];
   const API_URL = 'https://shwapnooperation.onrender.com/';
-  const { po_id } = route.params;
   const { GRNInfo } = useAppContext();
   const { grnItems, setGrnItems } = GRNInfo;
 
   useEffect(() => {
     const getAsyncStorage = async () => {
-      await getStorage('token', setToken, 'string');
+      await getStorage('token', setToken);
+      await getStorage('user', setUser, 'object');
       await getStorage('pressMode', setPressMode);
     }
     getAsyncStorage();
@@ -50,7 +53,7 @@ const PurchaseOrder = ({ navigation, route }) => {
     };
   }, []);
 
-  const getPoList = async () => {
+  const getPoDetails = async () => {
     await fetch(API_URL + 'bapi/po/display', {
       method: 'POST',
       headers: {
@@ -117,22 +120,33 @@ const PurchaseOrder = ({ navigation, route }) => {
       });
   };
 
+  const getPoInfo = async () => {
+    const start = performance.now();
+    setIsLoading(true);
+    await getPoDetails();
+    setIsLoading(false);
+    const end = performance.now();
+    const time = (end - start) / 1000
+    toast(`Loading time: ${time.toFixed(2)} Seconds`);
+  }
+
   useFocusEffect(
     useCallback(() => {
-      const getPoInfo = async () => {
-        const start = performance.now();
-        setIsLoading(true);
-        await getPoList();
-        setIsLoading(false);
-        const end = performance.now();
-        const time = (end - start) / 1000
-        toast(`Loading time: ${time.toFixed(2)} Seconds`);
-      }
       if (token && po_id) {
         getPoInfo();
       }
     }, [token, po_id]),
   );
+
+  const onRefresh = async () => {
+    const start = performance.now();
+    setRefreshing(true);
+    await getPoDetails();
+    setRefreshing(false);
+    const end = performance.now();
+    const time = (end - start) / 1000
+    toast(`Refreshing time: ${time.toFixed(2)} Seconds`);
+  };
 
   const renderItem = ({ item, index }) => (
     <>
@@ -235,58 +249,34 @@ const PurchaseOrder = ({ navigation, route }) => {
 
   const GRNByPo = grnItems.filter(grnItem => grnItem.po == po_id);
 
-  const createGRN = async (grnList) => {
+  const generateGRN = async (grnList) => {
     setDialogVisible(false);
     setIsButtonLoading(true);
+
+    let postData = {
+      po: po_id,
+      status: 'pending for grn',
+      createdBy: user._id,
+      grnData: grnList
+    };
     try {
-      await fetch(API_URL + 'bapi/grn/from-po/create', {
+      await fetch(API_URL + 'api/grn/pending-for-grn', {
         method: 'POST',
         headers: {
           authorization: token,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(grnList),
+        body: JSON.stringify(postData),
       })
         .then(response => response.json())
-        .then(async result => {
-          if (result.message === `Purchasing document ${po_id} not yet released`) {
-            await fetch(API_URL + 'api/po-tracking', {
-              method: 'PATCH',
-              headers: {
-                authorization: token,
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                po: po_id,
-                status: "pending for release"
-              }),
-            })
-              .then(response => response.json())
-              .then(data => {
-                if (data.status) {
-                  setGrnItems([]);
-                  Toast.show({
-                    type: 'customSuccess',
-                    text1: result.message,
-                  });
-                  setIsButtonLoading(false);
-                  setTimeout(() => {
-                    navigation.navigate('Receiving');
-                  }, 1800);
-                } else {
-                  Toast.show({
-                    type: 'customError',
-                    text1: data.message,
-                  });
-                }
-              })
-              .catch(error => {
-                Toast.show({
-                  type: 'customError',
-                  text1: error.message,
-                });
-                setIsButtonLoading(false);
-              });
+        .then(result => {
+          if (result.status) {
+            Toast.show({
+              type: 'customSuccess',
+              text1: result.message,
+            });
+            setGrnItems([]);
+            setIsButtonLoading(false);
           } else {
             Toast.show({
               type: 'customError',
@@ -355,7 +345,15 @@ const PurchaseOrder = ({ navigation, route }) => {
                   data={articles}
                   renderItem={renderItem}
                   keyExtractor={item => item.material}
-                  initialNumToRender={15}
+                  initialNumToRender={10}
+                  refreshControl={
+                    <RefreshControl
+                      colors={["#fff"]}
+                      onRefresh={onRefresh}
+                      progressBackgroundColor="#000"
+                      refreshing={refreshing}
+                    />
+                  }
                 />
               )}
 
@@ -365,7 +363,7 @@ const PurchaseOrder = ({ navigation, route }) => {
                 {isButtonLoading ? <ButtonLoading styles='bg-theme rounded-md p-5' /> :
                   <ButtonLg
                     title="Generate GRN"
-                    onPress={() => Alert.alert('Generate GRN')}
+                    onPress={() => setDialogVisible(true)}
                   />
                 }
               </View>
@@ -377,9 +375,9 @@ const PurchaseOrder = ({ navigation, route }) => {
       <Dialog
         isOpen={dialogVisible}
         modalHeader="Are you sure?"
-        modalSubHeader="GRN will be created"
+        modalSubHeader="GRN will be generated"
         onClose={() => setDialogVisible(false)}
-        onSubmit={() => createGRN(GRNByPo)}
+        onSubmit={() => generateGRN(GRNByPo)}
         leftButtonText="cancel"
         rightButtonText="proceed"
       />

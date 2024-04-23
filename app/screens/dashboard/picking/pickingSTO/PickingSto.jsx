@@ -3,9 +3,9 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, DeviceEventEmitter, FlatList, SafeAreaView, Text, View } from 'react-native';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../../components/CustomToast';
+import ServerError from '../../../../../components/animations/ServerError';
 import { getStorage } from '../../../../../hooks/useStorage';
 import SunmiScanner from '../../../../../utils/sunmi/scanner';
-import ServerError from '../../../../../components/animations/ServerError';
 
 const PickingSto = ({ navigation, route }) => {
   const { sto, picker, pickerId, packer, packerId } = route.params;
@@ -145,7 +145,7 @@ const PickingSto = ({ navigation, route }) => {
             console.log('updating sto tracking', data);
             Toast.show({
               type: 'customSuccess',
-              text1: result.message,
+              text1: data.message,
             });
           } else {
             Toast.show({
@@ -299,8 +299,8 @@ const PickingSto = ({ navigation, route }) => {
     <SafeAreaView className="flex-1 bg-white pt-8">
       <View className="flex-1 h-full px-2">
         <View className="screen-header flex-row items-center mb-4">
-          <Text className="flex-1 text-lg text-sh text-center font-semibold capitalize">
-            picking {' ' + sto}
+          <Text className="flex-1 text-lg text-sh text-center font-semibold">
+            Picking STO  {sto}
           </Text>
         </View>
         <View className="content flex-1 justify-around mt-5 mb-6">

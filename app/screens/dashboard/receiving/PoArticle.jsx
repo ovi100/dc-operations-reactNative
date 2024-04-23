@@ -5,13 +5,13 @@ import {
   TouchableOpacity,
   TouchableWithoutFeedback, View
 } from 'react-native';
+import DatePicker from 'react-native-date-picker';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
 import { ButtonLg, ButtonLoading } from '../../../../components/buttons';
 import { BoxIcon, CalendarIcon } from '../../../../constant/icons';
 import useAppContext from '../../../../hooks/useAppContext';
 import { getStorage } from '../../../../hooks/useStorage';
-import DatePicker from 'react-native-date-picker'
 
 const PoArticle = ({ navigation, route }) => {
   const {
@@ -32,7 +32,10 @@ const PoArticle = ({ navigation, route }) => {
   const [openDatePicker, setOpenDatePicker] = useState(false)
 
   useEffect(() => {
-    getStorage('token', setToken, 'string');
+    const getAsyncStorage = async () => {
+      await getStorage('token', setToken);
+    };
+    getAsyncStorage();
   }, []);
 
   useEffect(() => {
@@ -147,7 +150,7 @@ const PoArticle = ({ navigation, route }) => {
     )
   }
 
-  console.log(expiryDate, batchNo);
+  // console.log(expiryDate, batchNo);
 
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">
@@ -198,35 +201,46 @@ const PoArticle = ({ navigation, route }) => {
           </View>
         </View>
 
-        {/* Product Box */}
-        <View className="product-box bg-[#FEFBFB] border border-[#F2EFEF] rounded mt-3 p-5">
+        {/* Product Date */}
+        <View className="product-date bg-[#FEFBFB] border border-[#F2EFEF] rounded mt-3 p-5">
           <View className="box-header flex-row items-center justify-between">
             <View>
-              <Text className="text-xl text-[#2E2C3B] font-medium capitalize">
-                #Batch No.
+              <Text className="text-base text-[#2E2C3B] font-medium capitalize">
+                expiry date
               </Text>
             </View>
-            <View className="date-picker">
-              <TouchableOpacity onPress={() => setOpenDatePicker(true)}>
-                <View className="flex-row items-center bg-black rounded-md p-2">
-                  <Image className="w-6 h-6 mr-3" source={CalendarIcon} />
-                  <Text className="font-bold text-white">Select Expiry Date</Text>
-                </View>
-              </TouchableOpacity>
-              <DatePicker
-                theme='dark'
-                modal
-                title="Expiry Date"
-                minimumDate={new Date()}
-                open={openDatePicker}
-                mode='date'
-                date={expiryDate}
-                onConfirm={(date) => {
-                  setOpenDatePicker(false)
-                  setExpiryDate(date)
-                }}
-                onCancel={() => setOpenDatePicker(false)}
-              />
+          </View>
+          <View className="date-picker mt-6">
+            <TouchableOpacity onPress={() => setOpenDatePicker(true)}>
+              <View className="flex-row items-center justify-center bg-green-600 rounded-md p-4">
+                <Image className="w-7 h-7 mr-3" source={CalendarIcon} />
+                <Text className="text-lg font-bold text-white capitalize">select expiry date</Text>
+              </View>
+            </TouchableOpacity>
+            <DatePicker
+              theme='auto'
+              modal
+              title="Expiry Date"
+              minimumDate={new Date()}
+              open={openDatePicker}
+              mode='date'
+              date={expiryDate}
+              onConfirm={(date) => {
+                setOpenDatePicker(false)
+                setExpiryDate(date)
+              }}
+              onCancel={() => setOpenDatePicker(false)}
+            />
+          </View>
+        </View>
+
+        {/* Product Batch */}
+        <View className="product-batch bg-[#FEFBFB] border border-[#F2EFEF] rounded mt-3 p-5">
+          <View className="box-header flex-row items-center justify-between">
+            <View>
+              <Text className="text-base text-[#2E2C3B] font-medium capitalize">
+                batch no.
+              </Text>
             </View>
           </View>
           <View className="input-box mt-6">

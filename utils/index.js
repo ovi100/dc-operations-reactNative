@@ -44,13 +44,15 @@ const uniqueArrayOfObjects = (arr, prop) => {
   return unique;
 };
 
-const groupBy = (array, type) => {
+const groupBy = (array, key) => {
   return array.reduce((acc, obj) => {
-    const key = obj[type];
-    if (!acc[key]) {
-      acc[key] = [];
+    if (obj.hasOwnProperty(key)) {
+      const groupKey = obj[key];
+      acc[groupKey] = acc[groupKey] || [];
+      acc[groupKey].push(obj);
+    } else {
+      return null;
     }
-    acc[key].push(obj);
     return acc;
   }, {});
 };

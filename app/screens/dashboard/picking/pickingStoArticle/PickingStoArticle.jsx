@@ -14,46 +14,47 @@ const PickingStoArticle = ({ navigation, route }) => {
   const API_URL = 'https://shwapnooperation.onrender.com/api/article-tracking/update';
 
   useEffect(() => {
-    getStorage('token', setToken, 'string');
+    const getAsyncStorage = async () => {
+      await getStorage('token', setToken);
+      // await getStorage('user', setUser, 'object');
+    }
+    getAsyncStorage();
   }, []);
 
-  const updateArticleTracking = async () => {
+  const addToArticleTracking = async () => {
     let articleTrackingInfo = {
       sto,
+      code: article.material,
+      quantity: article.quantity,
+      name: article.description,
       inboundPicker: picker,
       inboundPickerId: pickerId,
       inboundPacker: packer,
       inboundPackerId: packerId,
-      pickedQuantity,
+      inboundPickedQuantity: pickedQuantity,
+      inboundPickingStartingTime: new Date(),
       inboundPickingEndingTime: new Date(),
-      status: 'inbound picked'
+      status: quantity === Number(pickedQuantity) ? 'inbound picked' : 'partially inbound picked'
     };
 
     console.log('article tracking post data', articleTrackingInfo);
 
     try {
-      await fetch(API_URL, {
-        method: 'PATCH',
+      await fetch(API_URL + 'api/article-tracking', {
+        method: 'POST',
         headers: {
           authorization: token,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(articleTrackingInfo),
+        body: JSON.stringify(postData),
       })
         .then(response => response.json())
-        .then(data => {
-          console.log('updating article tracking', data);
-          if (data.status) {
-            Toast.show({
-              type: 'customSuccess',
-              text1: data.message,
-            });
-          } else {
-            Toast.show({
-              type: 'customError',
-              text1: data.message,
-            });
-          }
+        .then(result => {
+          console.log('article post tracking response', result)
+          Toast.show({
+            type: 'customInfo',
+            text1: result.message,
+          });
         })
         .catch(error => {
           Toast.show({
@@ -66,19 +67,17 @@ const PickingStoArticle = ({ navigation, route }) => {
         type: 'customError',
         text1: error.message,
       });
-    } Toast.show({
-      type: 'customError',
-      text1: error.message,
-    });
-  };
-  const addToArticleTracking = async () => {
+    }
+  }
+
+  const postPickedArticle = async () => {
     if (pickedQuantity > quantity) {
       Toast.show({
         type: 'customWarn',
         text1: 'Quantity exceed',
       });
     } else {
-      await updateArticleTracking();
+      await addToArticleTracking();
     }
   };
 
@@ -133,7 +132,7 @@ const PickingStoArticle = ({ navigation, route }) => {
 
         <View className="button mt-3">
           {isButtonLoading ? <ButtonLoading styles='bg-theme rounded-md p-5' /> :
-            <ButtonLg title="Mark as Picked" onPress={() => addToArticleTracking()} />
+            <ButtonLg title="Mark as Picked" onPress={() => postPickedArticle()} />
           }
 
         </View>

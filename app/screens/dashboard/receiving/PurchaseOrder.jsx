@@ -85,17 +85,24 @@ const PurchaseOrder = ({ navigation, route }) => {
                   if (matchedShItem) {
                     return {
                       ...poItem,
-                      quantity: poItem.quantity - matchedShItem.receivedQuantity,
+                      remainingQuantity: poItem.quantity - matchedShItem.receivedQuantity
                     };
                   } else {
-                    return poItem;
+                    return {
+                      ...poItem,
+                      remainingQuantity: poItem.quantity
+                    };
                   }
-                }).filter(item => item.quantity !== 0);
-                // remainingPoItems = remainingPoItems.filter(item => item.quantity !== 0);
+                }).filter(item => item.remainingQuantity !== 0);
                 setArticles(remainingPoItems);
               }
               else {
-                let poItems = result.data.items;
+                let poItems = result.data.items.map(item => {
+                  return {
+                    ...item,
+                    remainingQuantity: item.quantity
+                  };
+                });
                 setArticles(poItems);
               }
             })
@@ -169,7 +176,7 @@ const PurchaseOrder = ({ navigation, route }) => {
             <Text
               className="w-1/5 text-black text-center"
               numberOfLines={1}>
-              {item.quantity}
+              {item.remainingQuantity}
             </Text>
           </View>
         </TouchableOpacity>
@@ -247,7 +254,7 @@ const PurchaseOrder = ({ navigation, route }) => {
     getArticleBarcode(barcode);
   }
 
-  const GRNByPo = grnItems.filter(grnItem => grnItem.po == po_id);
+  const GRNByPo = grnItems.filter(grnItem => grnItem.po === po_id);
 
   const generateGRN = async (grnList) => {
     setDialogVisible(false);
@@ -259,6 +266,7 @@ const PurchaseOrder = ({ navigation, route }) => {
       createdBy: user._id,
       grnData: grnList
     };
+
     try {
       await fetch(API_URL + 'api/grn/pending-for-grn', {
         method: 'POST',
@@ -328,7 +336,7 @@ const PurchaseOrder = ({ navigation, route }) => {
         </View>
         <View className="content">
           <>
-            <View className={`table ${GRNByPo.length > 0 ? 'h-[84vh]' : 'h-[92vh]'}`}>
+            <View className={`table ${GRNByPo.length > 0 ? 'h-[80vh]' : 'h-[92vh]'}`}>
               <View className="flex-row justify-between bg-th text-center mb-2 p-2">
                 {tableHeader.map(th => (
                   <Text className="text-white text-center font-bold" key={th}>
@@ -359,7 +367,7 @@ const PurchaseOrder = ({ navigation, route }) => {
 
             </View>
             {Boolean(GRNByPo.length) && (
-              <View className="button">
+              <View className="button mt-5">
                 {isButtonLoading ? <ButtonLoading styles='bg-theme rounded-md p-5' /> :
                   <ButtonLg
                     title="Generate GRN"

@@ -4,13 +4,9 @@ import { toast } from '../utils';
 const useGRN = () => {
   const [grnItems, setGrnItems] = useState([]);
 
-  // useEffect(() => {
-  //   setStorage('grnItems', grnItems);
-  // }, [setGrnItems]);
-
   const addToGRN = article => {
     const index = grnItems.findIndex(
-      item => item.po && item.material === article.po && article.material,
+      item => item.po === article.po && item.material === article.material,
     );
 
     if (index === -1) {
@@ -21,7 +17,7 @@ const useGRN = () => {
       let message = 'Item updated in GRN list';
       toast(message);
       const newItems = [...grnItems];
-      newItems[index] = {...article};
+      newItems[index].quantity = newItems[index].quantity + article.quantity;
       setGrnItems(newItems);
     }
   };

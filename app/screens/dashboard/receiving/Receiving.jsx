@@ -22,6 +22,7 @@ const Receiving = ({ navigation }) => {
   const [token, setToken] = useState('');
   const [barcode, setBarcode] = useState('');
   let [poList, setPoList] = useState([]);
+  const [errorMessage, setErrorMessage] = useState('');
   const [search, setSearch] = useState('');
   const tableHeader = ['Purchase Order ID', 'SKU'];
   const API_URL = 'https://shwapnooperation.onrender.com/';
@@ -61,15 +62,16 @@ const Receiving = ({ navigation }) => {
         body: JSON.stringify(postObject),
       })
         .then(response => response.json())
-        .then(async result => {
+        .then(result => {
           if (result.status) {
             const poData = result.data.po;
             setPoList(poData);
           } else {
             Toast.show({
               type: 'customError',
-              text1: error.message,
+              text1: result.message,
             });
+            setErrorMessage(result.message);
           }
         })
         .catch(error => {
@@ -231,7 +233,7 @@ const Receiving = ({ navigation }) => {
   if (poList.length === 0) {
     return (
       <View className="w-full h-screen justify-center px-3">
-        <ServerError message="No PO found!" />
+        <ServerError message={errorMessage} />
         <View className="button w-1/4 mx-auto mt-4">
           <Button
             title="Retry"

@@ -16,12 +16,12 @@ import { getStorage } from '../../../../hooks/useStorage';
 const PoArticle = ({ navigation, route }) => {
   const {
     description, material, po, poItem, quantity,
-    receivingPlant, storageLocation, unit
+    remainingQuantity, receivingPlant, storageLocation, unit
   } = route.params;
   const [isLoading, setIsLoading] = useState(false);
   const [isButtonLoading, setIsButtonLoading] = useState(false);
   const [bins, setBins] = useState([]);
-  const [newQuantity, setNewQuantity] = useState(quantity);
+  const [newQuantity, setNewQuantity] = useState(remainingQuantity);
   const [batchNo, setBatchNo] = useState('');
   const [token, setToken] = useState('');
   const { GRNInfo, authInfo } = useAppContext();
@@ -46,7 +46,7 @@ const PoArticle = ({ navigation, route }) => {
         .then(result => {
           if (result.status) {
             let binsData = result.bins.map(result => {
-              return { bin_id: result.bin_ID, gondola_id: result.gondola_ID };
+              return { bin_id: result.bin_ID, gondola_id: result.gondola_ID ? result.gondola_ID : "NA" };
             });
             setBins(binsData);
             setIsLoading(false);
@@ -63,7 +63,7 @@ const PoArticle = ({ navigation, route }) => {
   }, [material, user.site]);
 
   const readyForShelve = async () => {
-    if (newQuantity > quantity) {
+    if (newQuantity > remainingQuantity) {
       Toast.show({
         type: 'customWarn',
         text1: 'Quantity exceed',
@@ -95,6 +95,8 @@ const PoArticle = ({ navigation, route }) => {
         bins,
       };
 
+      console.log(shelvingObject);
+
       try {
         setIsButtonLoading(true);
         await fetch(API_URL + 'product-shelving/ready', {
@@ -107,6 +109,7 @@ const PoArticle = ({ navigation, route }) => {
         })
           .then(response => response.json())
           .then(data => {
+            console.log(data);
             if (data.status) {
               Toast.show({
                 type: 'customSuccess',
@@ -183,7 +186,7 @@ const PoArticle = ({ navigation, route }) => {
             </View>
             <View className="quantity flex-row items-center gap-3">
               <Image source={BoxIcon} />
-              <Text className="font-bold text-black">{quantity}</Text>
+              <Text className="font-bold text-black">{remainingQuantity}</Text>
             </View>
           </View>
           <View className="input-box mt-6">

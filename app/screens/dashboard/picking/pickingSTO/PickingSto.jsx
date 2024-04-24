@@ -84,51 +84,6 @@ const PickingSto = ({ navigation, route }) => {
     }, [token, sto]),
   );
 
-  const addToArticleTracking = async (article) => {
-    let postData = {
-      sto,
-      code: article.material,
-      quantity: article.quantity,
-      name: article.description,
-      picker,
-      pickerId,
-      packer,
-      packerId,
-      pickingStartingTime: new Date(),
-      status: 'inbound picking',
-    };
-
-    try {
-      await fetch(API_URL + 'api/article-tracking', {
-        method: 'POST',
-        headers: {
-          authorization: token,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(postData),
-      })
-        .then(response => response.json())
-        .then(result => {
-          console.log('article post tracking response', result)
-          Toast.show({
-            type: 'customInfo',
-            text1: result.message,
-          });
-        })
-        .catch(error => {
-          Toast.show({
-            type: 'customError',
-            text1: error.message,
-          });
-        });
-    } catch (error) {
-      Toast.show({
-        type: 'customError',
-        text1: error.message,
-      });
-    }
-  }
-
   const updateStoTracking = async (updateInfo) => {
     try {
       await fetch(API_URL + 'api/sto-tracking/update', {
@@ -215,7 +170,6 @@ const PickingSto = ({ navigation, route }) => {
                   };
                   updateStoTracking(stoTrackingInfo);
                 }
-                addToArticleTracking(article);
                 setIsFirstItem(false);
                 navigation.replace('PickingStoArticle', { ...article, picker, pickerId, packer, packerId });
               } else {

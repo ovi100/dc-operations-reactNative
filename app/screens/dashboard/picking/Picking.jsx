@@ -10,7 +10,7 @@ const Picking = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [user, setUser] = useState({});
-  const [stoTrackingInfo, setStoTrackingInfo] = useState({});
+  // const [stoTrackingInfo, setStoTrackingInfo] = useState({});
   const [token, setToken] = useState('');
   const [assignedData, setAssignedData] = useState([]);
   const tableHeader = ['STO', 'SKU', 'Outlet Code', 'Status'];
@@ -18,9 +18,9 @@ const Picking = ({ navigation }) => {
 
   useEffect(() => {
     const getAsyncStorage = async () => {
-      await getStorage('token', setToken, 'string');
+      await getStorage('token', setToken);
       await getStorage('user', setUser, 'object');
-      await getStorage('stoTrackingInfo', setStoTrackingInfo, 'object');
+      // await getStorage('stoTrackingInfo', setStoTrackingInfo, 'object');
     }
     getAsyncStorage();
   }, []);
@@ -122,7 +122,9 @@ const Picking = ({ navigation }) => {
     </TouchableOpacity>
   );
 
-  const notPicked = assignedData.filter(item => item.status === 'picker assigned' || item.status === 'picker packer assigned');
+  const checkStatus = ['picker assigned', 'picker packer assigned', 'inbound picking'];
+
+  const notPicked = assignedData.filter(item => checkStatus.some(status => status === item.status));
   const picked = assignedData.filter(item => item.status === 'picked');
 
   let tabInfo = [

@@ -3,7 +3,7 @@ import { toast } from '../utils';
 
 const useStoTracking = () => {
   const [stoItems, setStoItems] = useState([]);
-  const [countSKU, setCountSKU] = useState([]);
+  const [countStoSKU, setCountStoSKU] = useState([]);
   const [isFirstStoItem, setIsFirstStoItem] = useState(true);
 
   const addToSTO = article => {
@@ -16,7 +16,7 @@ const useStoTracking = () => {
       let message = 'Item added to STO list';
       toast(message);
       setStoItems([...stoItems, article]);
-      setCountSKU([...countSKU, {sto: article.sto, totalSKU: count++}]);
+      // setCountSKU([...countSKU, {sto: article.sto, totalSKU: count++}]);
       setIsFirstStoItem(false);
     } else {
       let message = 'Item updated in STO list';
@@ -27,12 +27,27 @@ const useStoTracking = () => {
     }
   };
 
+  const addToSTOCount = stoItem => {
+    const index = countStoSKU.findIndex(item => item.sto === stoItem.sto);
+
+    if (index === -1) {
+      let count = 0;
+      setCountStoSKU([...countStoSKU, {sto: stoItem.sto, totalSKU: count++}]);
+      setIsFirstStoItem(false);
+    } else {
+      const newItems = [...countStoSKU];
+      newItems[index].totalSKU = newItems[index].totalSKU + count++;
+      setStoItems(newItems);
+    }
+  };
+
   return {
     stoItems,
     setStoItems,
     addToSTO,
-    countSKU,
-    setCountSKU,
+    countStoSKU,
+    setCountStoSKU,
+    addToSTOCount,
     isFirstStoItem,
     setIsFirstStoItem,
   };

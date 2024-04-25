@@ -1,19 +1,18 @@
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, DeviceEventEmitter, FlatList, SafeAreaView, Text, View } from 'react-native';
+import { ActivityIndicator, DeviceEventEmitter, FlatList, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../../components/CustomToast';
 import ServerError from '../../../../../components/animations/ServerError';
-import { getStorage } from '../../../../../hooks/useStorage';
+import { getStorage, setStorage } from '../../../../../hooks/useStorage';
 import SunmiScanner from '../../../../../utils/sunmi/scanner';
 
 const PickingSto = ({ navigation, route }) => {
   const { sto, picker, pickerId, packer, packerId } = route.params;
   const [isLoading, setIsLoading] = useState(false);
-  // const [isTracking, setIsTracking] = useState(false);
-  const [isFirstItem, setIsFirstItem] = useState(true);
-  // const [countSKU, setCountSKU] = useState(1);
-  const [serverError, setServerError] = useState('');
+  const [isFirstStoItem, setIsFirstStoItem] = useState(true);
+  const [countSKU, setCountSKU] = useState(0);
+  const [pressMode, setPressMode] = useState(false);
   const [barcode, setBarcode] = useState('');
   const [token, setToken] = useState('');
   let [articles, setArticles] = useState([]);
@@ -23,10 +22,31 @@ const PickingSto = ({ navigation, route }) => {
   useEffect(() => {
     const getAsyncStorage = async () => {
       await getStorage('token', setToken);
-      // await getStorage('user', setUser, 'object');
+      await getStorage('pressMode', setPressMode);
     }
     getAsyncStorage();
   }, []);
+
+  //setting and getting isFirstStoItem from async storage
+  useEffect(() => {
+    setStorage(`isFirst${sto}Item`, String(isFirstStoItem));
+    const getFirstItemStatus = async () => {
+      try {
+        const value = await AsyncStorage.getItem(`isFirst${sto}Item`);
+        if (value === null || value === 'false') {
+          setIsFirstStoItem(false);
+        } else {
+          setIsFirstStoItem(true);
+        }
+      } catch (error) {
+        Toast.show({
+          type: 'customError',
+          text1: error.message,
+        });
+      }
+    };
+    getFirstItemStatus();
+  }, [isFirstStoItem]);
 
   useEffect(() => {
     startScan();
@@ -126,6 +146,23 @@ const PickingSto = ({ navigation, route }) => {
     });
   };
 
+  const postStoTracking = async (article) => {
+    let stoTrackingInfo = {
+      sto,
+      picker,
+      pickerId,
+      packer,
+      packerId,
+      pickedSku: countSKU++,
+      pickingStartingTime: new Date(),
+      pickingEndingTime: isFirstStoItem ? null : new Date(),
+      status: isFirstStoItem ? 'inbound picking' : 'inbound picked'
+    };
+    await updateStoTracking(stoTrackingInfo);
+    setIsFirstStoItem(false);
+    navigation.replace('PickingStoArticle', { ...article, picker, pickerId, packer, packerId });
+  };
+
   if (barcode !== '') {
     const getArticleBarcode = async (barcode) => {
       try {
@@ -143,35 +180,7 @@ const PickingSto = ({ navigation, route }) => {
               const article = articles.find(item => item.material === result.data.material);
 
               if (article && isValidBarcode) {
-                let countSKU = 1;
-                if (isFirstItem) {
-                  let stoTrackingInfo = {
-                    sto,
-                    picker,
-                    pickerId,
-                    packer,
-                    packerId,
-                    pickingStartingTime: new Date(),
-                    status: 'inbound picking'
-                  };
-                  updateStoTracking(stoTrackingInfo);
-                }
-
-                if (articles.length === 1) {
-                  let stoTrackingInfo = {
-                    sto,
-                    picker,
-                    pickerId,
-                    packer,
-                    packerId,
-                    pickedSku: countSKU,
-                    pickingEndingTime: new Date(),
-                    status: 'inbound picked',
-                  };
-                  updateStoTracking(stoTrackingInfo);
-                }
-                setIsFirstItem(false);
-                navigation.replace('PickingStoArticle', { ...article, picker, pickerId, packer, packerId });
+                postStoTracking(article);
               } else {
                 Toast.show({
                   type: 'customInfo',
@@ -205,27 +214,54 @@ const PickingSto = ({ navigation, route }) => {
   }
 
   const renderItem = ({ item, index }) => (
-    <View
-      key={index}
-      className="flex-row items-center justify-between bg-white border border-tb rounded-lg mt-2.5 p-4"
-    // style={{ elevation: 5 }}
-    >
-      <Text
-        className="w-1/5 text-black text-sm text-center"
-        numberOfLines={1}>
-        {item.material}
-      </Text>
-      <Text
-        className="w-3/5 text-black text-sm text-center"
-        numberOfLines={1}>
-        {item.description}
-      </Text>
-      <Text
-        className="w-1/5 text-black text-sm text-center"
-        numberOfLines={1}>
-        {item.quantity}
-      </Text>
-    </View>
+    <>
+      {pressMode === 'true' ? (
+        <TouchableOpacity onPress={() => postStoTracking(item)}>
+          <View
+            key={index}
+            className="flex-row items-center justify-between bg-white border border-tb rounded-lg mt-2.5 p-4"
+          >
+            <Text
+              className="w-1/5 text-black text-sm text-center"
+              numberOfLines={1}>
+              {item.material}
+            </Text>
+            <Text
+              className="w-3/5 text-black text-sm text-center"
+              numberOfLines={1}>
+              {item.description}
+            </Text>
+            <Text
+              className="w-1/5 text-black text-sm text-center pl-5"
+              numberOfLines={1}>
+              {item.quantity}
+            </Text>
+          </View>
+        </TouchableOpacity>
+      ) : (
+        <View
+          key={index}
+          className="flex-row items-center justify-between bg-white border border-tb rounded-lg mt-2.5 p-4"
+        >
+          <Text
+            className="w-1/5 text-black text-sm text-center"
+            numberOfLines={1}>
+            {item.material}
+          </Text>
+          <Text
+            className="w-3/5 text-black text-sm text-center"
+            numberOfLines={1}>
+            {item.description}
+          </Text>
+          <Text
+            className="w-1/5 text-black text-sm text-center pl-5"
+            numberOfLines={1}>
+            {item.quantity}
+          </Text>
+        </View>
+      )}
+    </>
+
   );
 
   if (isLoading && articles.length === 0) {

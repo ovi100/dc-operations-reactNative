@@ -115,7 +115,7 @@ const PurchaseOrder = ({ navigation, route }) => {
         } else {
           Toast.show({
             type: 'customError',
-            text1: error.message,
+            text1: result.message,
           });
         }
       })

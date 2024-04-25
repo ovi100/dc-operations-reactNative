@@ -1,39 +1,31 @@
-import { useFocusEffect, useIsFocused } from '@react-navigation/native';
-import React, { useCallback, useEffect, useState } from 'react';
+import { useIsFocused } from '@react-navigation/native';
+import React, { useEffect, useState } from 'react';
 import {
-  ActivityIndicator, Button, DeviceEventEmitter, FlatList,
-  RefreshControl,
-  SafeAreaView, Text, TextInput, TouchableHighlight, TouchableOpacity, View
+  ActivityIndicator,
+  DeviceEventEmitter,
+  SafeAreaView, Text, TextInput, TouchableHighlight,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
-import ServerError from '../../../../components/animations/ServerError';
+import Scan from '../../../../components/animations/Scan';
 import { getStorage } from '../../../../hooks/useStorage';
-import { dateRange, toast } from '../../../../utils';
 import SunmiScanner from '../../../../utils/sunmi/scanner';
 
 const Receiving = ({ navigation }) => {
   const isFocused = useIsFocused();
-  const [isLoading, setIsLoading] = useState(false);
   const [isCheckingPo, setIsCheckingPo] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
   const [pressMode, setPressMode] = useState(false);
-  const [user, setUser] = useState({});
   const [token, setToken] = useState('');
   const [barcode, setBarcode] = useState('');
-  let [poList, setPoList] = useState([]);
-  const [errorMessage, setErrorMessage] = useState('');
   const [search, setSearch] = useState('');
-  const tableHeader = ['Purchase Order ID', 'SKU'];
-  const API_URL = 'https://shwapnooperation.onrender.com/';
+  const API_URL = 'https://shwapnooperation.onrender.com/bapi/po/released';
   const { startScan, stopScan } = SunmiScanner;
-  const dateObject = dateRange(10);
-  const postObject = { ...dateObject, site: user.site };
 
   useEffect(() => {
     const getAsyncStorage = async () => {
       await getStorage('token', setToken);
-      await getStorage('user', setUser, 'object');
       await getStorage('pressMode', setPressMode);
     }
     getAsyncStorage();
@@ -51,97 +43,10 @@ const Receiving = ({ navigation }) => {
     };
   }, [isFocused]);
 
-  const getPoList = async () => {
-    try {
-      await fetch(API_URL + 'bapi/po/list', {
-        method: 'POST',
-        headers: {
-          authorization: token,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(postObject),
-      })
-        .then(response => response.json())
-        .then(async result => {
-          if (result.status) {
-            await fetch(API_URL + 'api/po-tracking?pageSize=500', {
-              method: 'GET',
-              headers: {
-                authorization: token,
-              },
-            })
-              .then(res => res.json())
-              .then(data => {
-                if (data.status) {
-                  const poData = result.data.po;
-                  const poNumbers = poData.map(item => item.po);
-                  const poTrackingItems = data.items.filter(trackingItem => poNumbers.some(poNumber => poNumber === trackingItem.po) && trackingItem.status === 'pending for grn');
-                  console.log('PO Tracking', poTrackingItems);
-                  setPoList(poData);
-                } else {
-                  const poData = result.data.po;
-                  setPoList(poData);
-                }
-              })
-              .catch(error => {
-                Toast.show({
-                  type: 'customError',
-                  text1: error.message,
-                });
-              });
-          } else {
-            Toast.show({
-              type: 'customError',
-              text1: result.message,
-            });
-            setErrorMessage(result.message);
-          }
-        })
-        .catch(error => {
-          Toast.show({
-            type: 'customError',
-            text1: error.message,
-          });
-        });
-    } catch (error) {
-      Toast.show({
-        type: 'customError',
-        text1: error.message,
-      });
-    }
-  };
-
-  const getPoData = async () => {
-    const start = performance.now();
-    setIsLoading(true);
-    await getPoList();
-    setIsLoading(false);
-    const end = performance.now();
-    const time = (end - start) / 1000
-    toast(`Loading time: ${time.toFixed(2)} Seconds`);
-  };
-
-  useFocusEffect(
-    useCallback(() => {
-      if (token && user.site) {
-        getPoData();
-      }
-    }, [token, user.site])
-  );
-
-  const onRefresh = async () => {
-    const start = performance.now();
-    setRefreshing(true);
-    await getPoList();
-    setRefreshing(false);
-    const end = performance.now();
-    const time = (end - start) / 1000
-    toast(`Loading time: ${time.toFixed(2)} Seconds`);
-  };
 
   const checkPo = async (po) => {
     try {
-      await fetch(API_URL + 'bapi/po/released', {
+      await fetch(API_URL, {
         method: 'POST',
         headers: {
           authorization: token,
@@ -153,11 +58,11 @@ const Receiving = ({ navigation }) => {
         .then(result => {
           if (result.status) {
             if (result.data.poReleasedStatus) {
-              navigation.replace('PurchaseOrder', { po_id: po });
+              navigation.push('PurchaseOrder', { po_id: po });
             } else {
               Toast.show({
                 type: 'customError',
-                text1: result.data.poReleased,
+                text1: "PO not released",
               });
             }
           } else {
@@ -187,151 +92,93 @@ const Receiving = ({ navigation }) => {
     setIsCheckingPo(false);
   };
 
-  if (barcode !== '') {
-    const poItem = poList.find(item => item.po === barcode);
-    if (poItem) {
-      getPoDetails(barcode);
-    } else {
+  const searchPo = async (po) => {
+    if (!po) {
       Toast.show({
-        type: 'customInfo',
-        text1: 'PO not found!',
+        type: 'customError',
+        text1: 'Please enter a PO number',
+      });
+      setBarcode('');
+      setSearch('');
+    } else if (po.length !== 10) {
+      Toast.show({
+        type: 'customError',
+        text1: 'Enter 10 digit PO number',
       });
     }
+    else {
+      await getPoDetails(po);
+      setBarcode('');
+      setSearch('');
+    }
+  };
+
+  if (barcode !== '') {
+    getPoDetails(barcode);
     setBarcode('');
-  }
-
-  const renderItem = ({ item, index }) => (
-    <>
-      {pressMode === 'true' ? (
-        <TouchableOpacity onPress={() => getPoDetails(item.po)}>
-          <View
-            key={index}
-            className="flex-row justify-around border border-tb rounded-lg mt-2.5 p-4"
-          >
-            <Text
-              className="text-black text-center"
-              numberOfLines={1} >
-              {item.po}
-            </Text>
-            <Text
-              className="text-black text-center"
-              numberOfLines={1}>
-              {item.sku}
-            </Text>
-          </View>
-        </TouchableOpacity>
-      ) : (
-        <View
-          key={index}
-          className="flex-row justify-around border border-tb rounded-lg mt-2.5 p-4"
-        >
-          <Text
-            className="text-black text-center"
-            numberOfLines={1} >
-            {item.po}
-          </Text>
-          <Text
-            className="text-black text-center"
-            numberOfLines={1}>
-            {item.sku}
-          </Text>
-        </View>
-      )}
-    </>
-  );
-
-  if (search !== '') {
-    poList = poList.filter(item => item.po.includes(search.toLowerCase()));
-  }
-
-  if (isLoading) {
-    return (
-      <View className="w-full h-screen justify-center px-3">
-        <ActivityIndicator size="large" color="#EB4B50" />
-        <Text className="mt-4 text-gray-400 text-base text-center">Loading po list. Please wait......</Text>
-      </View>
-    )
-  }
-
-  if (poList.length === 0) {
-    return (
-      <View className="w-full h-screen justify-center px-3">
-        <ServerError message={errorMessage} />
-        <View className="button w-1/4 mx-auto mt-4">
-          <Button
-            title="Retry"
-            onPress={() => getPoData()}
-          />
-        </View>
-      </View>
-    )
+    setSearch('');
   }
 
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">
-      {isCheckingPo ? (
-        <View className="w-full h-screen justify-center px-3">
-          <ActivityIndicator size="large" color="#EB4B50" />
-          <Text className="mt-4 text-gray-400 text-base text-center">Checking po. Please wait......</Text>
-        </View>
-      ) : (
-        <View className="flex-1 px-4">
-          <View className="screen-header flex-row items-center justify-center mb-4">
-            {pressMode === 'true' ? (
-              <TouchableHighlight onPress={() => null}>
-                <Text className="text-lg text-sh font-semibold capitalize">
-                  receiving screen
-                </Text>
-              </TouchableHighlight>
-            ) : (
+      <View className="flex-1 px-4">
+        <View className="screen-header flex-row items-center justify-center mb-4">
+          {pressMode === 'true' ? (
+            <TouchableHighlight onPress={() => null}>
               <Text className="text-lg text-sh font-semibold capitalize">
                 receiving screen
               </Text>
-            )}
-          </View>
+            </TouchableHighlight>
+          ) : (
+            <Text className="text-lg text-sh font-semibold capitalize">
+              receiving screen
+            </Text>
+          )}
+        </View>
 
-          {/* Search filter */}
-          <View className="search flex-row">
-            <View className="input-box relative flex-1">
-              <TextInput
-                className="bg-[#F5F6FA] h-[50px] text-black rounded-lg px-4"
-                placeholder="Search by purchase order"
-                keyboardType="phone-pad"
-                placeholderTextColor="#CBC9D9"
-                selectionColor="#CBC9D9"
-                // autoFocus={pressMode === 'true' ? true : false}
-                onChangeText={value => setSearch(value)}
-                value={search}
-              />
-            </View>
+        {/* Search Box */}
+        <View className="search flex-row z-0">
+          <View className="input-box w-4/5">
+            <TextInput
+              className="bg-[#F5F6FA] text-black rounded-bl-lg rounded-tl-lg px-4"
+              placeholder="Search by purchase order"
+              keyboardType="phone-pad"
+              placeholderTextColor="#CBC9D9"
+              selectionColor="#CBC9D9"
+              onChangeText={value => setSearch(value)}
+              value={search}
+            />
           </View>
-          <View className="content flex-1 justify-between py-5">
-            <View className="table h-full pb-2">
-              <View className="flex-row justify-around bg-gray-400 mb-2 px-3 py-2">
-                {tableHeader.map(th => (
-                  <Text className="text-white font-bold" key={th}>
-                    {th}
-                  </Text>
-                ))}
-              </View>
-              <FlatList
-                data={poList}
-                renderItem={renderItem}
-                keyExtractor={item => item.po}
-                initialNumToRender={10}
-                refreshControl={
-                  <RefreshControl
-                    colors={["#fff"]}
-                    onRefresh={onRefresh}
-                    progressBackgroundColor="#000"
-                    refreshing={refreshing}
-                  />
-                }
-              />
-            </View>
+          <View className="button w-1/5">
+            <TouchableOpacity onPress={() => searchPo(search)}>
+              <Text className="text-base bg-blue-600 text-white text-center rounded-tr-lg rounded-br-lg font-semibold py-3">
+                search
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
-      )}
+        <View className="content flex-1 justify-center">
+          {isCheckingPo ? (
+            <View className="flex-1 justify-center">
+              <ActivityIndicator size="large" color="#EB4B50" />
+              <Text className="mt-4 text-gray-400 text-base text-center">Checking po number</Text>
+            </View>
+          ) : (
+            <View className="">
+              <Scan />
+              <Text className="text-lg text-gray-400 text-center font-semibold">
+                Scan a PO barcode
+              </Text>
+              <Text className="text-2xl text-gray-400 text-center font-semibold my-5">
+                OR
+              </Text>
+              <Text className="text-lg text-gray-400 text-center font-semibold">
+                Search by a PO number
+              </Text>
+            </View>
+          )}
+        </View>
+      </View>
       <CustomToast />
     </SafeAreaView>
   );

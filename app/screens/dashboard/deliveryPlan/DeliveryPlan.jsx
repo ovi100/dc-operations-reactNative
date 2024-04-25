@@ -40,7 +40,7 @@ const DeliveryPlan = ({ navigation }) => {
   const [search, setSearch] = useState('');
   const tableHeader = ['STO ID', 'SKU', 'Outlet Code'];
   const API_URL = 'https://shwapnooperation.onrender.com/';
-  const dateObject = dateRange(15);
+  const dateObject = dateRange(10);
   const { from, to } = dateObject;
 
   useEffect(() => {

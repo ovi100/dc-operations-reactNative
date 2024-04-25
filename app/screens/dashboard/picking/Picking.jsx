@@ -66,10 +66,10 @@ const Picking = ({ navigation }) => {
 
   useFocusEffect(
     useCallback(() => {
-      if (token && user?.site) {
+      if (token && user.site) {
         getAssignedTask();
       }
-    }, [token, user?.site])
+    }, [token, user.site])
   );
 
   const onRefresh = async () => {

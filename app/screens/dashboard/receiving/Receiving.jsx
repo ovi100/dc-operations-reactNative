@@ -27,7 +27,7 @@ const Receiving = ({ navigation }) => {
   const tableHeader = ['Purchase Order ID', 'SKU'];
   const API_URL = 'https://shwapnooperation.onrender.com/';
   const { startScan, stopScan } = SunmiScanner;
-  const dateObject = dateRange(7);
+  const dateObject = dateRange(10);
   const postObject = { ...dateObject, site: user.site };
 
   useEffect(() => {
@@ -62,10 +62,33 @@ const Receiving = ({ navigation }) => {
         body: JSON.stringify(postObject),
       })
         .then(response => response.json())
-        .then(result => {
+        .then(async result => {
           if (result.status) {
-            const poData = result.data.po;
-            setPoList(poData);
+            await fetch(API_URL + 'api/po-tracking?pageSize=500', {
+              method: 'GET',
+              headers: {
+                authorization: token,
+              },
+            })
+              .then(res => res.json())
+              .then(data => {
+                if (data.status) {
+                  const poData = result.data.po;
+                  const poNumbers = poData.map(item => item.po);
+                  const poTrackingItems = data.items.filter(trackingItem => poNumbers.some(poNumber => poNumber === trackingItem.po) && trackingItem.status === 'pending for grn');
+                  console.log('PO Tracking', poTrackingItems);
+                  setPoList(poData);
+                } else {
+                  const poData = result.data.po;
+                  setPoList(poData);
+                }
+              })
+              .catch(error => {
+                Toast.show({
+                  type: 'customError',
+                  text1: error.message,
+                });
+              });
           } else {
             Toast.show({
               type: 'customError',

@@ -17,7 +17,7 @@ const PickingSto = ({ navigation, route }) => {
   let [articles, setArticles] = useState([]);
   const API_URL = 'https://shwapnooperation.onrender.com/';
   const { startScan, stopScan } = SunmiScanner;
-  const { totalSKU, setTotalSKU } = useStoTracking();
+  const { stoItems, totalSKU, setTotalSKU } = useStoTracking();
 
   useEffect(() => {
     const getAsyncStorage = async () => {
@@ -26,6 +26,8 @@ const PickingSto = ({ navigation, route }) => {
     }
     getAsyncStorage();
   }, []);
+
+  console.log('STO Items', stoItems);
 
   useEffect(() => {
     startScan();

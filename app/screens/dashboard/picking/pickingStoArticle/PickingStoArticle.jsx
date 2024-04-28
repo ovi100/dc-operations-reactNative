@@ -5,20 +5,19 @@ import CustomToast from '../../../../../components/CustomToast';
 import { ButtonBack, ButtonLg, ButtonLoading } from '../../../../../components/buttons';
 import { BoxIcon } from '../../../../../constant/icons';
 import useStoTracking from '../../../../../hooks/useStoTracking';
-import { getStorage, setStorage } from '../../../../../hooks/useStorage';
+import { getStorage } from '../../../../../hooks/useStorage';
 
 const PickingStoArticle = ({ navigation, route }) => {
   const { sto, material, description, quantity, picker, pickerId, packer, packerId } = route.params;
   const [isButtonLoading, setIsButtonLoading] = useState(false);
-  const [isFirstStoItem, setIsFirstStoItem] = useState(null);
+  const [isFirstStoItem, setIsFirstStoItem] = useState(true);
   const [pickedSKU, setPickedSKU] = useState(0);
   const [token, setToken] = useState('');
   const [pickedQuantity, setPickedQuantity] = useState(quantity);
-  const { addToSTO, countSKU } = useStoTracking();
+  const { addToSTO } = useStoTracking();
   const API_URL = 'https://shwapnooperation.onrender.com/api/';
 
   useEffect(() => {
-    setStorage(`isFirst${sto}Item`, String(isFirstStoItem));
     const getAsyncStorage = async () => {
       await getStorage('token', setToken);
     }
@@ -65,20 +64,7 @@ const PickingStoArticle = ({ navigation, route }) => {
     getStoTracking();
   }, []);
 
-  const stoSkuCount = countSKU.find(item => item.sto === sto);
-  console.log('STO Sku Count', stoSkuCount)
-
   const postStoTracking = async () => {
-    const article = {
-      sto,
-      material,
-      description,
-      quantity,
-      picker,
-      pickerId,
-      packer,
-      packerId,
-    };
     let stoTrackingInfo = {
       sto,
       picker,
@@ -108,7 +94,6 @@ const PickingStoArticle = ({ navigation, route }) => {
               type: 'customSuccess',
               text1: data.message,
             });
-            addToSTO(article);
           } else {
             Toast.show({
               type: 'customError',
@@ -183,10 +168,23 @@ const PickingStoArticle = ({ navigation, route }) => {
         text1: 'Quantity exceed',
       });
     } else {
+      const article = {
+        sto,
+        material,
+        description,
+        quantity,
+        pickedQuantity,
+        picker,
+        pickerId,
+        packer,
+        packerId,
+      };
       setIsButtonLoading(true);
       await postStoTracking();
       await addToArticleTracking();
+      addToSTO(article);
       setIsButtonLoading(false);
+      navigation.goBack();
     }
   };
 

@@ -11,14 +11,14 @@ const useGRN = () => {
 
     if (index === -1) {
       let message = 'Item added to GRN list';
-      toast(message);
       setGrnItems([...grnItems, article]);
+      toast(message);
     } else {
       let message = 'Item updated in GRN list';
-      toast(message);
       const newItems = [...grnItems];
       newItems[index].quantity = newItems[index].quantity + article.quantity;
       setGrnItems(newItems);
+      toast(message);
     }
   };
 

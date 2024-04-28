@@ -29,7 +29,6 @@ const SiteChoose = ({ navigation }) => {
         .then(response => response.json())
         .then(result => {
           if (result.status) {
-            console.log('site response', result);
             setSites(result.sites);
             setIsLoading(false);
           } else {

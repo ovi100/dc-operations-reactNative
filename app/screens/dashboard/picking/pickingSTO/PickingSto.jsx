@@ -4,20 +4,20 @@ import { ActivityIndicator, DeviceEventEmitter, FlatList, SafeAreaView, Text, To
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../../components/CustomToast';
 import ServerError from '../../../../../components/animations/ServerError';
-import { getStorage, setStorage } from '../../../../../hooks/useStorage';
+import useStoTracking from '../../../../../hooks/useStoTracking';
+import { getStorage } from '../../../../../hooks/useStorage';
 import SunmiScanner from '../../../../../utils/sunmi/scanner';
 
 const PickingSto = ({ navigation, route }) => {
   const { sto, picker, pickerId, packer, packerId } = route.params;
   const [isLoading, setIsLoading] = useState(false);
-  const [isFirstStoItem, setIsFirstStoItem] = useState(true);
-  const [countSKU, setCountSKU] = useState(0);
   const [pressMode, setPressMode] = useState(false);
   const [barcode, setBarcode] = useState('');
   const [token, setToken] = useState('');
   let [articles, setArticles] = useState([]);
   const API_URL = 'https://shwapnooperation.onrender.com/';
   const { startScan, stopScan } = SunmiScanner;
+  const { totalSKU, setTotalSKU } = useStoTracking();
 
   useEffect(() => {
     const getAsyncStorage = async () => {
@@ -26,27 +26,6 @@ const PickingSto = ({ navigation, route }) => {
     }
     getAsyncStorage();
   }, []);
-
-  //setting and getting isFirstStoItem from async storage
-  useEffect(() => {
-    setStorage(`isFirst${sto}Item`, String(isFirstStoItem));
-    const getFirstItemStatus = async () => {
-      try {
-        const value = await AsyncStorage.getItem(`isFirst${sto}Item`);
-        if (value === null || value === 'false') {
-          setIsFirstStoItem(false);
-        } else {
-          setIsFirstStoItem(true);
-        }
-      } catch (error) {
-        Toast.show({
-          type: 'customError',
-          text1: error.message,
-        });
-      }
-    };
-    getFirstItemStatus();
-  }, [isFirstStoItem]);
 
   useEffect(() => {
     startScan();
@@ -73,9 +52,9 @@ const PickingSto = ({ navigation, route }) => {
       })
         .then(response => response.json())
         .then(result => {
-          console.log(result);
           if (result.status) {
             setArticles(result.data.items);
+            setTotalSKU([...totalSKU, { sto, total: result.data.items.length }]);
             setIsLoading(false);
           } else {
             setIsLoading(false);
@@ -104,63 +83,8 @@ const PickingSto = ({ navigation, route }) => {
     }, [token, sto]),
   );
 
-  const updateStoTracking = async (updateInfo) => {
-    try {
-      await fetch(API_URL + 'api/sto-tracking/update', {
-        method: 'PATCH',
-        headers: {
-          authorization: token,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(updateInfo),
-      })
-        .then(response => response.json())
-        .then(data => {
-          if (data.status) {
-            console.log('updating sto tracking', data);
-            Toast.show({
-              type: 'customSuccess',
-              text1: data.message,
-            });
-          } else {
-            Toast.show({
-              type: 'customError',
-              text1: data.message,
-            });
-          }
-        })
-        .catch(error => {
-          Toast.show({
-            type: 'customError',
-            text1: error.message,
-          });
-        });
-    } catch (error) {
-      Toast.show({
-        type: 'customError',
-        text1: error.message,
-      });
-    } Toast.show({
-      type: 'customError',
-      text1: error.message,
-    });
-  };
-
-  const postStoTracking = async (article) => {
-    let stoTrackingInfo = {
-      sto,
-      picker,
-      pickerId,
-      packer,
-      packerId,
-      pickedSku: countSKU++,
-      pickingStartingTime: new Date(),
-      pickingEndingTime: isFirstStoItem ? null : new Date(),
-      status: isFirstStoItem ? 'inbound picking' : 'inbound picked'
-    };
-    await updateStoTracking(stoTrackingInfo);
-    setIsFirstStoItem(false);
-    navigation.replace('PickingStoArticle', { ...article, picker, pickerId, packer, packerId });
+  const goToStoArticle = async (article) => {
+    navigation.push('PickingStoArticle', { ...article, picker, pickerId, packer, packerId });
   };
 
   if (barcode !== '') {
@@ -180,7 +104,7 @@ const PickingSto = ({ navigation, route }) => {
               const article = articles.find(item => item.material === result.data.material);
 
               if (article && isValidBarcode) {
-                postStoTracking(article);
+                goToStoArticle(article);
               } else {
                 Toast.show({
                   type: 'customInfo',
@@ -216,7 +140,7 @@ const PickingSto = ({ navigation, route }) => {
   const renderItem = ({ item, index }) => (
     <>
       {pressMode === 'true' ? (
-        <TouchableOpacity onPress={() => postStoTracking(item)}>
+        <TouchableOpacity onPress={() => goToStoArticle(item)}>
           <View
             key={index}
             className="flex-row items-center justify-between bg-white border border-tb rounded-lg mt-2.5 p-4"

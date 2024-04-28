@@ -4,29 +4,138 @@ import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../../components/CustomToast';
 import { ButtonBack, ButtonLg, ButtonLoading } from '../../../../../components/buttons';
 import { BoxIcon } from '../../../../../constant/icons';
-import { getStorage } from '../../../../../hooks/useStorage';
+import useStoTracking from '../../../../../hooks/useStoTracking';
+import { getStorage, setStorage } from '../../../../../hooks/useStorage';
 
 const PickingStoArticle = ({ navigation, route }) => {
-  const [isButtonLoading, setIsButtonLoading] = useState(false);
-  const [token, setToken] = useState('');
   const { sto, material, description, quantity, picker, pickerId, packer, packerId } = route.params;
+  const [isButtonLoading, setIsButtonLoading] = useState(false);
+  const [isFirstStoItem, setIsFirstStoItem] = useState(null);
+  const [pickedSKU, setPickedSKU] = useState(0);
+  const [token, setToken] = useState('');
   const [pickedQuantity, setPickedQuantity] = useState(quantity);
-  const API_URL = 'https://shwapnooperation.onrender.com/api/article-tracking/update';
+  const { addToSTO, countSKU } = useStoTracking();
+  const API_URL = 'https://shwapnooperation.onrender.com/api/';
 
   useEffect(() => {
+    setStorage(`isFirst${sto}Item`, String(isFirstStoItem));
     const getAsyncStorage = async () => {
       await getStorage('token', setToken);
-      // await getStorage('user', setUser, 'object');
     }
     getAsyncStorage();
   }, []);
 
+  const getStoTracking = async () => {
+    try {
+      await fetch(API_URL + `sto-tracking?filterBy=sto&value=${sto}`, {
+        method: 'GET',
+        headers: {
+          authorization: token,
+          'Content-Type': 'application/json',
+        },
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.status) {
+            if (data.items[0].sku === data.items[0].pickedSku || data.items[0].pickedSku >= 1) {
+              setIsFirstStoItem(false);
+            } else {
+              setIsFirstStoItem(true);
+            }
+            setPickedSKU(prev => prev + Number(data.items[0].pickedSku));
+          } else {
+            setIsFirstStoItem(true);
+          }
+        })
+        .catch(error => {
+          Toast.show({
+            type: 'customError',
+            text1: error.message,
+          });
+        });
+    } catch (error) {
+      Toast.show({
+        type: 'customError',
+        text1: error.message,
+      });
+    }
+  };
+
+  useEffect(() => {
+    getStoTracking();
+  }, []);
+
+  const stoSkuCount = countSKU.find(item => item.sto === sto);
+  console.log('STO Sku Count', stoSkuCount)
+
+  const postStoTracking = async () => {
+    const article = {
+      sto,
+      material,
+      description,
+      quantity,
+      picker,
+      pickerId,
+      packer,
+      packerId,
+    };
+    let stoTrackingInfo = {
+      sto,
+      picker,
+      pickerId,
+      packer,
+      packerId,
+      pickedSku: pickedSKU,
+      pickingStartingTime: new Date(),
+    };
+    if (isFirstStoItem) {
+      stoTrackingInfo.status = 'inbound picking';
+    }
+
+    try {
+      await fetch(API_URL + 'sto-tracking/update', {
+        method: 'PATCH',
+        headers: {
+          authorization: token,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(stoTrackingInfo),
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.status) {
+            Toast.show({
+              type: 'customSuccess',
+              text1: data.message,
+            });
+            addToSTO(article);
+          } else {
+            Toast.show({
+              type: 'customError',
+              text1: data.message,
+            });
+          }
+        })
+        .catch(error => {
+          Toast.show({
+            type: 'customError',
+            text1: error.message,
+          });
+        });
+    } catch (error) {
+      Toast.show({
+        type: 'customError',
+        text1: error.message,
+      });
+    }
+  };
+
   const addToArticleTracking = async () => {
     let articleTrackingInfo = {
       sto,
-      code: article.material,
-      quantity: article.quantity,
-      name: article.description,
+      code: material,
+      quantity: quantity,
+      name: description,
       inboundPicker: picker,
       inboundPickerId: pickerId,
       inboundPacker: packer,
@@ -37,20 +146,17 @@ const PickingStoArticle = ({ navigation, route }) => {
       status: quantity === Number(pickedQuantity) ? 'inbound picked' : 'partially inbound picked'
     };
 
-    console.log('article tracking post data', articleTrackingInfo);
-
     try {
-      await fetch(API_URL + 'api/article-tracking', {
+      await fetch(API_URL + 'article-tracking', {
         method: 'POST',
         headers: {
           authorization: token,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(postData),
+        body: JSON.stringify(articleTrackingInfo),
       })
         .then(response => response.json())
         .then(result => {
-          console.log('article post tracking response', result)
           Toast.show({
             type: 'customInfo',
             text1: result.message,
@@ -77,7 +183,10 @@ const PickingStoArticle = ({ navigation, route }) => {
         text1: 'Quantity exceed',
       });
     } else {
+      setIsButtonLoading(true);
+      await postStoTracking();
       await addToArticleTracking();
+      setIsButtonLoading(false);
     }
   };
 

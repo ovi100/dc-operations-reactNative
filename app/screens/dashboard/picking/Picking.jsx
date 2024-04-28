@@ -84,7 +84,7 @@ const Picking = ({ navigation }) => {
     <TouchableOpacity
       className="flex-row items-center border border-tb rounded-lg mt-2.5 p-4"
       key={index}
-      onPress={() => navigation.replace('PickingSto', item)}
+      onPress={() => navigation.push('PickingSto', item)}
     >
       <Text className="flex-1 text-black text-center" numberOfLines={1}>
         {item.sto.slice(0, 2) + '...' + item.sto.slice(7, item.sto.length)}

@@ -4,9 +4,9 @@ import { ActivityIndicator, DeviceEventEmitter, FlatList, SafeAreaView, Text, To
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../../components/CustomToast';
 import ServerError from '../../../../../components/animations/ServerError';
-import useStoTracking from '../../../../../hooks/useStoTracking';
 import { getStorage } from '../../../../../hooks/useStorage';
 import SunmiScanner from '../../../../../utils/sunmi/scanner';
+import useAppContext from '../../../../../hooks/useAppContext';
 
 const PickingSto = ({ navigation, route }) => {
   const { sto, picker, pickerId, packer, packerId } = route.params;
@@ -17,17 +17,21 @@ const PickingSto = ({ navigation, route }) => {
   let [articles, setArticles] = useState([]);
   const API_URL = 'https://shwapnooperation.onrender.com/';
   const { startScan, stopScan } = SunmiScanner;
-  const { stoItems, totalSKU, setTotalSKU } = useStoTracking();
+  const { STOInfo } = useAppContext();
+  const { addToTotalSku } = STOInfo;
+
+  const [stoTrackingInfo, setStoTrackingInfo] = useState(null);
 
   useEffect(() => {
     const getAsyncStorage = async () => {
       await getStorage('token', setToken);
       await getStorage('pressMode', setPressMode);
+      await getStorage('stoTrackingInfo', setStoTrackingInfo, 'object');
     }
     getAsyncStorage();
-  }, []);
+  }, [navigation.isFocused()]);
 
-  console.log('STO Items', stoItems);
+  console.log('sto tracking AS info', stoTrackingInfo);
 
   useEffect(() => {
     startScan();
@@ -50,13 +54,14 @@ const PickingSto = ({ navigation, route }) => {
           authorization: token,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ sto: sto }),
+        body: JSON.stringify({ sto }),
       })
         .then(response => response.json())
         .then(result => {
           if (result.status) {
-            setArticles(result.data.items);
-            setTotalSKU([...totalSKU, { sto, total: result.data.items.length }]);
+            const stoData = result.data.items;
+            setArticles(stoData);
+            addToTotalSku({ sto, totalSku: stoData.length });
             setIsLoading(false);
           } else {
             setIsLoading(false);
@@ -134,7 +139,6 @@ const PickingSto = ({ navigation, route }) => {
           text1: error.message,
         });
       }
-      // setIsTracking(false);
     };
     getArticleBarcode(barcode);
   }
@@ -187,7 +191,6 @@ const PickingSto = ({ navigation, route }) => {
         </View>
       )}
     </>
-
   );
 
   if (isLoading && articles.length === 0) {

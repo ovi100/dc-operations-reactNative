@@ -21,13 +21,11 @@ const useActivity = () => {
 
       if (response.ok) {
         const responseData = await response.json();
-        console.log(responseData);
       } else {
         console.error('Failed to submit form');
         setError('There is a problem with the server!');
       }
     } catch (error) {
-      console.error(error);
       setError('There is a problem with the server!');
     } finally {
       setLoading(false);

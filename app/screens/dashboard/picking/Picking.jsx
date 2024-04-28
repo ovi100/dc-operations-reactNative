@@ -10,7 +10,6 @@ const Picking = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [user, setUser] = useState({});
-  // const [stoTrackingInfo, setStoTrackingInfo] = useState({});
   const [token, setToken] = useState('');
   const [assignedData, setAssignedData] = useState([]);
   const tableHeader = ['STO', 'SKU', 'Outlet Code', 'Status'];
@@ -20,14 +19,13 @@ const Picking = ({ navigation }) => {
     const getAsyncStorage = async () => {
       await getStorage('token', setToken);
       await getStorage('user', setUser, 'object');
-      // await getStorage('stoTrackingInfo', setStoTrackingInfo, 'object');
     }
     getAsyncStorage();
   }, []);
 
   const getStoData = async () => {
     try {
-      await fetch(API_URL + `value=${user?.site}`, {
+      await fetch(API_URL + `value=${user.site}`, {
         method: 'GET',
         headers: {
           authorization: token,
@@ -140,7 +138,7 @@ const Picking = ({ navigation }) => {
       count: picked.length,
       icon: PickingIcon,
     },
-  ]
+  ];
 
   const [active, setActive] = useState(tabInfo[0]);
 
@@ -195,7 +193,7 @@ const Picking = ({ navigation }) => {
         </View>
 
         <View className="tab-content flex-1 justify-between py-5">
-          {active?.name === 'not picked' ? (
+          {active.name === 'not picked' && (
             <>
               {notPicked.length > 0 ? (
                 <View className="table h-full pb-2">
@@ -223,16 +221,16 @@ const Picking = ({ navigation }) => {
                 </View>
               ) : (
                 <View className="h-full justify-center pb-2">
-                  <Text className="text-lg font-bold text-center">
+                  <Text className="text-lg text-black font-bold text-center">
                     No item ready for picking
                   </Text>
                 </View>
               )}
             </>
 
-          ) : null}
+          )}
 
-          {active?.name === 'picked' ? (
+          {active.name === 'picked' && (
             <>
               {picked.length > 0 ? (
                 <View className="table h-full pb-2">
@@ -260,13 +258,13 @@ const Picking = ({ navigation }) => {
                 </View>
               ) : (
                 <View className="h-full justify-center pb-2">
-                  <Text className="text-lg font-bold text-center">
+                  <Text className="text-lg text-black font-bold text-center">
                     No item picked yet!
                   </Text>
                 </View>
               )}
             </>
-          ) : null}
+          )}
         </View>
       </View>
       <CustomToast />

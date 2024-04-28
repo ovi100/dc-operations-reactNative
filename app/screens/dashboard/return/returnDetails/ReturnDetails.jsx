@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { Image, SafeAreaView, Text, TextInput, View } from 'react-native';
 import { ButtonBack, ButtonLg } from '../../../../../components/buttons';
 import { BoxIcon } from '../../../../../constant/icons';
-import { toast } from '../../../../../utils';
+import Toast from 'react-native-toast-message';
+import CustomToast from '../../../../../components/CustomToast';
 
 const ReturnDetails = ({ navigation, route }) => {
   const { id, name, quantity } = route.params;
@@ -11,10 +12,26 @@ const ReturnDetails = ({ navigation, route }) => {
   console.log('Return--> Barcode --> article', route.params);
 
   const returnArticle = async () => {
-    if (newQuantity > quantity) {
-      toast('Quantity exceed');
+    if (!newQuantity) {
+      Toast.show({
+        type: 'customError',
+        text1: 'Enter Quantity',
+      });
+    } else if (newQuantity <= 0) {
+      Toast.show({
+        type: 'customWarn',
+        text1: 'Quantity must be greater than zero',
+      });
+    } else if (newQuantity > remainingQuantity) {
+      Toast.show({
+        type: 'customWarn',
+        text1: 'Quantity exceed',
+      });
     } else {
-      toast('returning successfully');
+      Toast.show({
+        type: 'customWarn',
+        text1: 'Returning successfully',
+      });
       navigation.goBack();
     }
   };
@@ -72,6 +89,7 @@ const ReturnDetails = ({ navigation, route }) => {
           <ButtonLg title="Mark as Returned" onPress={() => returnArticle()} />
         </View>
       </View>
+      <CustomToast />
     </SafeAreaView>
   );
 };

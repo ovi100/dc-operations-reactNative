@@ -5,7 +5,6 @@ import CustomToast from '../../../../components/CustomToast';
 import { ButtonLg, ButtonLoading } from '../../../../components/buttons';
 import { BoxIcon } from '../../../../constant/icons';
 import { getStorage } from '../../../../hooks/useStorage';
-import { toast } from '../../../../utils';
 
 const ShelveArticle = ({ navigation, route }) => {
   const { _id, bins, code, description, receivedQuantity } = route.params;
@@ -76,8 +75,21 @@ const ShelveArticle = ({ navigation, route }) => {
   };
 
   const shelveArticle = async () => {
-    if (newQuantity > receivedQuantity) {
-      toast('Quantity exceed');
+    if (!newQuantity) {
+      Toast.show({
+        type: 'customError',
+        text1: 'Enter Quantity',
+      });
+    } else if (newQuantity <= 0) {
+      Toast.show({
+        type: 'customWarn',
+        text1: 'Quantity must be greater than zero',
+      });
+    } else if (newQuantity > remainingQuantity) {
+      Toast.show({
+        type: 'customWarn',
+        text1: 'Quantity exceed',
+      });
     } else {
       if (user.site) {
         const assignToShelveObject = {

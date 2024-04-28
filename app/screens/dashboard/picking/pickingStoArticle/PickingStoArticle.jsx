@@ -4,8 +4,8 @@ import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../../components/CustomToast';
 import { ButtonBack, ButtonLg, ButtonLoading } from '../../../../../components/buttons';
 import { BoxIcon } from '../../../../../constant/icons';
-import useStoTracking from '../../../../../hooks/useStoTracking';
 import { getStorage } from '../../../../../hooks/useStorage';
+import useAppContext from '../../../../../hooks/useAppContext';
 
 const PickingStoArticle = ({ navigation, route }) => {
   const { sto, material, description, quantity, picker, pickerId, packer, packerId } = route.params;
@@ -14,7 +14,8 @@ const PickingStoArticle = ({ navigation, route }) => {
   const [pickedSKU, setPickedSKU] = useState(0);
   const [token, setToken] = useState('');
   const [pickedQuantity, setPickedQuantity] = useState(quantity);
-  const { addToSTO } = useStoTracking();
+  const { STOInfo } = useAppContext();
+  const { addToSTO } = STOInfo;
   const API_URL = 'https://shwapnooperation.onrender.com/api/';
 
   useEffect(() => {
@@ -162,7 +163,18 @@ const PickingStoArticle = ({ navigation, route }) => {
   }
 
   const postPickedArticle = async () => {
-    if (pickedQuantity > quantity) {
+    console.log('pickedQuantity', pickedQuantity, typeof pickedQuantity)
+    if (!pickedQuantity) {
+      Toast.show({
+        type: 'customError',
+        text1: 'Enter Quantity',
+      });
+    } else if (pickedQuantity <= 0) {
+      Toast.show({
+        type: 'customWarn',
+        text1: 'Quantity must be greater than zero',
+      });
+    } else if (pickedQuantity > quantity) {
       Toast.show({
         type: 'customWarn',
         text1: 'Quantity exceed',
@@ -173,18 +185,20 @@ const PickingStoArticle = ({ navigation, route }) => {
         material,
         description,
         quantity,
-        pickedQuantity,
+        pickedQuantity: Number(pickedQuantity),
         picker,
         pickerId,
         packer,
         packerId,
       };
-      setIsButtonLoading(true);
-      await postStoTracking();
-      await addToArticleTracking();
       addToSTO(article);
-      setIsButtonLoading(false);
       navigation.goBack();
+      // setIsButtonLoading(true);
+      // await postStoTracking();
+      // await addToArticleTracking();
+      // addToSTO(article);
+      // setIsButtonLoading(false);
+      // navigation.goBack();
     }
   };
 

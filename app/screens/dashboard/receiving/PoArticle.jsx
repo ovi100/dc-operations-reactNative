@@ -63,7 +63,17 @@ const PoArticle = ({ navigation, route }) => {
   }, [material, user.site]);
 
   const readyForShelve = async () => {
-    if (newQuantity > remainingQuantity) {
+    if (!newQuantity) {
+      Toast.show({
+        type: 'customError',
+        text1: 'Enter Quantity',
+      });
+    } else if (newQuantity <= 0) {
+      Toast.show({
+        type: 'customWarn',
+        text1: 'Quantity must be greater than zero',
+      });
+    } else if (newQuantity > remainingQuantity) {
       Toast.show({
         type: 'customWarn',
         text1: 'Quantity exceed',

@@ -1,6 +1,9 @@
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, FlatList, Image, RefreshControl, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator, Button, FlatList, Image, RefreshControl,
+  SafeAreaView, Text, TouchableOpacity, View
+} from 'react-native';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
 import { NotPickingIcon, PickingIcon } from '../../../../constant/icons';
@@ -13,7 +16,7 @@ const Picking = ({ navigation }) => {
   const [token, setToken] = useState('');
   const [assignedData, setAssignedData] = useState([]);
   const tableHeader = ['STO', 'SKU', 'Outlet Code', 'Status'];
-  const API_URL = 'https://shwapnooperation.onrender.com/api/sto-tracking?pageSize=500&filterBy=supplyingPlant&';
+  const API_URL = 'https://shwapnooperation.onrender.com/api/sto-tracking?sortBy=sto&sortOrder=asc&pageSize=500&filterBy=supplyingPlant&';
 
   useEffect(() => {
     const getAsyncStorage = async () => {
@@ -85,7 +88,7 @@ const Picking = ({ navigation }) => {
       onPress={() => navigation.push('PickingSto', item)}
     >
       <Text className="flex-1 text-black text-center" numberOfLines={1}>
-        {item.sto.slice(0, 2) + '...' + item.sto.slice(7, item.sto.length)}
+        {item.sto.slice(0, 2) + '...' + item.sto.slice(5, item.sto.length)}
       </Text>
       <Text className="flex-1 text-black text-center" numberOfLines={1}>
         {item.sku}
@@ -93,7 +96,7 @@ const Picking = ({ navigation }) => {
       <Text className="flex-1 text-black text-center" numberOfLines={1}>
         {item.receivingPlant}
       </Text>
-      <Text className="flex-1 text-black text-center uppercase" numberOfLines={1}>
+      <Text className="flex-1 text-black text-center" numberOfLines={2}>
         {item.status}
       </Text>
     </TouchableOpacity>
@@ -106,7 +109,7 @@ const Picking = ({ navigation }) => {
       onPress={() => navigation.push('PickedSto', item)}
     >
       <Text className="flex-1 text-black text-center" numberOfLines={1}>
-        {item.sto.slice(0, 2) + '...' + item.sto.slice(7, item.sto.length)}
+        {item.sto.slice(0, 2) + '...' + item.sto.slice(5, item.sto.length)}
       </Text>
       <Text className="flex-1 text-black text-center" numberOfLines={1}>
         {item.sku}
@@ -114,7 +117,7 @@ const Picking = ({ navigation }) => {
       <Text className="flex-1 text-black text-center" numberOfLines={1}>
         {item.receivingPlant}
       </Text>
-      <Text className="flex-1 text-black text-center uppercase" numberOfLines={1}>
+      <Text className="flex-1 text-black text-center" numberOfLines={2}>
         {item.status}
       </Text>
     </TouchableOpacity>
@@ -153,12 +156,15 @@ const Picking = ({ navigation }) => {
     )
   }
 
-  if (assignedData.length === 0) {
+  if (assignedData.length === 0 || notPicked.length === 0) {
     return (
       <View className="w-full h-full justify-center px-3">
-        <Text className="text-black text-xl text-center font-semibold font-mono mt-5">
+        <Text className="text-black text-xl text-center font-bold">
           No task assigned yet
         </Text>
+        <View className="w-1/4 mx-auto mt-5">
+          <Button title='Retry' onPress={() => getAssignedTask()} />
+        </View>
       </View>
     )
   }

@@ -8,6 +8,7 @@ import {
   RefreshControl,
   SafeAreaView,
   Text,
+  TouchableHighlight,
   TouchableOpacity,
   View
 } from 'react-native';
@@ -153,7 +154,9 @@ const Shelving = ({ navigation }) => {
     articles = [...partialArticles, ...readyArticles];
   }
 
-  if (barcode !== '') {
+  console.log('press mode', pressMode);
+
+  if (barcode !== '' && pressMode === 'false') {
     const getArticleBarcode = async (barcode) => {
       try {
         await fetch('https://shelves-backend-1-kcgr.onrender.com/api/barcodes/barcode/' + barcode, {
@@ -275,7 +278,7 @@ const Shelving = ({ navigation }) => {
   if (!isLoading && articles.length === 0) {
     return (
       <View className="h-full justify-center pb-2">
-        <Text className="text-base font-bold text-center">
+        <Text className="text-base text-black font-bold text-center">
           No product is ready for shelving!
         </Text>
         <View className="w-1/4 mx-auto mt-5">
@@ -288,10 +291,18 @@ const Shelving = ({ navigation }) => {
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">
       <View className="flex-1 h-full px-4">
-        <View className="screen-header flex-row items-center mb-4">
-          <Text className="flex-1 text-lg text-sh text-center font-semibold capitalize">
-            Shelving
-          </Text>
+        <View className="screen-header flex-row items-center justify-center mb-4">
+          {pressMode === 'true' ? (
+            <TouchableHighlight onPress={() => null}>
+              <Text className="text-lg text-sh font-semibold capitalize">
+                Shelving
+              </Text>
+            </TouchableHighlight>
+          ) : (
+            <Text className="text-lg text-sh font-semibold capitalize">
+              Shelving
+            </Text>
+          )}
         </View>
 
         <View className="content flex-1">

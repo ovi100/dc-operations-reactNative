@@ -53,6 +53,8 @@ const PurchaseOrder = ({ navigation, route }) => {
     };
   }, []);
 
+  console.log('po number from po-details', po_id)
+
   const getPoDetails = async () => {
     await fetch(API_URL + 'bapi/po/display', {
       method: 'POST',
@@ -80,7 +82,7 @@ const PurchaseOrder = ({ navigation, route }) => {
                 const shItems = shelveData.items;
                 let remainingPoItems = poItems.map(poItem => {
                   const matchedShItem = shItems.find(
-                    shItem => shItem.code === poItem.material && shItem.po === poItem.po
+                    shItem => shItem.code === poItem.material && shItem.po === po_id
                   );
                   if (matchedShItem) {
                     return {
@@ -158,7 +160,7 @@ const PurchaseOrder = ({ navigation, route }) => {
   const renderItem = ({ item, index }) => (
     <>
       {pressMode === 'true' ? (
-        <TouchableOpacity onPress={() => navigation.replace('PoArticle', item)}>
+        <TouchableOpacity onPress={() => navigation.replace('PoArticle', { ...item, po: po_id })}>
           <View
             key={index}
             className="flex-row items-center border border-tb rounded-lg mt-2.5 p-4"
@@ -222,7 +224,7 @@ const PurchaseOrder = ({ navigation, route }) => {
               const poItem = articles.find(item => item.material === result.data.material);
 
               if (poItem && isValidBarcode) {
-                navigation.replace('PoArticle', poItem);
+                navigation.replace('PoArticle', { ...poItem, po: po_id });
               } else {
                 Toast.show({
                   type: 'customInfo',

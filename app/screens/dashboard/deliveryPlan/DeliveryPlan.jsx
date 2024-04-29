@@ -40,7 +40,7 @@ const DeliveryPlan = ({ navigation }) => {
   const [search, setSearch] = useState('');
   const tableHeader = ['STO ID', 'SKU', 'Outlet Code'];
   const API_URL = 'https://shwapnooperation.onrender.com/';
-  const dateObject = dateRange(10);
+  const dateObject = dateRange(15);
   const { from, to } = dateObject;
 
   useEffect(() => {
@@ -78,9 +78,9 @@ const DeliveryPlan = ({ navigation }) => {
               .then(inDnData => {
                 if (inDnData.status) {
                   const dnItems = result.data.sto;
-                  const inDnItems = inDnData.items.filter(item => item.status === 'picker packer assigned');
+                  const inDnItems = inDnData.items.filter(item => item.status === 'pending for dn');
                   let remainingDnItems = dnItems.filter(
-                    dnItem => !inDnItems.some(inDnItem => inDnItem.sto === dnItem.sto)
+                    dnItem => inDnItems.some(inDnItem => inDnItem.sto === dnItem.sto)
                   );
                   const finalDnList = remainingDnItems.map(item => {
                     return { ...item, selected: false };
@@ -328,7 +328,7 @@ const DeliveryPlan = ({ navigation }) => {
           </View>
           <View className="content flex-1 mt-3">
             {/* Table data */}
-            <View className={`table ${selectedList.length > 0 ? 'h-[76vh]' : 'h-[77vh]'}`}>
+            <View className={`table ${selectedList.length > 0 ? 'h-[76vh]' : 'h-[78vh]'}`}>
               <View className="flex-row items-center justify-between bg-gray-400 text-center mb-2 px-3 py-2">
                 {tableHeader.map((th) => (
                   <>

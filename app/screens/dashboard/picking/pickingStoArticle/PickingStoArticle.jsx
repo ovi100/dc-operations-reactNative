@@ -1,16 +1,21 @@
 import { useEffect, useState } from 'react';
-import { Image, SafeAreaView, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Image, SafeAreaView, Text, TextInput, View } from 'react-native';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../../components/CustomToast';
 import { ButtonBack, ButtonLg, ButtonLoading } from '../../../../../components/buttons';
 import { BoxIcon } from '../../../../../constant/icons';
-import { getStorage } from '../../../../../hooks/useStorage';
 import useAppContext from '../../../../../hooks/useAppContext';
+import { getStorage } from '../../../../../hooks/useStorage';
 
 const PickingStoArticle = ({ navigation, route }) => {
-  const { sto, material, description, quantity, picker, pickerId, packer, packerId } = route.params;
+  const {
+    sto, material, description, quantity,
+    picker, pickerId, packer, packerId
+  } = route.params;
+  const [isLoading, setIsLoading] = useState(false);
   const [isButtonLoading, setIsButtonLoading] = useState(false);
   const [isFirstStoItem, setIsFirstStoItem] = useState(true);
+  const [bins, setBins] = useState([]);
   const [pickedSKU, setPickedSKU] = useState(0);
   const [token, setToken] = useState('');
   const [pickedQuantity, setPickedQuantity] = useState(quantity);
@@ -24,6 +29,46 @@ const PickingStoArticle = ({ navigation, route }) => {
     }
     getAsyncStorage();
   }, []);
+
+  const getBins = async (code) => {
+    try {
+      await fetch('https://shelves-backend-dev.onrender.com/api/bins/product/' + code, {
+        method: 'GET',
+        headers: {
+          authorization: token,
+          'Content-Type': 'application/json',
+        }
+      })
+        .then(response => response.json())
+        .then(result => {
+          if (result.status) {
+            setBins(result.bins);
+          } else {
+            Toast.show({
+              type: 'customError',
+              text1: result.message,
+            });
+          }
+        })
+        .catch(error => {
+          Toast.show({
+            type: 'customError',
+            text1: error.message,
+          })
+        });
+    } catch (error) {
+      Toast.show({
+        type: 'customError',
+        text1: error.message,
+      })
+    }
+  }
+
+  const getBinsInfo = async () => {
+    setIsLoading(true);
+    await getBins(material);
+    setIsLoading(false);
+  }
 
   const getStoTracking = async () => {
     try {
@@ -62,8 +107,50 @@ const PickingStoArticle = ({ navigation, route }) => {
   };
 
   useEffect(() => {
-    getStoTracking();
-  }, []);
+    if (token && route.params) {
+      getBinsInfo();
+      getStoTracking();
+    }
+  }, [token, route.params]);
+
+  const addToOnHold = async () => {
+    let holdObject = {
+      material,
+      onHold: Number(pickedQuantity),
+      bin: '',
+      gondola: '',
+      site: packer,
+    };
+
+    try {
+      await fetch(API_URL + 'inventory/hold', {
+        method: 'POST',
+        headers: {
+          authorization: token,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(holdObject),
+      })
+        .then(response => response.json())
+        .then(result => {
+          Toast.show({
+            type: 'customInfo',
+            text1: result.message,
+          });
+        })
+        .catch(error => {
+          Toast.show({
+            type: 'customError',
+            text1: error.message,
+          });
+        });
+    } catch (error) {
+      Toast.show({
+        type: 'customError',
+        text1: error.message,
+      });
+    }
+  };
 
   const postStoTracking = async () => {
     let stoTrackingInfo = {
@@ -126,7 +213,7 @@ const PickingStoArticle = ({ navigation, route }) => {
       inboundPickerId: pickerId,
       inboundPacker: packer,
       inboundPackerId: packerId,
-      inboundPickedQuantity: pickedQuantity,
+      inboundPickedQuantity: Number(pickedQuantity),
       inboundPickingStartingTime: new Date(),
       inboundPickingEndingTime: new Date(),
       status: quantity === Number(pickedQuantity) ? 'inbound picked' : 'partially inbound picked'
@@ -163,11 +250,10 @@ const PickingStoArticle = ({ navigation, route }) => {
   }
 
   const postPickedArticle = async () => {
-    console.log('pickedQuantity', pickedQuantity, typeof pickedQuantity)
     if (!pickedQuantity) {
       Toast.show({
         type: 'customError',
-        text1: 'Enter Quantity',
+        text1: 'Enter a valid quantity',
       });
     } else if (pickedQuantity <= 0) {
       Toast.show({
@@ -191,16 +277,26 @@ const PickingStoArticle = ({ navigation, route }) => {
         packer,
         packerId,
       };
+
+      setIsButtonLoading(true);
+      await postStoTracking();
+      await addToArticleTracking();
       addToSTO(article);
+      setIsButtonLoading(false);
       navigation.goBack();
-      // setIsButtonLoading(true);
-      // await postStoTracking();
-      // await addToArticleTracking();
-      // addToSTO(article);
-      // setIsButtonLoading(false);
-      // navigation.goBack();
     }
   };
+
+  if (isLoading) {
+    return (
+      <View className="w-full h-screen justify-center px-3">
+        <ActivityIndicator size="large" color="#EB4B50" />
+        <Text className="mt-4 text-gray-400 text-base text-center">
+          Loading bins data. Please wait.....
+        </Text>
+      </View>
+    )
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-white pt-14">

@@ -1,12 +1,15 @@
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, DeviceEventEmitter, FlatList, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator, DeviceEventEmitter, FlatList, SafeAreaView,
+  Text, TouchableHighlight, TouchableOpacity, View
+} from 'react-native';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../../components/CustomToast';
 import ServerError from '../../../../../components/animations/ServerError';
+import useAppContext from '../../../../../hooks/useAppContext';
 import { getStorage } from '../../../../../hooks/useStorage';
 import SunmiScanner from '../../../../../utils/sunmi/scanner';
-import useAppContext from '../../../../../hooks/useAppContext';
 
 const PickingSto = ({ navigation, route }) => {
   const { sto, picker, pickerId, packer, packerId } = route.params;
@@ -94,7 +97,7 @@ const PickingSto = ({ navigation, route }) => {
     navigation.push('PickingStoArticle', { ...article, picker, pickerId, packer, packerId });
   };
 
-  if (barcode !== '') {
+  if (barcode !== '' && pressMode === 'false') {
     const getArticleBarcode = async (barcode) => {
       try {
         await fetch('https://shelves-backend-1-kcgr.onrender.com/api/barcodes/barcode/' + barcode, {
@@ -217,10 +220,18 @@ const PickingSto = ({ navigation, route }) => {
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">
       <View className="flex-1 h-full px-2">
-        <View className="screen-header flex-row items-center mb-4">
-          <Text className="flex-1 text-lg text-sh text-center font-semibold">
-            Picking STO  {sto}
-          </Text>
+        <View className="screen-header flex-row items-center justify-center mb-4">
+          {pressMode === 'true' ? (
+            <TouchableHighlight onPress={() => null}>
+              <Text className="text-lg text-sh font-semibold">
+                Picking STO  {sto}
+              </Text>
+            </TouchableHighlight>
+          ) : (
+            <Text className="text-lg text-sh font-semibold">
+              Picking STO  {sto}
+            </Text>
+          )}
         </View>
         <View className="content flex-1 justify-around mt-5 mb-6">
           <View className="table h-full pb-2">

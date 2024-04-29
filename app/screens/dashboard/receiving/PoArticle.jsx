@@ -2,14 +2,12 @@ import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Image, SafeAreaView, Text, TextInput,
-  TouchableOpacity,
   TouchableWithoutFeedback, View
 } from 'react-native';
-import DatePicker from 'react-native-date-picker';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
 import { ButtonLg, ButtonLoading } from '../../../../components/buttons';
-import { BoxIcon, CalendarIcon } from '../../../../constant/icons';
+import { BoxIcon } from '../../../../constant/icons';
 import useAppContext from '../../../../hooks/useAppContext';
 import { getStorage } from '../../../../hooks/useStorage';
 
@@ -22,14 +20,11 @@ const PoArticle = ({ navigation, route }) => {
   const [isButtonLoading, setIsButtonLoading] = useState(false);
   const [bins, setBins] = useState([]);
   const [newQuantity, setNewQuantity] = useState(remainingQuantity);
-  const [batchNo, setBatchNo] = useState('');
   const [token, setToken] = useState('');
   const { GRNInfo, authInfo } = useAppContext();
   const { user } = authInfo;
   const { addToGRN } = GRNInfo;
   const API_URL = 'https://shwapnooperation.onrender.com/api/';
-  const [expiryDate, setExpiryDate] = useState(new Date())
-  const [openDatePicker, setOpenDatePicker] = useState(false)
 
   useEffect(() => {
     const getAsyncStorage = async () => {
@@ -61,6 +56,8 @@ const PoArticle = ({ navigation, route }) => {
     }
 
   }, [material, user.site]);
+
+  console.log('po number from po-article', po)
 
   const readyForShelve = async () => {
     if (!newQuantity) {
@@ -104,8 +101,6 @@ const PoArticle = ({ navigation, route }) => {
         receivedBy: user.name,
         bins,
       };
-
-      console.log(shelvingObject);
 
       try {
         setIsButtonLoading(true);
@@ -163,8 +158,6 @@ const PoArticle = ({ navigation, route }) => {
     )
   }
 
-  // console.log(expiryDate, batchNo);
-
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">
       <View className="flex-1 px-4">
@@ -211,62 +204,6 @@ const PoArticle = ({ navigation, route }) => {
                 setNewQuantity(value);
               }}
             />
-          </View>
-        </View>
-
-        {/* Product Date */}
-        <View className="product-date bg-[#FEFBFB] border border-[#F2EFEF] rounded mt-3 p-5">
-          <View className="box-header flex-row items-center justify-between">
-            <View>
-              <Text className="text-base text-[#2E2C3B] font-medium capitalize">
-                expiry date
-              </Text>
-            </View>
-          </View>
-          <View className="date-picker mt-6">
-            <TouchableOpacity onPress={() => setOpenDatePicker(true)}>
-              <View className="flex-row items-center justify-center bg-green-600 rounded-md p-4">
-                <Image className="w-7 h-7 mr-3" source={CalendarIcon} />
-                <Text className="text-lg font-bold text-white capitalize">select expiry date</Text>
-              </View>
-            </TouchableOpacity>
-            <DatePicker
-              theme='auto'
-              modal
-              title="Expiry Date"
-              minimumDate={new Date()}
-              open={openDatePicker}
-              mode='date'
-              date={expiryDate}
-              onConfirm={(date) => {
-                setOpenDatePicker(false)
-                setExpiryDate(date)
-              }}
-              onCancel={() => setOpenDatePicker(false)}
-            />
-          </View>
-        </View>
-
-        {/* Product Batch */}
-        <View className="product-batch bg-[#FEFBFB] border border-[#F2EFEF] rounded mt-3 p-5">
-          <View className="box-header flex-row items-center justify-between">
-            <View>
-              <Text className="text-base text-[#2E2C3B] font-medium capitalize">
-                batch no.
-              </Text>
-            </View>
-          </View>
-          <View className="input-box mt-6">
-            <TextInput
-              className="bg-[#F5F6FA] border border-t-0 border-black/25 h-[50px] text-[#5D80C5] rounded-2xl mb-3 px-4"
-              placeholder="Enter batch number"
-              placeholderTextColor="#5D80C5"
-              selectionColor="#5D80C5"
-              keyboardType="numeric"
-              value={batchNo}
-              onChangeText={value => setBatchNo(value)}
-            />
-
           </View>
         </View>
 

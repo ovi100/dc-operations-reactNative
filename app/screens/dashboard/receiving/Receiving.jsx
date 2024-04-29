@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   DeviceEventEmitter,
+  Keyboard,
   SafeAreaView, Text, TextInput, TouchableHighlight,
   TouchableOpacity,
   View
@@ -110,6 +111,7 @@ const Receiving = ({ navigation }) => {
       await getPoDetails(po);
       setBarcode('');
       setSearch('');
+      Keyboard.dismiss();
     }
   };
 

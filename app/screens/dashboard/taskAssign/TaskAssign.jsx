@@ -1,6 +1,9 @@
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, FlatList, RefreshControl, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator, Button, FlatList, RefreshControl,
+  SafeAreaView, Text, TouchableOpacity, View
+} from 'react-native';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
 import ServerError from '../../../../components/animations/ServerError';
@@ -13,7 +16,7 @@ const TaskAssign = ({ navigation }) => {
   const [token, setToken] = useState('');
   let [taskList, setTaskList] = useState([]);
   const tableHeader = ['STO ID', 'SKU', 'Outlet Code', 'Status'];
-  const API_URL = 'https://shwapnooperation.onrender.com/api/sto-tracking?pageSize=200&filterBy=supplyingPlant&';
+  const API_URL = 'https://shwapnooperation.onrender.com/api/sto-tracking?pageSize=500&sortBy=sto&&sortOrder=asc&filterBy=supplyingPlant&';
 
   useEffect(() => {
     const getAsyncStorage = async () => {
@@ -58,13 +61,14 @@ const TaskAssign = ({ navigation }) => {
     }
   };
 
+  const getTaskList = async () => {
+    setIsLoading(true);
+    await getInDnList();
+    setIsLoading(false);
+  };
+
   useFocusEffect(
     useCallback(() => {
-      const getTaskList = async () => {
-        setIsLoading(true);
-        await getInDnList();
-        setIsLoading(false);
-      };
       if (token && user.site) {
         getTaskList();
       }
@@ -115,6 +119,9 @@ const TaskAssign = ({ navigation }) => {
     return (
       <View className="w-full h-screen justify-center px-3">
         <ServerError message="No data found!" />
+        <View className="w-1/4 mx-auto mt-5">
+          <Button title='Retry' onPress={() => getTaskList()} />
+        </View>
       </View>
     )
   }

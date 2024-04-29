@@ -1,6 +1,6 @@
-import {useEffect, useState} from 'react';
-import {toast} from '../utils';
-import {getStorage, setStorage} from './useStorage';
+import { useEffect, useState } from 'react';
+import { toast } from '../utils';
+import { getStorage, setStorage } from './useStorage';
 
 const useStoTracking = () => {
   const [stoItems, setStoItems] = useState([]);
@@ -55,22 +55,6 @@ const useStoTracking = () => {
       setTotalSKU(newItems);
     }
   };
-
-  // const calculateSku = sto => {
-  //   const matchedSto = totalSKU.find(item => item.sto === sto);
-
-  //   if (matchedSto) {
-  //     const filteredSto = stoItems.filter(
-  //       item => item.sto === sto && item.quantity !== item.pickedQuantity,
-  //     );
-  //     const result = {
-  //       sto: matchedSto.sto,
-  //       totalSku: matchedSto.totalSku,
-  //       remainingSku: filteredSto.length,
-  //     };
-  //     console.log(result);
-  //   }
-  // };
 
   const calculateSku = stoItem => {
     const filteredSto = stoItems.filter(

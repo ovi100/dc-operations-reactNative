@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {Alert} from 'react-native';
+import { toast } from '../utils';
 
 const setStorage = async (key, value) => {
   try {
@@ -10,7 +10,7 @@ const setStorage = async (key, value) => {
       await AsyncStorage.setItem(key, value);
     }
   } catch (e) {
-    Alert.alert(e);
+    toast(e.message);
   }
 };
 
@@ -23,7 +23,7 @@ const getStorage = async (key, setFunction, type = '') => {
       return setFunction(value !== null ? value : null);
     }
   } catch (e) {
-    Alert.alert(e);
+    toast(e.message);
   }
 };
 
@@ -31,7 +31,7 @@ const removeItem = async key => {
   try {
     await AsyncStorage.removeItem(key);
   } catch (e) {
-    Alert.alert(e);
+    toast(e.message);
   }
 };
 
@@ -39,8 +39,9 @@ const removeAll = async () => {
   try {
     await AsyncStorage.clear();
   } catch (e) {
-    Alert.alert(e);
+    toast(e.message);
   }
 };
 
-export {getStorage, removeAll, removeItem, setStorage};
+export { getStorage, removeAll, removeItem, setStorage };
+

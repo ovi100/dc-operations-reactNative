@@ -243,7 +243,7 @@ const PurchaseOrder = ({ navigation, route }) => {
           .catch(error => {
             Toast.show({
               type: 'customError',
-              text1: 'API request failed',
+              text1: error.message,
             });
           });
       } catch (error) {
@@ -257,6 +257,8 @@ const PurchaseOrder = ({ navigation, route }) => {
   }
 
   const GRNByPo = grnItems.filter(grnItem => grnItem.po === po_id);
+
+  console.log('GRN by PO', GRNByPo);
 
   const generateGRN = async (grnList) => {
     setDialogVisible(false);

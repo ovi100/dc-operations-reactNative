@@ -31,6 +31,7 @@ const PurchaseOrder = ({ navigation, route }) => {
   const API_URL = 'https://shwapnooperation.onrender.com/';
   const { GRNInfo } = useAppContext();
   const { grnItems, setGrnItems } = GRNInfo;
+  let GrnByPo = [];
 
   useEffect(() => {
     const getAsyncStorage = async () => {
@@ -256,9 +257,11 @@ const PurchaseOrder = ({ navigation, route }) => {
     getArticleBarcode(barcode);
   }
 
-  const GRNByPo = grnItems.filter(grnItem => grnItem.po === po_id);
+  if (grnItems) {
+    GrnByPo = grnItems.filter(grnItem => grnItem.po === po_id);
+    console.log('GRN by PO', GrnByPo);
+  }
 
-  console.log('GRN by PO', GRNByPo);
 
   const generateGRN = async (grnList) => {
     setDialogVisible(false);
@@ -340,7 +343,7 @@ const PurchaseOrder = ({ navigation, route }) => {
         </View>
         <View className="content">
           <>
-            <View className={`table ${GRNByPo.length > 0 ? 'h-[80vh]' : 'h-[92vh]'}`}>
+            <View className={`table ${GrnByPo.length > 0 ? 'h-[80vh]' : 'h-[92vh]'}`}>
               <View className="flex-row justify-between bg-th text-center mb-2 p-2">
                 {tableHeader.map(th => (
                   <Text className="text-white text-center font-bold" key={th}>
@@ -348,7 +351,7 @@ const PurchaseOrder = ({ navigation, route }) => {
                   </Text>
                 ))}
               </View>
-              {articles.length === 0 && GRNByPo.length > 0 ? (
+              {articles.length === 0 && GrnByPo.length > 0 ? (
                 <Text className="text-black text-lg text-center font-bold mt-5">
                   No articles left to receive
                 </Text>
@@ -370,7 +373,7 @@ const PurchaseOrder = ({ navigation, route }) => {
               )}
 
             </View>
-            {Boolean(GRNByPo.length) && (
+            {Boolean(GrnByPo.length) && (
               <View className="button mt-5">
                 {isButtonLoading ? <ButtonLoading styles='bg-theme rounded-md p-5' /> :
                   <ButtonLg
@@ -389,7 +392,7 @@ const PurchaseOrder = ({ navigation, route }) => {
         modalHeader="Are you sure?"
         modalSubHeader="GRN will be generated"
         onClose={() => setDialogVisible(false)}
-        onSubmit={() => generateGRN(GRNByPo)}
+        onSubmit={() => generateGRN(GrnByPo)}
         leftButtonText="cancel"
         rightButtonText="proceed"
       />

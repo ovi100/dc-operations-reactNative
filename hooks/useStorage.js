@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { toast } from '../utils';
+import {toast} from '../utils';
 
 const setStorage = async (key, value) => {
   try {
@@ -19,6 +19,8 @@ const getStorage = async (key, setFunction, type = '') => {
     const value = await AsyncStorage.getItem(key);
     if (type === 'object') {
       return setFunction(value !== null ? JSON.parse(value) : null);
+    } else if (type === 'array') {
+      return setFunction(value !== null ? JSON.parse(value) : []);
     } else {
       return setFunction(value !== null ? value : null);
     }
@@ -43,5 +45,4 @@ const removeAll = async () => {
   }
 };
 
-export { getStorage, removeAll, removeItem, setStorage };
-
+export {getStorage, removeAll, removeItem, setStorage};

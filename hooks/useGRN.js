@@ -8,12 +8,10 @@ const useGRN = () => {
 
   useEffect(() => {
     const getAsyncStorage = async () => {
-      await getStorage('grnItems', setGrnItems, 'object');
+      await getStorage('grnItems', setGrnItems, 'array');
     };
     getAsyncStorage();
   }, [isUpdating]);
-
-  console.log('grn items from hook', grnItems);
 
   const addToGRN = article => {
     const index = grnItems.findIndex(

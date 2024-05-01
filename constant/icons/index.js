@@ -1,7 +1,6 @@
-import ArrowLeftWhiteIcon from './arrow-left-white-icon.png';
 import ArrowLeftIcon from './arrow-left.png';
 import AvatarImage from './avatar.png';
-import LoginBGImage from './background.png';
+import LogoImage from './logo.png';
 import BoxIcon from './box-icon.png';
 import CalendarIcon from './calendar-icon.png';
 import CameraIcon from './camera-icon.png';
@@ -37,7 +36,6 @@ import WarehouseIcon from './warehouse-icon.png';
 
 export {
   ArrowLeftIcon,
-  ArrowLeftWhiteIcon,
   AvatarImage,
   BoxIcon,
   CalendarIcon,
@@ -54,7 +52,7 @@ export {
   IdIcon,
   ImageIcon,
   InfoIcon,
-  LoginBGImage,
+  LogoImage,
   MasterPackingIcon,
   NotPickingIcon,
   PasswordIcon,
@@ -71,6 +69,5 @@ export {
   SwitchIcon,
   TaskAssignIcon,
   UserIcon,
-  WarehouseIcon
+  WarehouseIcon,
 };
-

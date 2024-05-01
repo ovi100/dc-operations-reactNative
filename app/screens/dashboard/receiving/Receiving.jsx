@@ -4,6 +4,7 @@ import {
   ActivityIndicator,
   DeviceEventEmitter,
   Keyboard,
+  KeyboardAvoidingView,
   SafeAreaView, Text, TextInput, TouchableHighlight,
   TouchableOpacity,
   View
@@ -122,67 +123,67 @@ const Receiving = ({ navigation }) => {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white pt-8">
-      <View className="flex-1 px-4">
-        <View className="screen-header flex-row items-center justify-center mb-4">
-          {pressMode === 'true' ? (
-            <TouchableHighlight onPress={() => null}>
-              <Text className="text-lg text-sh font-semibold capitalize">
-                receiving screen
-              </Text>
-            </TouchableHighlight>
-          ) : (
+    <KeyboardAvoidingView className="flex-1 bg-white pt-8 px-4" behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      {/* <View className="flex-1 px-4"> */}
+      <View className="screen-header flex-row items-center justify-center mb-4">
+        {pressMode === 'true' ? (
+          <TouchableHighlight onPress={() => null}>
             <Text className="text-lg text-sh font-semibold capitalize">
               receiving screen
             </Text>
-          )}
-        </View>
+          </TouchableHighlight>
+        ) : (
+          <Text className="text-lg text-sh font-semibold capitalize">
+            receiving screen
+          </Text>
+        )}
+      </View>
 
-        {/* Search Box */}
-        <View className="search flex-row z-0">
-          <View className="input-box w-4/5">
-            <TextInput
-              className="bg-[#F5F6FA] text-black rounded-bl-lg rounded-tl-lg px-4"
-              placeholder="Search by purchase order"
-              keyboardType="phone-pad"
-              placeholderTextColor="#CBC9D9"
-              selectionColor="#CBC9D9"
-              onChangeText={value => setSearch(value)}
-              value={search}
-            />
-          </View>
-          <View className="button w-1/5">
-            <TouchableOpacity onPress={() => searchPo(search)}>
-              <Text className="text-base bg-blue-600 text-white text-center rounded-tr-lg rounded-br-lg font-semibold py-3">
-                search
-              </Text>
-            </TouchableOpacity>
-          </View>
+      {/* Search Box */}
+      <View className="search flex-row">
+        <View className="input-box w-4/5">
+          <TextInput
+            className="bg-[#F5F6FA] text-black rounded-bl-lg rounded-tl-lg px-4"
+            placeholder="Search by purchase order"
+            keyboardType="phone-pad"
+            placeholderTextColor="#CBC9D9"
+            selectionColor="#CBC9D9"
+            onChangeText={value => setSearch(value)}
+            value={search}
+          />
         </View>
-        <View className="content flex-1 justify-center">
-          {isCheckingPo ? (
-            <View className="flex-1 justify-center">
-              <ActivityIndicator size="large" color="#EB4B50" />
-              <Text className="mt-4 text-gray-400 text-base text-center">Checking po number</Text>
-            </View>
-          ) : (
-            <View className="">
-              <Scan />
-              <Text className="text-lg text-gray-400 text-center font-semibold">
-                Scan a PO barcode
-              </Text>
-              <Text className="text-2xl text-gray-400 text-center font-semibold my-5">
-                OR
-              </Text>
-              <Text className="text-lg text-gray-400 text-center font-semibold">
-                Search by a PO number
-              </Text>
-            </View>
-          )}
+        <View className="button w-1/5">
+          <TouchableOpacity onPress={() => searchPo(search)}>
+            <Text className="text-base bg-blue-600 text-white text-center rounded-tr-lg rounded-br-lg font-semibold py-3">
+              search
+            </Text>
+          </TouchableOpacity>
         </View>
       </View>
+      <View className="content h-3/4 justify-center">
+        {isCheckingPo ? (
+          <View>
+            <ActivityIndicator size="large" color="#EB4B50" />
+            <Text className="mt-4 text-gray-400 text-base text-center">Checking po number</Text>
+          </View>
+        ) : (
+          <View>
+            <Scan />
+            <Text className="text-lg text-gray-400 text-center font-semibold">
+              Scan a PO barcode
+            </Text>
+            <Text className="text-xl text-gray-400 text-center font-semibold my-3">
+              OR
+            </Text>
+            <Text className="text-lg text-gray-400 text-center font-semibold">
+              Search by a PO number
+            </Text>
+          </View>
+        )}
+      </View>
+      {/* </View> */}
       <CustomToast />
-    </SafeAreaView>
+    </KeyboardAvoidingView>
   );
 };
 

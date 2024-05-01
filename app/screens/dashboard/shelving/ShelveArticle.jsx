@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import {
-  ActivityIndicator, Image, KeyboardAvoidingView, SafeAreaView,
+  ActivityIndicator, Image, KeyboardAvoidingView,
+  SafeAreaView,
+  ScrollView,
   Text, TextInput,
   TouchableOpacity,
   View
@@ -180,9 +182,9 @@ const ShelveArticle = ({ navigation, route }) => {
   }
 
   return (
-    <KeyboardAvoidingView className="flex-1" enabled={true} behavior="padding">
-      <SafeAreaView className="flex-1 bg-white pt-8">
-        <View className="flex-1 px-4">
+    <SafeAreaView className="flex-1 bg-white pt-8 px-4">
+      <KeyboardAvoidingView className="flex-1" behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+        <ScrollView>
           <View className="screen-header mb-4">
             <View className="text items-center">
               <View className="flex-row">
@@ -292,10 +294,10 @@ const ShelveArticle = ({ navigation, route }) => {
               <ButtonLg title="Mark as Shelved" onPress={() => postShelvingData()} />
             }
           </View>
-        </View>
-        <CustomToast />
-      </SafeAreaView>
-    </KeyboardAvoidingView>
+        </ScrollView>
+      </KeyboardAvoidingView>
+      <CustomToast />
+    </SafeAreaView>
   );
 };
 

@@ -13,9 +13,7 @@ import CustomToast from '../../components/CustomToast';
 import { ButtonLogin } from '../../components/buttons';
 import {
   EyeInvisibleIcon,
-  EyeVisibleIcon,
-  LoginBGImage,
-  LogoImage,
+  EyeVisibleIcon
 } from '../../constant/icons';
 import useAppContext from '../../hooks/useAppContext';
 import styles from '../../styles/button';

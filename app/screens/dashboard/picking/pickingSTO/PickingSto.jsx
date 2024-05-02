@@ -1,7 +1,7 @@
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
-  ActivityIndicator, DeviceEventEmitter, FlatList, SafeAreaView,
+  ActivityIndicator, Button, DeviceEventEmitter, FlatList, SafeAreaView,
   Text, TouchableHighlight, TouchableOpacity, View
 } from 'react-native';
 import Toast from 'react-native-toast-message';
@@ -10,12 +10,14 @@ import ServerError from '../../../../../components/animations/ServerError';
 import useAppContext from '../../../../../hooks/useAppContext';
 import { getStorage } from '../../../../../hooks/useStorage';
 import SunmiScanner from '../../../../../utils/sunmi/scanner';
+import { mergeInventory, updateStoItems } from '../pickingStoArticle/helperFunctions';
 
 const PickingSto = ({ navigation, route }) => {
   const { sto, picker, pickerId, packer, packerId } = route.params;
   const [isLoading, setIsLoading] = useState(false);
   const [pressMode, setPressMode] = useState(false);
   const [barcode, setBarcode] = useState('');
+  const [user, setUser] = useState({});
   const [token, setToken] = useState('');
   let [articles, setArticles] = useState([]);
   const API_URL = 'https://shwapnooperation.onrender.com/';
@@ -28,13 +30,14 @@ const PickingSto = ({ navigation, route }) => {
   useEffect(() => {
     const getAsyncStorage = async () => {
       await getStorage('token', setToken);
+      await getStorage('user', setUser, 'object');
       await getStorage('pressMode', setPressMode);
       await getStorage('stoTrackingInfo', setStoTrackingInfo, 'object');
     }
     getAsyncStorage();
   }, [navigation.isFocused()]);
 
-  console.log('sto tracking AS info', stoTrackingInfo);
+  // console.log('sto tracking AS info', stoTrackingInfo);
 
   useEffect(() => {
     startScan();
@@ -48,9 +51,9 @@ const PickingSto = ({ navigation, route }) => {
     };
   }, []);
 
-  const fetchStoDetails = async () => {
+
+  const getStoDetails = async () => {
     try {
-      setIsLoading(true);
       await fetch(API_URL + 'bapi/sto/display', {
         method: 'POST',
         headers: {
@@ -60,14 +63,48 @@ const PickingSto = ({ navigation, route }) => {
         body: JSON.stringify({ sto }),
       })
         .then(response => response.json())
-        .then(result => {
-          if (result.status) {
-            const stoData = result.data.items;
-            setArticles(stoData);
-            addToTotalSku({ sto, totalSku: stoData.length });
-            setIsLoading(false);
+        .then(async stoDetails => {
+          if (stoDetails.status) {
+            try {
+              await fetch(API_URL + `api/inventory?filterBy=site&value=${user.site}&pageSize=500`, {
+                method: 'GET',
+                headers: {
+                  authorization: token,
+                  'Content-Type': 'application/json',
+                }
+              })
+                .then(response => response.json())
+                .then(inventoryData => {
+                  if (inventoryData.status) {
+                    const inventoryItems = mergeInventory(inventoryData.items);
+                    const stoItems = stoDetails.data.items;
+                    const mergedData = updateStoItems(stoItems, inventoryItems);
+                    console.log('calculated data', mergedData)
+                    setArticles(mergedData);
+                    addToTotalSku({ sto, totalSku: stoItems.length });
+                  } else {
+                    const stoItems = stoDetails.data.items;
+                    setArticles(stoItems);
+                    addToTotalSku({ sto, totalSku: stoItems.length });
+                  }
+                })
+                .catch(error => {
+                  Toast.show({
+                    type: 'customError',
+                    text1: error.message,
+                  });
+                });
+            } catch (error) {
+              Toast.show({
+                type: 'customError',
+                text1: error.message,
+              });
+            }
           } else {
-            setIsLoading(false);
+            Toast.show({
+              type: 'customError',
+              text1: stoDetails.message,
+            });
           }
         })
         .catch(error => {
@@ -82,15 +119,20 @@ const PickingSto = ({ navigation, route }) => {
         text1: error.message,
       });
     }
-
   };
+
+  const finalStoData = async () => {
+    setIsLoading(true);
+    await getStoDetails();
+    setIsLoading(false);
+  }
 
   useFocusEffect(
     useCallback(() => {
-      if (token && sto) {
-        fetchStoDetails();
+      if (token && sto && user.site) {
+        finalStoData();
       }
-    }, [token, sto]),
+    }, [token, sto, user.site]),
   );
 
   const goToStoArticle = async (article) => {
@@ -152,21 +194,32 @@ const PickingSto = ({ navigation, route }) => {
         <TouchableOpacity onPress={() => goToStoArticle(item)}>
           <View
             key={index}
-            className="flex-row items-center justify-between bg-white border border-tb rounded-lg mt-2.5 p-4"
-          >
-            <Text
-              className="w-1/5 text-black text-sm text-center"
-              numberOfLines={1}>
-              {item.material}
-            </Text>
-            <Text
-              className="w-3/5 text-black text-sm text-center"
-              numberOfLines={1}>
-              {item.description}
-            </Text>
-            <Text
-              className="w-1/5 text-black text-sm text-center pl-5"
-              numberOfLines={1}>
+            className="flex-row items-center justify-between border border-tb rounded-lg mt-2.5 p-3">
+            <View className="w-[45%]">
+              <Text className="text-xs text-black" numberOfLines={1}>
+                {item.material}
+              </Text>
+              <Text className="w-36 text-black text-base mt-1" numberOfLines={2}>
+                {item.description}
+              </Text>
+            </View>
+            <View className="w-2/5">
+              {item.bins?.length > 0 ? (
+                <>
+                  <Text
+                    className="text-black text-center mb-1 last:mb-0"
+                    numberOfLines={1}>
+                    {item.bins[0].bin}
+                  </Text>
+                  <Text
+                    className="text-blue-600 text-center mb-1 last:mb-0"
+                    numberOfLines={1}>
+                    {item.bins.slice(1).length} more bins
+                  </Text>
+                </>
+              ) : (<Text className="text-black text-center">No bin has been assigned</Text>)}
+            </View>
+            <Text className="w-[15%] text-black text-right" numberOfLines={1}>
               {item.quantity}
             </Text>
           </View>
@@ -174,21 +227,32 @@ const PickingSto = ({ navigation, route }) => {
       ) : (
         <View
           key={index}
-          className="flex-row items-center justify-between bg-white border border-tb rounded-lg mt-2.5 p-4"
-        >
-          <Text
-            className="w-1/5 text-black text-sm text-center"
-            numberOfLines={1}>
-            {item.material}
-          </Text>
-          <Text
-            className="w-3/5 text-black text-sm text-center"
-            numberOfLines={1}>
-            {item.description}
-          </Text>
-          <Text
-            className="w-1/5 text-black text-sm text-center pl-5"
-            numberOfLines={1}>
+          className="flex-row items-center justify-between border border-tb rounded-lg mt-2.5 p-3">
+          <View className="w-[45%]">
+            <Text className="text-xs text-black" numberOfLines={1}>
+              {item.material}
+            </Text>
+            <Text className="w-36 text-black text-base mt-1" numberOfLines={2}>
+              {item.description}
+            </Text>
+          </View>
+          <View className="w-2/5">
+            {item.bins.length > 0 ? (
+              <>
+                <Text
+                  className="text-black text-center mb-1 last:mb-0"
+                  numberOfLines={1}>
+                  {item.bins[0].bin}
+                </Text>
+                <Text
+                  className="text-blue-600 text-center mb-1 last:mb-0"
+                  numberOfLines={1}>
+                  {item.bins.slice(1).length} more bins
+                </Text>
+              </>
+            ) : (<Text className="text-black text-center">No bin has been assigned</Text>)}
+          </View>
+          <Text className="w-[15%] text-black text-right" numberOfLines={1}>
             {item.quantity}
           </Text>
         </View>
@@ -211,11 +275,12 @@ const PickingSto = ({ navigation, route }) => {
     return (
       <View className="w-full h-screen justify-center px-3">
         <ServerError message="No data found!" />
+        <View className="w-1/4 mx-auto mt-5">
+          <Button title='Retry' onPress={() => finalStoData()} />
+        </View>
       </View>
     )
   }
-
-  console.log('articles length', articles.length);
 
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">
@@ -235,14 +300,14 @@ const PickingSto = ({ navigation, route }) => {
         </View>
         <View className="content flex-1 justify-around mt-5 mb-6">
           <View className="table h-full pb-2">
-            <View className="flex-row bg-th text-center mb-2 py-2">
-              <Text className="w-1/5 text-white text-sm text-center font-bold">
-                Article ID
+            <View className="flex-row justify-between bg-th mb-2 py-2 px-3">
+              <Text className="text-white text-sm text-center font-bold">
+                Article Info
               </Text>
-              <Text className="w-3/5 text-white text-sm text-center font-bold">
-                Article Name
+              <Text className="text-white text-sm text-center font-bold">
+                Bins
               </Text>
-              <Text className="w-1/5 text-white text-sm text-center font-bold">
+              <Text className="text-white text-sm text-center font-bold">
                 Quantity
               </Text>
             </View>

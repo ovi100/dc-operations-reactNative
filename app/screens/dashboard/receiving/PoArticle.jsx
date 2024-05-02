@@ -14,7 +14,7 @@ import { getStorage } from '../../../../hooks/useStorage';
 const PoArticle = ({ navigation, route }) => {
   const {
     description, material, po, poItem, quantity,
-    remainingQuantity, receivingPlant, storageLocation, unit
+    remainingQuantity, receivingPlant, unit
   } = route.params;
   const [isLoading, setIsLoading] = useState(false);
   const [isButtonLoading, setIsButtonLoading] = useState(false);
@@ -79,11 +79,11 @@ const PoArticle = ({ navigation, route }) => {
       const grnItem = {
         movementType: '101',
         movementIndicator: 'B',
+        storageLocation: '0001',
         po: po,
         poItem: Number(poItem).toString(),
         material: material,
         plant: receivingPlant,
-        storageLocation: storageLocation,
         quantity: Number(newQuantity),
         uom: unit,
         uomIso: unit,
@@ -114,7 +114,7 @@ const PoArticle = ({ navigation, route }) => {
         })
           .then(response => response.json())
           .then(data => {
-            console.log(data);
+            // console.log('ready for shelving response', data);
             if (data.status) {
               Toast.show({
                 type: 'customSuccess',

@@ -46,12 +46,11 @@ const useStoTracking = () => {
 
   const addToTotalSku = stoItem => {
     const index = totalSKU.findIndex(item => item.sto === stoItem.sto);
-
     if (index === -1) {
       setTotalSKU([...totalSKU, stoItem]);
     } else {
       const newItems = [...totalSKU];
-      newItems[index].totalSku = newItems[index].totalSku + stoItem.totalSku;
+      newItems[index].totalSku = stoItem.totalSku;
       setTotalSKU(newItems);
     }
   };

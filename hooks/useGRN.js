@@ -4,14 +4,15 @@ import { getStorage, setStorage } from './useStorage';
 
 const useGRN = () => {
   const [grnItems, setGrnItems] = useState([]);
-  const [isUpdating, setIsUpdating] = useState(false);
+  const [isUpdatingGrn, setIsUpdatingGrn] = useState(false);
 
   useEffect(() => {
     const getAsyncStorage = async () => {
       await getStorage('grnItems', setGrnItems, 'array');
     };
     getAsyncStorage();
-  }, [isUpdating]);
+    setIsUpdatingGrn(false);
+  }, [isUpdatingGrn]);
 
   const addToGRN = article => {
     const index = grnItems.findIndex(
@@ -23,7 +24,7 @@ const useGRN = () => {
       const newItems = [...grnItems, article];
       setStorage('grnItems', newItems);
       setGrnItems(newItems);
-      setIsUpdating(true);
+      setIsUpdatingGrn(true);
       toast(message);
     } else {
       let message = 'Item updated in GRN list';
@@ -31,17 +32,18 @@ const useGRN = () => {
       newItems[index].quantity = newItems[index].quantity + article.quantity;
       setStorage('grnItems', newItems);
       setGrnItems(newItems);
-      setIsUpdating(true);
+      setIsUpdatingGrn(true);
       toast(message);
     }
 
-    setIsUpdating(false);
+    setIsUpdatingGrn(false);
   };
 
   const GRNInfo = {
     grnItems,
     setGrnItems,
     addToGRN,
+    setIsUpdatingGrn,
   };
 
   return GRNInfo;

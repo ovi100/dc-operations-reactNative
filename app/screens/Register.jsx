@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
-import { ActivityIndicator, Image, SafeAreaView, Text, TextInput, TouchableWithoutFeedback, View } from 'react-native';
+import {
+  ActivityIndicator, Image, KeyboardAvoidingView,
+  Text, TextInput, TouchableWithoutFeedback, View
+} from 'react-native';
+import Toast from 'react-native-toast-message';
+import CustomToast from '../../components/CustomToast';
 import { ButtonLogin } from '../../components/buttons';
 import { EyeInvisibleIcon, EyeVisibleIcon } from '../../constant/icons';
 import styles from '../../styles/button';
 import { validateInput } from '../../utils';
-import Toast from 'react-native-toast-message';
-import CustomToast from '../../components/CustomToast';
 
 const Register = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -78,84 +81,77 @@ const Register = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView className="bg-white h-full">
-      <View className="mx-5 mt-20">
-        <View className="w-full rounded-2xl px-3 mb-4">
-          <View className="name relative">
-            <TextInput
-              className={`border ${nameError ? 'border-red-500' : 'border-[#bcbcbc]'
-                } h-[55px] text-[#a9a9a9] rounded-[5px] px-4`}
-              placeholder="Enter name"
-              placeholderTextColor='#bcbcbc'
-              selectionColor="#bcbcbc"
-              onChangeText={value => {
-                setName(value);
-                setNameError(validateInput('name', value));
-              }}
-            />
-            {nameError && (
-              <Text className="absolute right-2 top-3 text-red-500 mt-1">
-                {nameError}
-              </Text>
-            )}
-          </View>
+    <KeyboardAvoidingView className="bg-white flex-1 justify-center py-2.5" behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      <View className="register-content px-5">
+        <View className="name relative mb-4">
+          <TextInput
+            className={`border ${nameError ? 'border-red-500' : 'border-[#bcbcbc]'
+              } h-[60px] text-[#a9a9a9] rounded-md px-4`}
+            placeholder="Enter name"
+            placeholderTextColor='#bcbcbc'
+            selectionColor="#bcbcbc"
+            onChangeText={value => {
+              setName(value);
+              setNameError(validateInput('name', value));
+            }}
+          />
+          {nameError && (
+            <Text className="absolute right-2 top-3 text-red-500 mt-1">
+              {nameError}
+            </Text>
+          )}
         </View>
-        <View className="w-full rounded-2xl px-3 mb-4">
-          <View className="email relative">
-            <TextInput
-              className={`border ${emailError ? 'border-red-500' : 'border-[#bcbcbc]'
-                } h-[55px] text-[#a9a9a9] rounded-[5px] px-4`}
-              placeholder="Enter email"
-              placeholderTextColor='#bcbcbc'
-              selectionColor="#bcbcbc"
-              keyboardType="email-address"
-              onChangeText={value => {
-                setEmail(value);
-                setEmailError(validateInput('email', value));
-              }}
-            />
-            {emailError && (
-              <Text className="absolute right-2 top-3 text-red-500 mt-1">
-                {emailError}
-              </Text>
-            )}
-          </View>
+        <View className="email relative mb-4">
+          <TextInput
+            className={`border ${emailError ? 'border-red-500' : 'border-[#bcbcbc]'
+              } h-[60px] text-[#a9a9a9] rounded-md px-4`}
+            placeholder="Enter email"
+            placeholderTextColor='#bcbcbc'
+            selectionColor="#bcbcbc"
+            keyboardType="email-address"
+            onChangeText={value => {
+              setEmail(value);
+              setEmailError(validateInput('email', value));
+            }}
+          />
+          {emailError && (
+            <Text className="absolute right-2 top-3 text-red-500 mt-1">
+              {emailError}
+            </Text>
+          )}
         </View>
-        <View className="w-full rounded-2xl px-3 mb-4">
-          <View className="password relative">
-            <TextInput
-              className={`border ${passwordError ? 'border-red-500' : 'border-[#bcbcbc]'
-                } h-[55px] text-[#a9a9a9] rounded-[5px] px-4`}
-              placeholder="Enter password"
-              placeholderTextColor='#bcbcbc'
-              selectionColor="#bcbcbc"
-              secureTextEntry={!inputType}
-              onChangeText={value => {
-                setPassword(value);
-                setPasswordError(validateInput('password', value));
-              }}
-            />
-            {password && (
-              <TouchableWithoutFeedback onPress={toggleType}>
-                <Image
-                  className="w-6 h-6 absolute right-3 top-4"
-                  source={inputType ? EyeInvisibleIcon : EyeVisibleIcon}
-                />
-              </TouchableWithoutFeedback>
-            )}
+        <View className="password relative mb-4">
+          <TextInput
+            className={`border ${passwordError ? 'border-red-500' : 'border-[#bcbcbc]'
+              } h-[60px] text-[#a9a9a9] rounded-md px-4`}
+            placeholder="Enter password"
+            placeholderTextColor='#bcbcbc'
+            selectionColor="#bcbcbc"
+            secureTextEntry={!inputType}
+            onChangeText={value => {
+              setPassword(value);
+              setPasswordError(validateInput('password', value));
+            }}
+          />
+          {password && (
+            <TouchableWithoutFeedback onPress={toggleType}>
+              <Image
+                className="w-6 h-6 absolute right-3 top-4"
+                source={inputType ? EyeInvisibleIcon : EyeVisibleIcon}
+              />
+            </TouchableWithoutFeedback>
+          )}
 
-            {passwordError && (
-              <Text className="absolute right-2 top-3 text-red-500 mt-1">
-                {passwordError}
-              </Text>
-            )}
-          </View>
+          {passwordError && (
+            <Text className="absolute right-2 top-3 text-red-500 mt-1">
+              {passwordError}
+            </Text>
+          )}
         </View>
-
-        <View className="buttons w-full px-3">
+        <View className="buttons">
           {isLoading ? (
             <TouchableWithoutFeedback>
-              <View className="h-[55px] items-center justify-center bg-[#AC3232] rounded-md">
+              <View className="h-[60px] items-center justify-center bg-[#AC3232] rounded-md">
                 <ActivityIndicator size="small" color="#ffffff" />
               </View>
             </TouchableWithoutFeedback>
@@ -177,7 +173,7 @@ const Register = ({ navigation }) => {
         </View>
       </View>
       <CustomToast />
-    </SafeAreaView>
+    </KeyboardAvoidingView>
   )
 }
 

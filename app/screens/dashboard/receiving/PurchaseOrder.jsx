@@ -11,7 +11,7 @@ import CustomToast from '../../../../components/CustomToast';
 import Dialog from '../../../../components/Dialog';
 import { ButtonLg, ButtonLoading } from '../../../../components/buttons';
 import useAppContext from '../../../../hooks/useAppContext';
-import { getStorage } from '../../../../hooks/useStorage';
+import { getStorage, setStorage } from '../../../../hooks/useStorage';
 import { toast } from '../../../../utils';
 import SunmiScanner from '../../../../utils/sunmi/scanner';
 
@@ -30,8 +30,9 @@ const PurchaseOrder = ({ navigation, route }) => {
   const tableHeader = ['Article Code', 'Article Name', 'Quantity'];
   const API_URL = 'https://shwapnooperation.onrender.com/';
   const { GRNInfo } = useAppContext();
-  const { grnItems, setGrnItems } = GRNInfo;
+  const { grnItems, setGrnItems, setIsUpdatingGrn } = GRNInfo;
   let GrnByPo = [];
+  let remainingGrnItems = [];
 
   useEffect(() => {
     const getAsyncStorage = async () => {
@@ -258,6 +259,7 @@ const PurchaseOrder = ({ navigation, route }) => {
   }
 
   if (grnItems) {
+    remainingGrnItems = grnItems.filter(grnItem => grnItem.po !== po_id);
     GrnByPo = grnItems.filter(grnItem => grnItem.po === po_id);
     console.log('GRN by PO', GrnByPo);
   }
@@ -285,13 +287,17 @@ const PurchaseOrder = ({ navigation, route }) => {
       })
         .then(response => response.json())
         .then(result => {
+          console.log('GRN generate response', result);
           if (result.status) {
             Toast.show({
               type: 'customSuccess',
               text1: result.message,
             });
-            setGrnItems([]);
+            setStorage('grnItems', remainingGrnItems);
+            setIsUpdatingGrn(true);
+            setGrnItems(remainingGrnItems);
             setIsButtonLoading(false);
+
           } else {
             Toast.show({
               type: 'customError',
@@ -351,7 +357,7 @@ const PurchaseOrder = ({ navigation, route }) => {
                   </Text>
                 ))}
               </View>
-              {articles.length === 0 && GrnByPo.length > 0 ? (
+              {!isLoading && articles.length === 0 && GrnByPo.length > 0 ? (
                 <Text className="text-black text-lg text-center font-bold mt-5">
                   No articles left to receive
                 </Text>

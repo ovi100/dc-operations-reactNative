@@ -27,7 +27,7 @@ const Shelving = ({ navigation }) => {
   let articles = [];
   let [readyArticles, setReadyArticles] = useState([]);
   let [partialArticles, setPartialArticles] = useState([]);
-  const tableHeader = ['Article ID', 'BIN ID', 'Quantity'];
+  const tableHeader = ['Article Info', 'BIN ID', 'Quantity'];
   const API_URL = 'https://shwapnooperation.onrender.com/api/product-shelving/';
   const { startScan, stopScan } = SunmiScanner;
 

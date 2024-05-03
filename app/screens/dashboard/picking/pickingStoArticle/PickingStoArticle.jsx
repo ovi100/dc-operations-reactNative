@@ -9,13 +9,13 @@ import { getStorage } from '../../../../../hooks/useStorage';
 
 const PickingStoArticle = ({ navigation, route }) => {
   const {
-    sto, material, description, quantity,
-    picker, pickerId, packer, packerId
+    sto, material, description, quantity, bin,
+    gondola, picker, pickerId, packer, packerId
   } = route.params;
   const [isLoading, setIsLoading] = useState(false);
   const [isButtonLoading, setIsButtonLoading] = useState(false);
   const [isFirstStoItem, setIsFirstStoItem] = useState(true);
-  const [bins, setBins] = useState([]);
+  const [user, setUser] = useState({});
   const [pickedSKU, setPickedSKU] = useState(0);
   const [token, setToken] = useState('');
   const [pickedQuantity, setPickedQuantity] = useState(quantity);
@@ -26,49 +26,11 @@ const PickingStoArticle = ({ navigation, route }) => {
   useEffect(() => {
     const getAsyncStorage = async () => {
       await getStorage('token', setToken);
+      await getStorage('user', setUser, 'object');
     }
     getAsyncStorage();
   }, []);
 
-  const getBins = async (code) => {
-    try {
-      await fetch('https://shelves-backend-dev.onrender.com/api/bins/product/' + code, {
-        method: 'GET',
-        headers: {
-          authorization: token,
-          'Content-Type': 'application/json',
-        }
-      })
-        .then(response => response.json())
-        .then(result => {
-          if (result.status) {
-            setBins(result.bins);
-          } else {
-            Toast.show({
-              type: 'customError',
-              text1: result.message,
-            });
-          }
-        })
-        .catch(error => {
-          Toast.show({
-            type: 'customError',
-            text1: error.message,
-          })
-        });
-    } catch (error) {
-      Toast.show({
-        type: 'customError',
-        text1: error.message,
-      })
-    }
-  }
-
-  const getBinsInfo = async () => {
-    setIsLoading(true);
-    await getBins(material);
-    setIsLoading(false);
-  }
 
   const getStoTracking = async () => {
     try {
@@ -108,7 +70,6 @@ const PickingStoArticle = ({ navigation, route }) => {
 
   useEffect(() => {
     if (token && route.params) {
-      getBinsInfo();
       getStoTracking();
     }
   }, [token, route.params]);
@@ -117,9 +78,9 @@ const PickingStoArticle = ({ navigation, route }) => {
     let holdObject = {
       material,
       onHold: Number(pickedQuantity),
-      bin: '',
-      gondola: '',
-      site: packer,
+      bin,
+      gondola,
+      site: user.site,
     };
 
     try {
@@ -266,24 +227,27 @@ const PickingStoArticle = ({ navigation, route }) => {
         text1: 'Quantity exceed',
       });
     } else {
-      const article = {
-        sto,
-        material,
-        description,
-        quantity,
-        pickedQuantity: Number(pickedQuantity),
-        picker,
-        pickerId,
-        packer,
-        packerId,
-      };
+      if (user.site) {
+        const article = {
+          sto,
+          material,
+          description,
+          quantity,
+          pickedQuantity: Number(pickedQuantity),
+          picker,
+          pickerId,
+          packer,
+          packerId,
+        };
 
-      setIsButtonLoading(true);
-      await postStoTracking();
-      await addToArticleTracking();
-      addToSTO(article);
-      setIsButtonLoading(false);
-      navigation.goBack();
+        setIsButtonLoading(true);
+        await postStoTracking();
+        await addToArticleTracking();
+        await addToOnHold();
+        addToSTO(article);
+        setIsButtonLoading(false);
+        navigation.goBack();
+      }
     }
   };
 

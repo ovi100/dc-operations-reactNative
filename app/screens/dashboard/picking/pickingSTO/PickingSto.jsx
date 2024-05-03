@@ -10,7 +10,7 @@ import ServerError from '../../../../../components/animations/ServerError';
 import useAppContext from '../../../../../hooks/useAppContext';
 import { getStorage } from '../../../../../hooks/useStorage';
 import SunmiScanner from '../../../../../utils/sunmi/scanner';
-import { mergeInventory, updateStoItems } from '../pickingStoArticle/helperFunctions';
+import { mergeInventory, stoItemsByBin, updateStoItems } from '../processStoData';
 
 const PickingSto = ({ navigation, route }) => {
   const { sto, picker, pickerId, packer, packerId } = route.params;
@@ -79,7 +79,6 @@ const PickingSto = ({ navigation, route }) => {
                     const inventoryItems = mergeInventory(inventoryData.items);
                     const stoItems = stoDetails.data.items;
                     const mergedData = updateStoItems(stoItems, inventoryItems);
-                    console.log('calculated data', mergedData)
                     setArticles(mergedData);
                     addToTotalSku({ sto, totalSku: stoItems.length });
                   } else {
@@ -188,6 +187,8 @@ const PickingSto = ({ navigation, route }) => {
     getArticleBarcode(barcode);
   }
 
+  console.log('articles', articles);
+
   const renderItem = ({ item, index }) => (
     <>
       {pressMode === 'true' ? (
@@ -195,66 +196,82 @@ const PickingSto = ({ navigation, route }) => {
           <View
             key={index}
             className="flex-row items-center justify-between border border-tb rounded-lg mt-2.5 p-3">
-            <View className="w-[45%]">
-              <Text className="text-xs text-black" numberOfLines={1}>
-                {item.material}
-              </Text>
-              <Text className="w-36 text-black text-base mt-1" numberOfLines={2}>
+            <View className="w-1/2">
+              <View className="flex-row items-center">
+                <Text className="text-xs text-black mr-2" numberOfLines={1}>
+                  {item.material}
+                </Text>
+                <Text className="text-black text-xs font-bold" numberOfLines={2}>
+                  quantity {'--> ' + item.quantity}
+                </Text>
+              </View>
+              <Text className="text-black text-base mt-1" numberOfLines={2}>
                 {item.description}
               </Text>
             </View>
-            <View className="w-2/5">
+            <View className="w-1/2">
               {item.bins?.length > 0 ? (
                 <>
-                  <Text
-                    className="text-black text-center mb-1 last:mb-0"
-                    numberOfLines={1}>
-                    {item.bins[0].bin}
-                  </Text>
-                  <Text
-                    className="text-blue-600 text-center mb-1 last:mb-0"
-                    numberOfLines={1}>
-                    {item.bins.slice(1).length} more bins
-                  </Text>
+                  {item.bins.slice(0, 2).map(item => (
+                    <Text
+                      className="text-black text-center mb-1 last:mb-0"
+                      numberOfLines={1}
+                      key={item.bin}
+                    >
+                      {item.bin}{' --> '}{item.quantity}
+                    </Text>
+                  ))}
+                  {item.bins.slice(2).length > 0 && (
+                    <Text
+                      className="text-blue-600 text-center mt-1"
+                      numberOfLines={1}>
+                      {item.bins.slice(2).length} more bins
+                    </Text>
+                  )}
                 </>
               ) : (<Text className="text-black text-center">No bin has been assigned</Text>)}
             </View>
-            <Text className="w-[15%] text-black text-right" numberOfLines={1}>
-              {item.quantity}
-            </Text>
           </View>
         </TouchableOpacity>
       ) : (
         <View
           key={index}
           className="flex-row items-center justify-between border border-tb rounded-lg mt-2.5 p-3">
-          <View className="w-[45%]">
-            <Text className="text-xs text-black" numberOfLines={1}>
-              {item.material}
-            </Text>
-            <Text className="w-36 text-black text-base mt-1" numberOfLines={2}>
+          <View className="w-1/2">
+            <View className="flex-row items-center">
+              <Text className="text-xs text-black mr-2" numberOfLines={1}>
+                {item.material}
+              </Text>
+              <Text className="text-black text-xs font-bold" numberOfLines={2}>
+                quantity {'--> ' + item.quantity}
+              </Text>
+            </View>
+            <Text className="text-black text-base mt-1" numberOfLines={2}>
               {item.description}
             </Text>
           </View>
-          <View className="w-2/5">
-            {item.bins.length > 0 ? (
+          <View className="w-1/2">
+            {item.bins?.length > 0 ? (
               <>
-                <Text
-                  className="text-black text-center mb-1 last:mb-0"
-                  numberOfLines={1}>
-                  {item.bins[0].bin}
-                </Text>
-                <Text
-                  className="text-blue-600 text-center mb-1 last:mb-0"
-                  numberOfLines={1}>
-                  {item.bins.slice(1).length} more bins
-                </Text>
+                {item.bins.slice(0, 2).map(item => (
+                  <Text
+                    className="text-black text-center mb-1 last:mb-0"
+                    numberOfLines={1}
+                    key={item.bin}
+                  >
+                    {item.bin}{' --> '}{item.quantity}
+                  </Text>
+                ))}
+                {item.bins.slice(2).length > 0 && (
+                  <Text
+                    className="text-blue-600 text-center mt-1"
+                    numberOfLines={1}>
+                    {item.bins.slice(2).length} more bins
+                  </Text>
+                )}
               </>
             ) : (<Text className="text-black text-center">No bin has been assigned</Text>)}
           </View>
-          <Text className="w-[15%] text-black text-right" numberOfLines={1}>
-            {item.quantity}
-          </Text>
         </View>
       )}
     </>
@@ -300,15 +317,12 @@ const PickingSto = ({ navigation, route }) => {
         </View>
         <View className="content flex-1 justify-around mt-5 mb-6">
           <View className="table h-full pb-2">
-            <View className="flex-row justify-between bg-th mb-2 py-2 px-3">
-              <Text className="text-white text-sm text-center font-bold">
+            <View className="flex-row justify-around bg-th mb-2 py-2 px-3">
+              <Text className="text-white text-center font-bold">
                 Article Info
               </Text>
-              <Text className="text-white text-sm text-center font-bold">
-                Bins
-              </Text>
-              <Text className="text-white text-sm text-center font-bold">
-                Quantity
+              <Text className="text-white text-center font-bold">
+                Bin Info
               </Text>
             </View>
             <FlatList

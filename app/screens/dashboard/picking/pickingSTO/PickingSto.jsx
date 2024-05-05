@@ -1,16 +1,19 @@
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
-  ActivityIndicator, Button, DeviceEventEmitter, FlatList, SafeAreaView,
-  Text, TouchableHighlight, TouchableOpacity, View
+  ActivityIndicator,
+  DeviceEventEmitter, FlatList, SafeAreaView,
+  Text, TouchableHighlight,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../../components/CustomToast';
-import ServerError from '../../../../../components/animations/ServerError';
 import useAppContext from '../../../../../hooks/useAppContext';
 import { getStorage } from '../../../../../hooks/useStorage';
 import SunmiScanner from '../../../../../utils/sunmi/scanner';
-import { mergeInventory, stoItemsByBin, updateStoItems } from '../processStoData';
+import { adjustStoQuantity, mergeInventory, updateStoItems } from '../processStoData';
 
 const PickingSto = ({ navigation, route }) => {
   const { sto, picker, pickerId, packer, packerId } = route.params;
@@ -54,6 +57,7 @@ const PickingSto = ({ navigation, route }) => {
 
   const getStoDetails = async () => {
     try {
+      setIsLoading(true);
       await fetch(API_URL + 'bapi/sto/display', {
         method: 'POST',
         headers: {
@@ -74,13 +78,49 @@ const PickingSto = ({ navigation, route }) => {
                 }
               })
                 .then(response => response.json())
-                .then(inventoryData => {
+                .then(async inventoryData => {
                   if (inventoryData.status) {
-                    const inventoryItems = mergeInventory(inventoryData.items);
-                    const stoItems = stoDetails.data.items;
-                    const mergedData = updateStoItems(stoItems, inventoryItems);
-                    setArticles(mergedData);
-                    addToTotalSku({ sto, totalSku: stoItems.length });
+                    try {
+                      await fetch(API_URL + `api/article-tracking?filterBy=sto&value=${sto}&pageSize=500`, {
+                        method: 'GET',
+                        headers: {
+                          authorization: token,
+                          'Content-Type': 'application/json',
+                        }
+                      })
+                        .then(response => response.json())
+                        .then(articleTrackingData => {
+                          if (articleTrackingData.status) {
+                            const inventoryItems = mergeInventory(inventoryData.items);
+                            const stoItems = stoDetails.data.items;
+                            const stoMergedData = updateStoItems(stoItems, inventoryItems);
+                            const articleTrackingItems = articleTrackingData.items;
+                            const adjustStoItemsQuantity = adjustStoQuantity(stoMergedData, articleTrackingItems);
+                            setArticles(adjustStoItemsQuantity);
+                            addToTotalSku({ sto, totalSku: stoItems.length });
+                          } else {
+                            const inventoryItems = mergeInventory(inventoryData.items);
+                            const stoItems = stoDetails.data.items;
+                            const updateStdData = updateStoItems(stoItems, inventoryItems);
+                            const stoMergedData = updateStdData.map(updateStoItem => {
+                              return { ...updateStoItem, remainingQuantity: updateStoItem.quantity }
+                            }).filter(item => item.remainingQuantity !== 0);
+                            setArticles(stoMergedData);
+                            addToTotalSku({ sto, totalSku: stoItems.length });
+                          }
+                        })
+                        .catch(error => {
+                          Toast.show({
+                            type: 'customError',
+                            text1: error.message,
+                          });
+                        });
+                    } catch (error) {
+                      Toast.show({
+                        type: 'customError',
+                        text1: error.message,
+                      });
+                    }
                   } else {
                     const stoItems = stoDetails.data.items;
                     setArticles(stoItems);
@@ -117,13 +157,14 @@ const PickingSto = ({ navigation, route }) => {
         type: 'customError',
         text1: error.message,
       });
-    }
+    } finally {
+      console.log('sto data calculation complete');
+      setIsLoading(false);
+    };
   };
 
   const finalStoData = async () => {
-    setIsLoading(true);
     await getStoDetails();
-    setIsLoading(false);
   }
 
   useFocusEffect(
@@ -134,8 +175,8 @@ const PickingSto = ({ navigation, route }) => {
     }, [token, sto, user.site]),
   );
 
-  const goToStoArticle = async (article) => {
-    navigation.push('PickingStoArticle', { ...article, picker, pickerId, packer, packerId });
+  const goToStoArticleBins = async (article) => {
+    navigation.push('PickingStoArticleBinDetails', { ...article, picker, pickerId, packer, packerId });
   };
 
   if (barcode !== '' && pressMode === 'false') {
@@ -155,7 +196,7 @@ const PickingSto = ({ navigation, route }) => {
               const article = articles.find(item => item.material === result.data.material);
 
               if (article && isValidBarcode) {
-                goToStoArticle(article);
+                goToStoArticleBins(article);
               } else {
                 Toast.show({
                   type: 'customInfo',
@@ -187,12 +228,10 @@ const PickingSto = ({ navigation, route }) => {
     getArticleBarcode(barcode);
   }
 
-  console.log('articles', articles);
-
   const renderItem = ({ item, index }) => (
     <>
       {pressMode === 'true' ? (
-        <TouchableOpacity onPress={() => goToStoArticle(item)}>
+        <TouchableOpacity onPress={() => goToStoArticleBins(item)}>
           <View
             key={index}
             className="flex-row items-center justify-between border border-tb rounded-lg mt-2.5 p-3">
@@ -201,8 +240,8 @@ const PickingSto = ({ navigation, route }) => {
                 <Text className="text-xs text-black mr-2" numberOfLines={1}>
                   {item.material}
                 </Text>
-                <Text className="text-black text-xs font-bold" numberOfLines={2}>
-                  quantity {'--> ' + item.quantity}
+                <Text className="text-black text-xs font-bold" numberOfLines={1}>
+                  quantity {'--> ' + item.remainingQuantity}
                 </Text>
               </View>
               <Text className="text-black text-base mt-1" numberOfLines={2}>
@@ -222,11 +261,13 @@ const PickingSto = ({ navigation, route }) => {
                     </Text>
                   ))}
                   {item.bins.slice(2).length > 0 && (
-                    <Text
-                      className="text-blue-600 text-center mt-1"
-                      numberOfLines={1}>
-                      {item.bins.slice(2).length} more bins
-                    </Text>
+                    <TouchableWithoutFeedback onPress={() => goToStoArticleBins(item)}>
+                      <Text
+                        className="text-blue-600 text-center mt-1"
+                        numberOfLines={1}>
+                        {item.bins.slice(2).length} more bins
+                      </Text>
+                    </TouchableWithoutFeedback>
                   )}
                 </>
               ) : (<Text className="text-black text-center">No bin has been assigned</Text>)}
@@ -242,8 +283,8 @@ const PickingSto = ({ navigation, route }) => {
               <Text className="text-xs text-black mr-2" numberOfLines={1}>
                 {item.material}
               </Text>
-              <Text className="text-black text-xs font-bold" numberOfLines={2}>
-                quantity {'--> ' + item.quantity}
+              <Text className="text-black text-xs font-bold" numberOfLines={1}>
+                quantity {'--> ' + item.remainingQuantity}
               </Text>
             </View>
             <Text className="text-black text-base mt-1" numberOfLines={2}>
@@ -263,11 +304,13 @@ const PickingSto = ({ navigation, route }) => {
                   </Text>
                 ))}
                 {item.bins.slice(2).length > 0 && (
-                  <Text
-                    className="text-blue-600 text-center mt-1"
-                    numberOfLines={1}>
-                    {item.bins.slice(2).length} more bins
-                  </Text>
+                  <TouchableWithoutFeedback onPress={() => goToStoArticleBins(item)}>
+                    <Text
+                      className="text-blue-600 text-center mt-1"
+                      numberOfLines={1}>
+                      {item.bins.slice(2).length} more bins
+                    </Text>
+                  </TouchableWithoutFeedback>
                 )}
               </>
             ) : (<Text className="text-black text-center">No bin has been assigned</Text>)}
@@ -288,16 +331,16 @@ const PickingSto = ({ navigation, route }) => {
     )
   }
 
-  if (!isLoading && articles.length === 0) {
-    return (
-      <View className="w-full h-screen justify-center px-3">
-        <ServerError message="No data found!" />
-        <View className="w-1/4 mx-auto mt-5">
-          <Button title='Retry' onPress={() => finalStoData()} />
-        </View>
-      </View>
-    )
-  }
+  // if (!isLoading && articles.length === 0) {
+  //   return (
+  //     <View className="w-full h-screen justify-center px-3">
+  //       <ServerError message="No data found!" />
+  //       <View className="w-1/4 mx-auto mt-5">
+  //         <Button title='Retry' onPress={() => finalStoData()} />
+  //       </View>
+  //     </View>
+  //   )
+  // }
 
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">
@@ -325,11 +368,17 @@ const PickingSto = ({ navigation, route }) => {
                 Bin Info
               </Text>
             </View>
-            <FlatList
-              data={articles}
-              renderItem={renderItem}
-              keyExtractor={item => item.material}
-            />
+            {!isLoading && articles.length > 0 ? (
+              <FlatList
+                data={articles}
+                renderItem={renderItem}
+                keyExtractor={item => item.material}
+              />
+            ) : (
+              <Text className="text-black text-xl text-center font-bold">
+                No article left for picking
+              </Text>
+            )}
           </View>
         </View>
       </View>

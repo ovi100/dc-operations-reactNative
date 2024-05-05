@@ -9,16 +9,17 @@ import { getStorage } from '../../../../../hooks/useStorage';
 
 const PickingStoArticle = ({ navigation, route }) => {
   const {
-    sto, material, description, quantity, bin,
-    gondola, picker, pickerId, packer, packerId
+    sto, material, description, quantity, bins,
+    picker, pickerId, packer, packerId
   } = route.params;
   const [isLoading, setIsLoading] = useState(false);
   const [isButtonLoading, setIsButtonLoading] = useState(false);
   const [isFirstStoItem, setIsFirstStoItem] = useState(true);
   const [user, setUser] = useState({});
-  const [pickedSKU, setPickedSKU] = useState(0);
+  const [pickedSKU, setPickedSKU] = useState(1);
   const [token, setToken] = useState('');
-  const [pickedQuantity, setPickedQuantity] = useState(quantity);
+  // const [inboundPickedQuantity, setInboundPickedQuantity] = useState(0);
+  const [pickedQuantity, setPickedQuantity] = useState(bins.quantity);
   const { STOInfo } = useAppContext();
   const { addToSTO } = STOInfo;
   const API_URL = 'https://shwapnooperation.onrender.com/api/';
@@ -30,7 +31,6 @@ const PickingStoArticle = ({ navigation, route }) => {
     }
     getAsyncStorage();
   }, []);
-
 
   const getStoTracking = async () => {
     try {
@@ -44,12 +44,14 @@ const PickingStoArticle = ({ navigation, route }) => {
         .then(response => response.json())
         .then(data => {
           if (data.status) {
-            if (data.items[0].sku === data.items[0].pickedSku || data.items[0].pickedSku >= 1) {
+            let sku = data.items[0].sku;
+            let picSku = data.items[0].pickedSku === null ? 0 : data.items[0].pickedSku;
+            if (sku === picSku || picSku >= 1) {
               setIsFirstStoItem(false);
             } else {
               setIsFirstStoItem(true);
             }
-            setPickedSKU(prev => prev + Number(data.items[0].pickedSku));
+            setPickedSKU(prev => prev + picSku);
           } else {
             setIsFirstStoItem(true);
           }
@@ -68,50 +70,81 @@ const PickingStoArticle = ({ navigation, route }) => {
     }
   };
 
+  // const getArticleTracking = async () => {
+  //   try {
+  //     await fetch(API_URL + `api/article-tracking?filterBy=sto&value=${sto}`, {
+  //       method: 'GET',
+  //       headers: {
+  //         authorization: token,
+  //         'Content-Type': 'application/json',
+  //       },
+  //     })
+  //       .then(response => response.json())
+  //       .then(data => {
+  //         if (data.status) {
+  //           let dbQuantity = data.items.filter(item => item.code === material).map(elm => elm.inboundPickedQuantity);
+  //           setInboundPickedQuantity(dbQuantity);
+  //         }
+  //       })
+  //       .catch(error => {
+  //         Toast.show({
+  //           type: 'customError',
+  //           text1: error.message,
+  //         });
+  //       });
+  //   } catch (error) {
+  //     Toast.show({
+  //       type: 'customError',
+  //       text1: error.message,
+  //     });
+  //   }
+  // };
+
   useEffect(() => {
     if (token && route.params) {
       getStoTracking();
     }
   }, [token, route.params]);
 
-  const addToOnHold = async () => {
-    let holdObject = {
-      material,
-      onHold: Number(pickedQuantity),
-      bin,
-      gondola,
-      site: user.site,
-    };
+  // const addToOnHold = async () => {
+  //   let holdObject = {
+  //     material,
+  //     onHold: Number(pickedQuantity),
+  //     bin: bins.bin,
+  //     gondola: bins.gondola,
+  //     site: user.site,
+  //   };
 
-    try {
-      await fetch(API_URL + 'inventory/hold', {
-        method: 'POST',
-        headers: {
-          authorization: token,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(holdObject),
-      })
-        .then(response => response.json())
-        .then(result => {
-          Toast.show({
-            type: 'customInfo',
-            text1: result.message,
-          });
-        })
-        .catch(error => {
-          Toast.show({
-            type: 'customError',
-            text1: error.message,
-          });
-        });
-    } catch (error) {
-      Toast.show({
-        type: 'customError',
-        text1: error.message,
-      });
-    }
-  };
+  //   try {
+  //     await fetch(API_URL + 'inventory/hold', {
+  //       method: 'POST',
+  //       headers: {
+  //         authorization: token,
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify(holdObject),
+  //     })
+  //       .then(response => response.json())
+  //       .then(result => {
+  //         console.log('on hold response', result);
+  //         Toast.show({
+  //           type: 'customInfo',
+  //           text1: result.message,
+  //         });
+  //       })
+  //       .catch(error => {
+  //         Toast.show({
+  //           type: 'customError',
+  //           text1: error.message,
+  //         });
+  //       });
+  //   } catch (error) {
+  //     Toast.show({
+  //       type: 'customError',
+  //       text1: error.message,
+  //     });
+  //   }
+  // };
 
   const postStoTracking = async () => {
     let stoTrackingInfo = {
@@ -138,6 +171,7 @@ const PickingStoArticle = ({ navigation, route }) => {
       })
         .then(response => response.json())
         .then(data => {
+          // console.log('sto tracking response', data);
           if (data.status) {
             Toast.show({
               type: 'customSuccess',
@@ -180,6 +214,8 @@ const PickingStoArticle = ({ navigation, route }) => {
       status: quantity === Number(pickedQuantity) ? 'inbound picked' : 'partially inbound picked'
     };
 
+    console.log(articleTrackingInfo);
+
     try {
       await fetch(API_URL + 'article-tracking', {
         method: 'POST',
@@ -191,6 +227,7 @@ const PickingStoArticle = ({ navigation, route }) => {
       })
         .then(response => response.json())
         .then(result => {
+          // console.log('article tracking response', result);
           Toast.show({
             type: 'customInfo',
             text1: result.message,
@@ -218,13 +255,13 @@ const PickingStoArticle = ({ navigation, route }) => {
       });
     } else if (pickedQuantity <= 0) {
       Toast.show({
-        type: 'customWarn',
+        type: 'customError',
         text1: 'Quantity must be greater than zero',
       });
-    } else if (pickedQuantity > quantity) {
+    } else if (pickedQuantity > bins.quantity) {
       Toast.show({
-        type: 'customWarn',
-        text1: 'Quantity exceed',
+        type: 'customError',
+        text1: 'Bin quantity exceed',
       });
     } else {
       if (user.site) {
@@ -243,7 +280,7 @@ const PickingStoArticle = ({ navigation, route }) => {
         setIsButtonLoading(true);
         await postStoTracking();
         await addToArticleTracking();
-        await addToOnHold();
+        // await addToOnHold();
         addToSTO(article);
         setIsButtonLoading(false);
         navigation.goBack();
@@ -276,8 +313,11 @@ const PickingStoArticle = ({ navigation, route }) => {
                 {' ' + material}
               </Text>
             </View>
-            <Text className="text-sm text-sh text-right font-medium capitalize">
+            <Text className="text-sm text-sh text-right font-medium capitalize my-1">
               {description}
+            </Text>
+            <Text className="text-sm text-sh text-right font-medium">
+              {bins.bin}{' --> '}{bins.quantity}
             </Text>
           </View>
         </View>
@@ -302,8 +342,8 @@ const PickingStoArticle = ({ navigation, route }) => {
               placeholderTextColor="#5D80C5"
               selectionColor="#5D80C5"
               keyboardType="numeric"
-              autoFocus={true}
-              value={pickedQuantity.toString()}
+              // autoFocus={true}
+              // value={pickedQuantity.toString()}
               onChangeText={value => {
                 setPickedQuantity(value);
               }}

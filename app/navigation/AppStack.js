@@ -10,6 +10,7 @@ import ChildPacking from '../screens/dashboard/packing/ChildPacking';
 import MasterPacking from '../screens/dashboard/packing/MasterPacking';
 import QualityCheck from '../screens/dashboard/packing/qualityCheck/QualityCheck';
 import Picking from '../screens/dashboard/picking/Picking';
+import PickingStoArticleBinDetails from '../screens/dashboard/picking/PickingStoArticleBinDetails';
 import PickedSto from '../screens/dashboard/picking/pickedSTO/PickedSto';
 import PickingSto from '../screens/dashboard/picking/pickingSTO/PickingSto';
 import PickingStoArticle from '../screens/dashboard/picking/pickingStoArticle/PickingStoArticle';
@@ -61,6 +62,11 @@ const AppStack = () => {
       id: 'picking-sto-article',
       name: 'PickingStoArticle',
       component: PickingStoArticle,
+    },
+    {
+      id: 'picking-sto-article-bins',
+      name: 'PickingStoArticleBinDetails',
+      component: PickingStoArticleBinDetails,
     },
     {id: 'child-packing', name: 'ChildPacking', component: ChildPacking},
     {id: 'quality-check', name: 'QualityCheck', component: QualityCheck},

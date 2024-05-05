@@ -1,4 +1,4 @@
-import {groupBy} from '../../../../utils';
+import { groupBy } from '../../../../utils';
 
 const mergeInventory = inventoryData => {
   return inventoryData.reduce((acc, item) => {
@@ -54,6 +54,28 @@ const updateStoItems = (stoItems, inventoryItems) => {
   return items;
 };
 
+const adjustStoQuantity = (stoItems, articles) => {
+  const result = stoItems
+    .map(stoItem => {
+      const matchedArticle = articles.find(
+        article => article.code === stoItem.material,
+      );
+      if (matchedArticle) {
+        return {
+          ...stoItem,
+          remainingQuantity: stoItem.quantity - matchedArticle.inboundPickedQuantity,
+        };
+      } else {
+        return {
+          ...stoItem,
+          remainingQuantity: stoItem.quantity,
+        };
+      }
+    })
+    .filter(item => item.remainingQuantity !== 0);
+  return result;
+};
+
 const stoItemsByBin = (stoItems, inventoryItems) => {
   const binObject = groupBy(inventoryItems, 'bin');
   // const filteredBinObject = {};
@@ -80,4 +102,5 @@ const stoItemsByBin = (stoItems, inventoryItems) => {
   return stoItemsByBin;
 };
 
-export {mergeInventory, updateStoItems, stoItemsByBin};
+export { adjustStoQuantity, mergeInventory, stoItemsByBin, updateStoItems };
+

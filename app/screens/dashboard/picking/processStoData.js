@@ -1,3 +1,4 @@
+import Toast from 'react-native-toast-message';
 import { groupBy } from '../../../../utils';
 
 const mergeInventory = inventoryData => {
@@ -63,7 +64,8 @@ const adjustStoQuantity = (stoItems, articles) => {
       if (matchedArticle) {
         return {
           ...stoItem,
-          remainingQuantity: stoItem.quantity - matchedArticle.inboundPickedQuantity,
+          remainingQuantity:
+            stoItem.quantity - matchedArticle.inboundPickedQuantity,
         };
       } else {
         return {
@@ -102,5 +104,47 @@ const stoItemsByBin = (stoItems, inventoryItems) => {
   return stoItemsByBin;
 };
 
-export { adjustStoQuantity, mergeInventory, stoItemsByBin, updateStoItems };
+const updateArticle = async data => {
+  try {
+    await fetch(API_URL + 'article-tracking/update', {
+      method: 'PATCH',
+      headers: {
+        authorization: token,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status) {
+          Toast.show({
+            type: 'customSuccess',
+            text1: data.message,
+          });
+        } else {
+          Toast.show({
+            type: 'customError',
+            text1: data.message,
+          });
+        }
+      })
+      .catch(error => {
+        Toast.show({
+          type: 'customError',
+          text1: error.message,
+        });
+      });
+  } catch (error) {
+    Toast.show({
+      type: 'customError',
+      text1: error.message,
+    });
+  }
+};
+
+export {
+  adjustStoQuantity,
+  mergeInventory,
+  stoItemsByBin, updateArticle, updateStoItems
+};
 

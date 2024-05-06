@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
-  ActivityIndicator, Image, SafeAreaView, Text,
+  ActivityIndicator, Image, SafeAreaView, ScrollView, Text,
   TouchableOpacity, TouchableWithoutFeedback, View
 } from 'react-native';
 import Toast from 'react-native-toast-message';
@@ -12,7 +12,7 @@ const API_URL = 'https://shelves-backend-1-kcgr.onrender.com/api/sites';
 
 const SiteChoose = ({ navigation }) => {
   const { authInfo } = useAppContext();
-  const { user, setUser, token, logout } = authInfo;
+  const { user, setUser, setUserSites, token, logout } = authInfo;
   const [isLoading, setIsLoading] = useState(false);
   let [sites, setSites] = useState([]);
 
@@ -66,8 +66,13 @@ const SiteChoose = ({ navigation }) => {
     return;
   }
 
-  if (user.site?.length > 0 && !user.hasPermission.includes("all-site-access") && sites.length > 0) {
+  if (user.site?.length > 0 && !user.site.includes("all-site-access") && sites.length > 0) {
     sites = user.site.map(item => sites.find(elm => elm.code === item));
+    setUserSites(sites);
+    setStorage('userSites', sites);
+  } else {
+    setUserSites(sites);
+    setStorage('userSites', sites);
   }
 
   const updateUser = (site) => {
@@ -125,21 +130,23 @@ const SiteChoose = ({ navigation }) => {
           </Text>
           <ButtonProfile onPress={() => navigation.push('Profile')} />
         </View>
-        <View className="flex-row flex-wrap items-center px-3">
-          {sites.map(item => (
-            <TouchableOpacity
-              className="site-box items-center w-1/3 mt-8"
-              onPress={() => updateUser(item.code)}
-              key={item.code}>
-              <View className="flex-col items-center">
-                <View className="icon">
-                  <Image className="w-16 h-16" source={item.imgURL !== '' ? { uri: item.imgURL } : SitesIcon} />
+        <ScrollView>
+          <View className="flex-row flex-wrap items-center px-3">
+            {sites.map(item => (
+              <TouchableOpacity
+                className="site-box items-center w-1/3 mt-8"
+                onPress={() => updateUser(item.code)}
+                key={item.code}>
+                <View className="flex-col items-center">
+                  <View className="icon">
+                    <Image className="w-16 h-16" source={item.imgURL !== '' ? { uri: item.imgURL } : SitesIcon} />
+                  </View>
+                  <Text className="text text-black mt-3">{item.code}</Text>
                 </View>
-                <Text className="text text-black mt-3">{item.code}</Text>
-              </View>
-            </TouchableOpacity>
-          ))}
-        </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </ScrollView>
       </View>
     </SafeAreaView>
   )

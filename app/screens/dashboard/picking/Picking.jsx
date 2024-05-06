@@ -6,7 +6,7 @@ import {
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
-import { NotPickingIcon, PickingIcon } from '../../../../constant/icons';
+import { StoNotPickedIcon, StoPickedIcon } from '../../../../constant/icons';
 import { getStorage } from '../../../../hooks/useStorage';
 
 const Picking = ({ navigation }) => {
@@ -176,13 +176,13 @@ const Picking = ({ navigation }) => {
       id: 1,
       name: 'not picked',
       count: notPicked.length,
-      icon: NotPickingIcon,
+      icon: StoNotPickedIcon,
     },
     {
       id: 2,
       name: 'picked',
       count: picked.length,
-      icon: PickingIcon,
+      icon: StoPickedIcon,
     },
   ];
 
@@ -227,7 +227,7 @@ const Picking = ({ navigation }) => {
               key={item.id}
               onPress={() => setActive(item)}
               className={`w-1/2 ${active?.name === item.name
-                ? 'bg-[#F6FEFF] border border-gray-200 rounded-full'
+                ? 'bg-[#FFC4C4] border border-gray-200 rounded-full'
                 : ''
                 } p-1.5`}>
               <View className="item-box flex-row items-center justify-center">

@@ -116,7 +116,7 @@ const Login = ({ navigation }) => {
             </View>
           </View>
         </View>
-        <View className="version-info w-full absolute -bottom-44">
+        <View className="version-info w-full absolute -bottom-40">
           <Text className="text-gray-400 text-center font-bold capitalize">
             shwapno operations app
           </Text>

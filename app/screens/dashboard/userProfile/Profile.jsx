@@ -23,7 +23,7 @@ const Profile = ({ navigation }) => {
   const [isEnabled, setIsEnabled] = useState(false);
   const [selectedSite, setSelectedSite] = useState('');
   const [user, setLsUser] = useState({});
-  const [site, setSite] = useState([]);
+  const [sites, setSites] = useState([]);
   const { authInfo } = useAppContext();
   const { logout, setUser } = authInfo;
 
@@ -31,7 +31,7 @@ const Profile = ({ navigation }) => {
     const getUserInfo = async () => {
       setIsLoading(true);
       await getStorage('user', setLsUser, 'object');
-      await getStorage('usersite', setSite, 'object');
+      await getStorage('userSites', setSites, 'object');
       setIsLoading(false);
     }
     getUserInfo();
@@ -129,17 +129,17 @@ const Profile = ({ navigation }) => {
               {isEnabled ? 'press mode enabled' : 'press mode disabled'}
             </Text>
           </View>
-          {site !== null && (
+          {sites !== null && (
             <View className="site bg-white border border-solid border-gray-300 rounded mt-4">
               <Picker
                 selectedValue={selectedSite}
                 onValueChange={site => updateUser(site)}
                 style={{ color: 'black' }}>
                 <Picker.Item label={user.site} value={user.site} />
-                {site?.map((item, i) => (
+                {sites?.map((item, i) => (
                   <Picker.Item
-                    label={item}
-                    value={item}
+                    label={item.code}
+                    value={item.code}
                     key={i}
                     style={{ color: 'black' }}
                   />

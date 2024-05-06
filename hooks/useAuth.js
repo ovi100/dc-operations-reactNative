@@ -7,7 +7,7 @@ import { getStorage, removeAll, setStorage } from './useStorage';
 const useAuth = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState(null);
-  const [userSite, setUserSite] = useState([]);
+  const [userSites, setUserSites] = useState([]);
   const [token, setToken] = useState(null);
   const {createActivity} = useActivity();
   const API_URL = 'https://shwapnooperation.onrender.com/api/user';
@@ -32,13 +32,13 @@ const useAuth = () => {
       }
 
       const data = await response.json();
+
       if (data.status) {
         setUser(data.user);
-        setUserSite(data.user.site);
         setToken(data.token);
+        setUserSites(data.site);
         setStorage('token', data.token);
         setStorage('user', data.user);
-        setStorage('usersite', data.user.site);
         // activity
         await createActivity(
           data.user._id,
@@ -63,7 +63,6 @@ const useAuth = () => {
 
   const logout = () => {
     setUser(null);
-    setUserSite([]);
     setToken(null);
     removeAll();
     setIsLoading(false);
@@ -101,7 +100,8 @@ const useAuth = () => {
     isLoading,
     user,
     setUser,
-    userSite,
+    userSites,
+    setUserSites,
     token,
   };
 

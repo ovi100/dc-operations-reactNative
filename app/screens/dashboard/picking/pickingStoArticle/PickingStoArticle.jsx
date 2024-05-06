@@ -6,6 +6,7 @@ import { ButtonBack, ButtonLg, ButtonLoading } from '../../../../../components/b
 import { BoxIcon } from '../../../../../constant/icons';
 import useAppContext from '../../../../../hooks/useAppContext';
 import { getStorage } from '../../../../../hooks/useStorage';
+import { updateArticle } from '../processStoData';
 
 const PickingStoArticle = ({ navigation, route }) => {
   const {
@@ -20,6 +21,7 @@ const PickingStoArticle = ({ navigation, route }) => {
   const [token, setToken] = useState('');
   // const [inboundPickedQuantity, setInboundPickedQuantity] = useState(0);
   const [pickedQuantity, setPickedQuantity] = useState(bins.quantity);
+  const [stoTrackingInfo, setStoTrackingInfo] = useState(null);
   const { STOInfo } = useAppContext();
   const { addToSTO } = STOInfo;
   const API_URL = 'https://shwapnooperation.onrender.com/api/';
@@ -28,9 +30,12 @@ const PickingStoArticle = ({ navigation, route }) => {
     const getAsyncStorage = async () => {
       await getStorage('token', setToken);
       await getStorage('user', setUser, 'object');
+      await getStorage('stoTrackingInfo', setStoTrackingInfo, 'object');
     }
     getAsyncStorage();
   }, []);
+
+  console.log('sto tracking AS info', stoTrackingInfo);
 
   const getStoTracking = async () => {
     try {
@@ -69,6 +74,9 @@ const PickingStoArticle = ({ navigation, route }) => {
       });
     }
   };
+
+
+
 
   // const getArticleTracking = async () => {
   //   try {
@@ -214,8 +222,6 @@ const PickingStoArticle = ({ navigation, route }) => {
       status: quantity === Number(pickedQuantity) ? 'inbound picked' : 'partially inbound picked'
     };
 
-    console.log(articleTrackingInfo);
-
     try {
       await fetch(API_URL + 'article-tracking', {
         method: 'POST',
@@ -226,12 +232,23 @@ const PickingStoArticle = ({ navigation, route }) => {
         body: JSON.stringify(articleTrackingInfo),
       })
         .then(response => response.json())
-        .then(result => {
-          // console.log('article tracking response', result);
-          Toast.show({
-            type: 'customInfo',
-            text1: result.message,
-          });
+        .then(async result => {
+          if (result.status) {
+            const object = result.data;
+            if (object.quantity === object.inboundPickedQuantity) {
+              let updateObject = {
+                sto: object.sto,
+                code: object.code,
+                status: "inbound picked"
+              };
+              await updateArticle(updateObject);
+            }
+          } else {
+            Toast.show({
+              type: 'customError',
+              text1: result.message,
+            });
+          }
         })
         .catch(error => {
           Toast.show({

@@ -28,19 +28,17 @@ const PickingSto = ({ navigation, route }) => {
   const { STOInfo } = useAppContext();
   const { addToTotalSku } = STOInfo;
 
-  const [stoTrackingInfo, setStoTrackingInfo] = useState(null);
+
 
   useEffect(() => {
     const getAsyncStorage = async () => {
       await getStorage('token', setToken);
       await getStorage('user', setUser, 'object');
       await getStorage('pressMode', setPressMode);
-      await getStorage('stoTrackingInfo', setStoTrackingInfo, 'object');
+
     }
     getAsyncStorage();
   }, [navigation.isFocused()]);
-
-  // console.log('sto tracking AS info', stoTrackingInfo);
 
   useEffect(() => {
     startScan();

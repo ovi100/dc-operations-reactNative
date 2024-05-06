@@ -11,9 +11,10 @@ import {
 import NoAccess from '../../../components/animations/NoAccess';
 import { ButtonProfile } from '../../../components/buttons';
 import {
-  ChildPackingIcon,
+  AuditIcon,
   DeliveryNoteIcon,
   DeliveryPlanIcon,
+  PackingIcon,
   PickingIcon,
   ReceivingIcon,
   ReturnIcon,
@@ -28,13 +29,6 @@ const Home = ({navigation}) => {
   let filteredLinks;
 
   const navLinks = [
-    {
-      name: 'Audit',
-      icon: ReturnIcon,
-      screen: 'Audit',
-      role: 'audit',
-      access: 'audit-access',
-    },
     {
       name: 'Receiving',
       icon: ReceivingIcon,
@@ -72,18 +66,11 @@ const Home = ({navigation}) => {
     },
     {
       name: 'Child Packing',
-      icon: ChildPackingIcon,
+      icon: PackingIcon,
       screen: 'ChildPacking',
       role: 'packer',
       access: 'packing-access',
     },
-    // {
-    //   name: 'Master Packing',
-    //   icon: MasterPackingIcon,
-    //   screen: 'MasterPacking',
-    //   role: 'packer',
-    //   access:'packing-access'
-    // },
     {
       name: 'Final Delivery Note',
       icon: DeliveryNoteIcon,
@@ -91,13 +78,20 @@ const Home = ({navigation}) => {
       role: 'DN charge',
       access: 'delivery-note-access',
     },
-    // {
-    //   name: 'Return',
-    //   icon: ReturnIcon,
-    //   screen: 'Return',
-    //   role: 'returner',
-    //   access:'return-access'
-    // },
+    {
+      name: 'Audit',
+      icon: AuditIcon,
+      screen: 'Audit',
+      role: 'audit',
+      access: 'audit-access',
+    },
+    {
+      name: 'Return',
+      icon: ReturnIcon,
+      screen: 'Return',
+      role: 'returner',
+      access: 'return-access',
+    },
   ];
 
   if (user?.hasPermission.includes('*')) {
@@ -166,7 +160,10 @@ const Home = ({navigation}) => {
               <Link to={{screen: item.screen}}>
                 <View className="flex-col items-center">
                   <View className="icon">
-                    <Image className="w-24 h-24" source={item.icon} />
+                    <Image
+                      className="w-24 h-24 rounded-[14px]"
+                      source={item.icon}
+                    />
                   </View>
                   <Text className="text text-black mt-3">{item.name}</Text>
                 </View>

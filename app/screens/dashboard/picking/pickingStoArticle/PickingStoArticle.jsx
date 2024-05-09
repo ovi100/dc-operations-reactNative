@@ -6,7 +6,7 @@ import { ButtonBack, ButtonLg, ButtonLoading } from '../../../../../components/b
 import { BoxIcon } from '../../../../../constant/icons';
 import useAppContext from '../../../../../hooks/useAppContext';
 import { getStorage } from '../../../../../hooks/useStorage';
-import { updateArticle } from '../processStoData';
+import { updateStoTracking, updateArticleTracking } from '../processStoData';
 
 const PickingStoArticle = ({ navigation, route }) => {
   const {
@@ -16,26 +16,41 @@ const PickingStoArticle = ({ navigation, route }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isButtonLoading, setIsButtonLoading] = useState(false);
   const [isFirstStoItem, setIsFirstStoItem] = useState(true);
+  const [isLastStoItem, setIsLastStoItem] = useState(false);
   const [user, setUser] = useState({});
-  const [pickedSKU, setPickedSKU] = useState(1);
+  const [pickedSku, setPickedSku] = useState(1);
   const [token, setToken] = useState('');
-  // const [inboundPickedQuantity, setInboundPickedQuantity] = useState(0);
   const [pickedQuantity, setPickedQuantity] = useState(bins.quantity);
-  const [stoTrackingInfo, setStoTrackingInfo] = useState(null);
+  // const [stoTrackingInfo, setStoTrackingInfo] = useState(null);
   const { STOInfo } = useAppContext();
-  const { addToSTO } = STOInfo;
+  const { addToSTO, stoItems } = STOInfo;
   const API_URL = 'https://shwapnooperation.onrender.com/api/';
 
   useEffect(() => {
     const getAsyncStorage = async () => {
       await getStorage('token', setToken);
       await getStorage('user', setUser, 'object');
-      await getStorage('stoTrackingInfo', setStoTrackingInfo, 'object');
+      // await getStorage('stoTrackingInfo', setStoTrackingInfo, 'object');
     }
     getAsyncStorage();
   }, []);
 
+  const article = {
+    sto,
+    material,
+    description,
+    quantity,
+    pickedQuantity: Number(pickedQuantity),
+    picker,
+    pickerId,
+    packer,
+    packerId,
+  };
+
   console.log('sto tracking AS info', stoTrackingInfo);
+  // const filteredSto = JSON.parse(stoTrackingInfo.stoItems).filter(
+  //   item => item.sto === stoItem.sto);
+  console.log('sto Items', stoItems);
 
   const getStoTracking = async () => {
     try {
@@ -50,15 +65,22 @@ const PickingStoArticle = ({ navigation, route }) => {
         .then(data => {
           if (data.status) {
             let sku = data.items[0].sku;
-            let picSku = data.items[0].pickedSku === null ? 0 : data.items[0].pickedSku;
+            let picSku = data.items[0].pickedSku ? data.items[0].pickedSku : 0;
             if (sku === picSku || picSku >= 1) {
               setIsFirstStoItem(false);
             } else {
               setIsFirstStoItem(true);
             }
-            setPickedSKU(prev => prev + picSku);
+
+            if (sku - picSku === 1) {
+              setIsLastStoItem(true);
+            } else {
+              setIsLastStoItem(false);
+            }
+            setPickedSku(prev => prev + picSku);
           } else {
             setIsFirstStoItem(true);
+            setIsLastStoItem(false);
           }
         })
         .catch(error => {
@@ -74,39 +96,6 @@ const PickingStoArticle = ({ navigation, route }) => {
       });
     }
   };
-
-
-
-
-  // const getArticleTracking = async () => {
-  //   try {
-  //     await fetch(API_URL + `api/article-tracking?filterBy=sto&value=${sto}`, {
-  //       method: 'GET',
-  //       headers: {
-  //         authorization: token,
-  //         'Content-Type': 'application/json',
-  //       },
-  //     })
-  //       .then(response => response.json())
-  //       .then(data => {
-  //         if (data.status) {
-  //           let dbQuantity = data.items.filter(item => item.code === material).map(elm => elm.inboundPickedQuantity);
-  //           setInboundPickedQuantity(dbQuantity);
-  //         }
-  //       })
-  //       .catch(error => {
-  //         Toast.show({
-  //           type: 'customError',
-  //           text1: error.message,
-  //         });
-  //       });
-  //   } catch (error) {
-  //     Toast.show({
-  //       type: 'customError',
-  //       text1: error.message,
-  //     });
-  //   }
-  // };
 
   useEffect(() => {
     if (token && route.params) {
@@ -155,55 +144,36 @@ const PickingStoArticle = ({ navigation, route }) => {
   // };
 
   const postStoTracking = async () => {
-    let stoTrackingInfo = {
+    let postStoData = {
       sto,
-      picker,
-      pickerId,
-      packer,
-      packerId,
-      pickedSku: pickedSKU,
-      pickingStartingTime: new Date(),
+      pickedSku,
     };
+    let stoTrackingInfo = {};
     if (isFirstStoItem) {
-      stoTrackingInfo.status = 'inbound picking';
+      stoTrackingInfo = {
+        ...postStoData,
+        picker,
+        pickerId,
+        packer,
+        packerId,
+        pickingStartingTime: new Date(),
+        status: 'inbound picking'
+      };
+    } else if (isLastStoItem) {
+      stoTrackingInfo = {
+        ...postStoData,
+        pickingEndingTime: new Date(),
+        status: 'inbound picked'
+      };
+    } else {
+      stoTrackingInfo = {
+        ...postStoData
+      };
     }
 
-    try {
-      await fetch(API_URL + 'sto-tracking/update', {
-        method: 'PATCH',
-        headers: {
-          authorization: token,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(stoTrackingInfo),
-      })
-        .then(response => response.json())
-        .then(data => {
-          // console.log('sto tracking response', data);
-          if (data.status) {
-            Toast.show({
-              type: 'customSuccess',
-              text1: data.message,
-            });
-          } else {
-            Toast.show({
-              type: 'customError',
-              text1: data.message,
-            });
-          }
-        })
-        .catch(error => {
-          Toast.show({
-            type: 'customError',
-            text1: error.message,
-          });
-        });
-    } catch (error) {
-      Toast.show({
-        type: 'customError',
-        text1: error.message,
-      });
-    }
+    console.log('sto tracking post data', stoTrackingInfo);
+    await updateStoTracking(token, stoTrackingInfo);
+
   };
 
   const addToArticleTracking = async () => {
@@ -234,14 +204,14 @@ const PickingStoArticle = ({ navigation, route }) => {
         .then(response => response.json())
         .then(async result => {
           if (result.status) {
-            const object = result.data;
-            if (object.quantity === object.inboundPickedQuantity) {
+            const article = result.data;
+            if (!quantity === Number(pickedQuantity) && article.quantity === article.inboundPickedQuantity) {
               let updateObject = {
-                sto: object.sto,
-                code: object.code,
+                sto: article.sto,
+                code: article.code,
                 status: "inbound picked"
               };
-              await updateArticle(updateObject);
+              await updateArticleTracking(token, updateObject);
             }
           } else {
             Toast.show({
@@ -282,18 +252,6 @@ const PickingStoArticle = ({ navigation, route }) => {
       });
     } else {
       if (user.site) {
-        const article = {
-          sto,
-          material,
-          description,
-          quantity,
-          pickedQuantity: Number(pickedQuantity),
-          picker,
-          pickerId,
-          packer,
-          packerId,
-        };
-
         setIsButtonLoading(true);
         await postStoTracking();
         await addToArticleTracking();

@@ -1,5 +1,6 @@
 import Toast from 'react-native-toast-message';
-import { groupBy } from '../../../../utils';
+import {groupBy} from '../../../../utils';
+const API_URL = 'https://shwapnooperation.onrender.com/api/';
 
 const mergeInventory = inventoryData => {
   return inventoryData.reduce((acc, item) => {
@@ -104,7 +105,45 @@ const stoItemsByBin = (stoItems, inventoryItems) => {
   return stoItemsByBin;
 };
 
-const updateArticle = async data => {
+const updateStoTracking = async (token, postData) => {
+  try {
+    await fetch(API_URL + 'sto-tracking/update', {
+      method: 'PATCH',
+      headers: {
+        authorization: token,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(postData),
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status) {
+          Toast.show({
+            type: 'customSuccess',
+            text1: data.message,
+          });
+        } else {
+          Toast.show({
+            type: 'customError',
+            text1: data.message,
+          });
+        }
+      })
+      .catch(error => {
+        Toast.show({
+          type: 'customError',
+          text1: error.message,
+        });
+      });
+  } catch (error) {
+    Toast.show({
+      type: 'customError',
+      text1: error.message,
+    });
+  }
+};
+
+const updateArticleTracking = async (token, postData) => {
   try {
     await fetch(API_URL + 'article-tracking/update', {
       method: 'PATCH',
@@ -112,7 +151,7 @@ const updateArticle = async data => {
         authorization: token,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(data),
+      body: JSON.stringify(postData),
     })
       .then(response => response.json())
       .then(data => {
@@ -145,6 +184,8 @@ const updateArticle = async data => {
 export {
   adjustStoQuantity,
   mergeInventory,
-  stoItemsByBin, updateArticle, updateStoItems
+  stoItemsByBin,
+  updateStoTracking,
+  updateArticleTracking,
+  updateStoItems,
 };
-

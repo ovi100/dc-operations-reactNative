@@ -125,8 +125,8 @@ const Profile = ({ navigation }) => {
               onValueChange={toggleSwitch}
               value={isEnabled}
             />
-            <Text className={`text-base ${isEnabled ? 'text-green-600' : 'text-red-600'} font-medium capitalize`}>
-              {isEnabled ? 'press mode enabled' : 'press mode disabled'}
+            <Text className={`text-base ${isEnabled ? 'text-green-600' : 'text-red-600'} font-medium`}>
+              {isEnabled ? 'Press mode is enabled' : 'Press mode is disabled'}
             </Text>
           </View>
           {sites !== null && (

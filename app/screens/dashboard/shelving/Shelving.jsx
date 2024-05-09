@@ -154,9 +154,7 @@ const Shelving = ({ navigation }) => {
     articles = [...partialArticles, ...readyArticles];
   }
 
-  console.log('press mode', pressMode);
-
-  if (barcode !== '' && pressMode === 'false') {
+  if (barcode !== '' && (pressMode === 'false' || pressMode === null)) {
     const getArticleBarcode = async (barcode) => {
       try {
         await fetch('https://shelves-backend-1-kcgr.onrender.com/api/barcodes/barcode/' + barcode, {

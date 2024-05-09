@@ -1,12 +1,11 @@
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
-  DeviceEventEmitter, FlatList, SafeAreaView,
-  Text, TouchableHighlight,
-  TouchableOpacity,
-  TouchableWithoutFeedback,
-  View
+  ActivityIndicator, Button,
+  DeviceEventEmitter, FlatList,
+  SafeAreaView, TouchableHighlight,
+  Text, TouchableOpacity,
+  TouchableWithoutFeedback, View
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../../components/CustomToast';
@@ -14,6 +13,7 @@ import useAppContext from '../../../../../hooks/useAppContext';
 import { getStorage } from '../../../../../hooks/useStorage';
 import SunmiScanner from '../../../../../utils/sunmi/scanner';
 import { adjustStoQuantity, mergeInventory, updateStoItems } from '../processStoData';
+import ServerError from '../../../../../components/animations/ServerError';
 
 const PickingSto = ({ navigation, route }) => {
   const { sto, picker, pickerId, packer, packerId } = route.params;
@@ -27,8 +27,6 @@ const PickingSto = ({ navigation, route }) => {
   const { startScan, stopScan } = SunmiScanner;
   const { STOInfo } = useAppContext();
   const { addToTotalSku } = STOInfo;
-
-
 
   useEffect(() => {
     const getAsyncStorage = async () => {
@@ -51,7 +49,6 @@ const PickingSto = ({ navigation, route }) => {
       DeviceEventEmitter.removeAllListeners('ScanDataReceived');
     };
   }, []);
-
 
   const getStoDetails = async () => {
     try {
@@ -156,7 +153,7 @@ const PickingSto = ({ navigation, route }) => {
         text1: error.message,
       });
     } finally {
-      console.log('sto data calculation complete');
+      // console.log('sto data calculation complete');
       setIsLoading(false);
     };
   };
@@ -177,7 +174,7 @@ const PickingSto = ({ navigation, route }) => {
     navigation.push('PickingStoArticleBinDetails', { ...article, picker, pickerId, packer, packerId });
   };
 
-  if (barcode !== '' && pressMode === 'false') {
+  if (barcode !== '' && (pressMode === 'false' || pressMode === null)) {
     const getArticleBarcode = async (barcode) => {
       try {
         await fetch('https://shelves-backend-1-kcgr.onrender.com/api/barcodes/barcode/' + barcode, {
@@ -252,7 +249,7 @@ const PickingSto = ({ navigation, route }) => {
                   {item.bins.slice(0, 2).map(item => (
                     <Text
                       className="text-black text-center mb-1 last:mb-0"
-                      numberOfLines={1}
+                      numberOfLines={2}
                       key={item.bin}
                     >
                       {item.bin}{' --> '}{item.quantity}
@@ -295,7 +292,7 @@ const PickingSto = ({ navigation, route }) => {
                 {item.bins.slice(0, 2).map(item => (
                   <Text
                     className="text-black text-center mb-1 last:mb-0"
-                    numberOfLines={1}
+                    numberOfLines={2}
                     key={item.bin}
                   >
                     {item.bin}{' --> '}{item.quantity}
@@ -329,16 +326,16 @@ const PickingSto = ({ navigation, route }) => {
     )
   }
 
-  // if (!isLoading && articles.length === 0) {
-  //   return (
-  //     <View className="w-full h-screen justify-center px-3">
-  //       <ServerError message="No data found!" />
-  //       <View className="w-1/4 mx-auto mt-5">
-  //         <Button title='Retry' onPress={() => finalStoData()} />
-  //       </View>
-  //     </View>
-  //   )
-  // }
+  if (!isLoading && articles.length === 0) {
+    return (
+      <View className="w-full h-screen justify-center px-3">
+        <ServerError message="No data found!" />
+        <View className="w-1/4 mx-auto mt-5">
+          <Button title='Retry' onPress={() => finalStoData()} />
+        </View>
+      </View>
+    )
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">
@@ -366,17 +363,11 @@ const PickingSto = ({ navigation, route }) => {
                 Bin Info
               </Text>
             </View>
-            {!isLoading && articles.length > 0 ? (
-              <FlatList
-                data={articles}
-                renderItem={renderItem}
-                keyExtractor={item => item.material}
-              />
-            ) : (
-              <Text className="text-black text-xl text-center font-bold">
-                No article left for picking
-              </Text>
-            )}
+            <FlatList
+              data={articles}
+              renderItem={renderItem}
+              keyExtractor={item => item.material}
+            />
           </View>
         </View>
       </View>

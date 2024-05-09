@@ -14,7 +14,7 @@ import { getStorage } from '../../../../hooks/useStorage';
 const PoArticle = ({ navigation, route }) => {
   const {
     description, material, po, poItem, quantity,
-    remainingQuantity, receivingPlant, unit
+    remainingQuantity, receivingPlant, storageLocation, unit
   } = route.params;
   const [isLoading, setIsLoading] = useState(false);
   const [isButtonLoading, setIsButtonLoading] = useState(false);
@@ -57,8 +57,6 @@ const PoArticle = ({ navigation, route }) => {
 
   }, [material, user.site]);
 
-  console.log('po number from po-article', po)
-
   const readyForShelve = async () => {
     if (!newQuantity) {
       Toast.show({
@@ -79,7 +77,7 @@ const PoArticle = ({ navigation, route }) => {
       const grnItem = {
         movementType: '101',
         movementIndicator: 'B',
-        storageLocation: '0001',
+        storageLocation,
         po: po,
         poItem: Number(poItem).toString(),
         material: material,

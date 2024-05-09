@@ -55,8 +55,6 @@ const PurchaseOrder = ({ navigation, route }) => {
     };
   }, []);
 
-  console.log('po number from po-details', po_id)
-
   const getPoDetails = async () => {
     await fetch(API_URL + 'bapi/po/display', {
       method: 'POST',
@@ -67,55 +65,38 @@ const PurchaseOrder = ({ navigation, route }) => {
       body: JSON.stringify({ po: po_id }),
     })
       .then(response => response.json())
-      .then(async result => {
+      .then(result => {
         if (result.status) {
-          await fetch(API_URL + 'api/product-shelving/ready',
-            {
-              method: 'GET',
-              headers: {
-                authorization: token,
-              },
-            },
-          )
-            .then(res => res.json())
-            .then(async shelveData => {
-              if (shelveData.status) {
-                const poItems = result.data.items;
-                const shItems = shelveData.items;
-                let remainingPoItems = poItems.map(poItem => {
-                  const matchedShItem = shItems.find(
-                    shItem => shItem.code === poItem.material && shItem.po === po_id
-                  );
-                  if (matchedShItem) {
-                    return {
-                      ...poItem,
-                      remainingQuantity: poItem.quantity - matchedShItem.receivedQuantity
-                    };
-                  } else {
-                    return {
-                      ...poItem,
-                      remainingQuantity: poItem.quantity
-                    };
-                  }
-                }).filter(item => item.remainingQuantity !== 0);
-                setArticles(remainingPoItems);
+          const poItems = result.data.items;
+          const historyItems = result.data.historyTotal;
+          if (historyItems.length > 0) {
+            let remainingPoItems = poItems.map(poItem => {
+              const matchedItem = historyItems.find(
+                historyItem => historyItem.material === poItem.material
+              );
+              if (matchedItem) {
+                return {
+                  ...poItem,
+                  remainingQuantity: poItem.quantity - matchedItem.grnQuantity
+                };
+              } else {
+                return {
+                  ...poItem,
+                  remainingQuantity: poItem.quantity
+                };
               }
-              else {
-                let poItems = result.data.items.map(item => {
-                  return {
-                    ...item,
-                    remainingQuantity: item.quantity
-                  };
-                });
-                setArticles(poItems);
-              }
-            })
-            .catch(error => {
-              Toast.show({
-                type: 'customError',
-                text1: error.message,
-              });
+            }).filter(item => item.remainingQuantity !== 0);
+            setArticles(remainingPoItems);
+          }
+          else {
+            let poItems = result.data.items.map(item => {
+              return {
+                ...item,
+                remainingQuantity: item.quantity
+              };
             });
+            setArticles(poItems);
+          }
         } else {
           Toast.show({
             type: 'customError',
@@ -162,7 +143,7 @@ const PurchaseOrder = ({ navigation, route }) => {
   const renderItem = ({ item, index }) => (
     <>
       {pressMode === 'true' ? (
-        <TouchableOpacity onPress={() => navigation.replace('PoArticle', { ...item, po: po_id })}>
+        <TouchableOpacity onPress={() => navigation.replace('PoArticle', item)}>
           <View
             key={index}
             className="flex-row items-center border border-tb rounded-lg mt-2.5 p-4"
@@ -202,14 +183,14 @@ const PurchaseOrder = ({ navigation, route }) => {
           <Text
             className="w-1/5 text-black text-right"
             numberOfLines={1}>
-            {item.quantity}
+            {item.remainingQuantity}
           </Text>
         </View>
       )}
     </>
   );
 
-  if (barcode !== '') {
+  if (barcode !== '' && (pressMode === 'false' || pressMode === null)) {
     const getArticleBarcode = async (barcode) => {
       try {
         await fetch('https://shelves-backend-1-kcgr.onrender.com/api/barcodes/barcode/' + barcode, {
@@ -226,7 +207,7 @@ const PurchaseOrder = ({ navigation, route }) => {
               const poItem = articles.find(item => item.material === result.data.material);
 
               if (poItem && isValidBarcode) {
-                navigation.replace('PoArticle', { ...poItem, po: po_id });
+                navigation.replace('PoArticle', poItem);
               } else {
                 Toast.show({
                   type: 'customInfo',
@@ -264,7 +245,6 @@ const PurchaseOrder = ({ navigation, route }) => {
     console.log('GRN by PO', GrnByPo);
   }
 
-
   const generateGRN = async (grnList) => {
     setDialogVisible(false);
     setIsButtonLoading(true);
@@ -287,7 +267,6 @@ const PurchaseOrder = ({ navigation, route }) => {
       })
         .then(response => response.json())
         .then(result => {
-          console.log('GRN generate response', result);
           if (result.status) {
             Toast.show({
               type: 'customSuccess',

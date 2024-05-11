@@ -8,11 +8,11 @@ export const AppContext = createContext({});
 const AppProvider = ({children}) => {
   const authInfo = useAuth();
   const GRNInfo = useGRN();
-  const STOInfo = useStoTracking();
+  const StoInfo = useStoTracking();
   const contextValues = {
     authInfo,
     GRNInfo,
-    STOInfo,
+    StoInfo,
   };
   return (
     <AppContext.Provider value={contextValues}>{children}</AppContext.Provider>

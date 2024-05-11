@@ -116,19 +116,7 @@ const updateStoTracking = async (token, postData) => {
       body: JSON.stringify(postData),
     })
       .then(response => response.json())
-      .then(data => {
-        if (data.status) {
-          Toast.show({
-            type: 'customSuccess',
-            text1: data.message,
-          });
-        } else {
-          Toast.show({
-            type: 'customError',
-            text1: data.message,
-          });
-        }
-      })
+      .then(data => data)
       .catch(error => {
         Toast.show({
           type: 'customError',

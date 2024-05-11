@@ -3,7 +3,7 @@ import { Picker } from '@react-native-picker/picker';
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator, Alert, Image, Switch,
-  Text, TouchableWithoutFeedback, View
+  Text, TouchableHighlight, TouchableWithoutFeedback, View
 } from 'react-native';
 import { ButtonBack, ButtonLogin } from '../../../../components/buttons';
 import {
@@ -118,16 +118,19 @@ const Profile = ({ navigation }) => {
           </View>
           <View className="switch border-b border-gray-200 flex-row items-center py-4">
             <Image className="w-6 h-5 mr-2" source={SwitchIcon} />
-            <Switch
-              trackColor={{ false: 'red', true: 'green' }}
-              thumbColor={'#dddddd'}
-              ios_backgroundColor="#3e3e3e"
-              onValueChange={toggleSwitch}
-              value={isEnabled}
-            />
-            <Text className={`text-base ${isEnabled ? 'text-green-600' : 'text-red-600'} font-medium`}>
-              {isEnabled ? 'Press mode is enabled' : 'Press mode is disabled'}
-            </Text>
+            <TouchableWithoutFeedback onPress={() => toggleSwitch()}>
+              <View className="flex-row items-center">
+                <Switch
+                  trackColor={{ false: 'red', true: 'green' }}
+                  thumbColor={'#dddddd'}
+                  ios_backgroundColor="#3e3e3e"
+                  value={isEnabled}
+                />
+                <Text className={`text-base ${isEnabled ? 'text-green-600' : 'text-red-600'} font-medium`}>
+                  {isEnabled ? 'Press mode is enabled' : 'Press mode is disabled'}
+                </Text>
+              </View>
+            </TouchableWithoutFeedback>
           </View>
           {sites !== null && (
             <View className="site bg-white border border-solid border-gray-300 rounded mt-4">
@@ -135,13 +138,12 @@ const Profile = ({ navigation }) => {
                 selectedValue={selectedSite}
                 onValueChange={site => updateUser(site)}
                 style={{ color: 'black' }}>
-                <Picker.Item label={user.site} value={user.site} />
                 {sites?.map((item, i) => (
                   <Picker.Item
                     label={item.code}
                     value={item.code}
                     key={i}
-                    style={{ color: 'black' }}
+                    style={{ color: user.site === item.code ? 'green' : 'black', fontWeight: '600' }}
                   />
                 ))}
               </Picker>

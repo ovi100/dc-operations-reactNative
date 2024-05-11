@@ -10,14 +10,15 @@ import {
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../../components/CustomToast';
 import useAppContext from '../../../../../hooks/useAppContext';
-import { getStorage } from '../../../../../hooks/useStorage';
+import { getStorage, setStorage } from '../../../../../hooks/useStorage';
 import SunmiScanner from '../../../../../utils/sunmi/scanner';
-import { adjustStoQuantity, mergeInventory, updateStoItems } from '../processStoData';
+import { adjustStoQuantity, mergeInventory, updateStoItems, updateStoTracking } from '../processStoData';
 import ServerError from '../../../../../components/animations/ServerError';
 
 const PickingSto = ({ navigation, route }) => {
   const { sto, picker, pickerId, packer, packerId } = route.params;
   const [isLoading, setIsLoading] = useState(false);
+  // const [serverMessage, setServerMessage] = useState("");
   const [pressMode, setPressMode] = useState(false);
   const [barcode, setBarcode] = useState('');
   const [user, setUser] = useState({});
@@ -25,15 +26,15 @@ const PickingSto = ({ navigation, route }) => {
   let [articles, setArticles] = useState([]);
   const API_URL = 'https://shwapnooperation.onrender.com/';
   const { startScan, stopScan } = SunmiScanner;
-  const { STOInfo } = useAppContext();
-  const { addToTotalSku } = STOInfo;
+  const { StoInfo } = useAppContext();
+  const { addToStoInfo, stoInfo, setStoInfo, stoItems, setStoItems, setIsUpdatingSto } = StoInfo;
+  let remainingStoInfo = [], remainingStoItems = [], pickedSto = [], stoTrackInfo = {};
 
   useEffect(() => {
     const getAsyncStorage = async () => {
       await getStorage('token', setToken);
       await getStorage('user', setUser, 'object');
       await getStorage('pressMode', setPressMode);
-
     }
     getAsyncStorage();
   }, [navigation.isFocused()]);
@@ -48,11 +49,10 @@ const PickingSto = ({ navigation, route }) => {
       stopScan();
       DeviceEventEmitter.removeAllListeners('ScanDataReceived');
     };
-  }, []);
+  }, [navigation.isFocused()]);
 
   const getStoDetails = async () => {
     try {
-      setIsLoading(true);
       await fetch(API_URL + 'bapi/sto/display', {
         method: 'POST',
         headers: {
@@ -92,7 +92,6 @@ const PickingSto = ({ navigation, route }) => {
                             const articleTrackingItems = articleTrackingData.items;
                             const adjustStoItemsQuantity = adjustStoQuantity(stoMergedData, articleTrackingItems);
                             setArticles(adjustStoItemsQuantity);
-                            addToTotalSku({ sto, totalSku: stoItems.length });
                           } else {
                             const inventoryItems = mergeInventory(inventoryData.items);
                             const stoItems = stoDetails.data.items;
@@ -101,7 +100,6 @@ const PickingSto = ({ navigation, route }) => {
                               return { ...updateStoItem, remainingQuantity: updateStoItem.quantity }
                             }).filter(item => item.remainingQuantity !== 0);
                             setArticles(stoMergedData);
-                            addToTotalSku({ sto, totalSku: stoItems.length });
                           }
                         })
                         .catch(error => {
@@ -119,7 +117,6 @@ const PickingSto = ({ navigation, route }) => {
                   } else {
                     const stoItems = stoDetails.data.items;
                     setArticles(stoItems);
-                    addToTotalSku({ sto, totalSku: stoItems.length });
                   }
                 })
                 .catch(error => {
@@ -134,6 +131,7 @@ const PickingSto = ({ navigation, route }) => {
                 text1: error.message,
               });
             }
+            addToStoInfo({ sto, sku: stoDetails.data.items.length });
           } else {
             Toast.show({
               type: 'customError',
@@ -152,14 +150,13 @@ const PickingSto = ({ navigation, route }) => {
         type: 'customError',
         text1: error.message,
       });
-    } finally {
-      // console.log('sto data calculation complete');
-      setIsLoading(false);
-    };
+    }
   };
 
   const finalStoData = async () => {
+    setIsLoading(true);
     await getStoDetails();
+    setIsLoading(false);
   }
 
   useFocusEffect(
@@ -169,6 +166,81 @@ const PickingSto = ({ navigation, route }) => {
       }
     }, [token, sto, user.site]),
   );
+
+  if (stoItems) {
+    remainingStoItems = stoItems.filter(stoItem => stoItem.sto !== sto);
+    pickedSto = stoItems.filter(stoItem => stoItem.sto === sto && stoItem.quantity === stoItem.pickedQuantity);
+    remainingStoInfo = stoInfo.filter(item => item.sto !== sto);
+    let matchedItem = stoInfo.find(item => item.sto === sto);
+    stoTrackInfo = {
+      ...matchedItem,
+      pickedSku: pickedSto.length,
+      remainingSku: matchedItem?.sku - pickedSto.length,
+    }
+  }
+
+  const postStoTracking = async () => {
+    let postData = {};
+    const isOnlyItem = stoTrackInfo.sku === 1 && stoTrackInfo.pickedSku === 1;
+    const isFirstItem = stoTrackInfo.sku > 1 && stoTrackInfo.pickedSku === 1 && articles.length > 1;
+    const isLastItem = stoTrackInfo.sku - stoTrackInfo.pickedSku === 0 && stoTrackInfo.pickedSku > 1;
+
+    console.log('isOnlyItem', isOnlyItem);
+    console.log('isFirstItem', isFirstItem);
+    console.log('isLastItem', isLastItem);
+
+    if (isOnlyItem) {
+      postData = {
+        sto,
+        pickedSku: stoTrackInfo.pickedSku,
+        picker,
+        pickerId,
+        packer,
+        packerId,
+        pickingStartingTime: new Date(),
+        pickingEndingTime: new Date(),
+        status: 'inbound picked'
+      };
+    } else if (isFirstItem) {
+      postData = {
+        sto,
+        pickedSku: stoTrackInfo.pickedSku,
+        picker,
+        pickerId,
+        packer,
+        packerId,
+        pickingStartingTime: new Date(),
+        status: 'inbound picking'
+      };
+    } else if (isLastItem) {
+      postData = {
+        sto,
+        pickedSku: stoTrackInfo.pickedSku,
+        pickingEndingTime: new Date(),
+        status: 'inbound picked'
+      };
+    } else {
+      postData = {
+        sto,
+        pickedSku: stoTrackInfo.pickedSku,
+        status: 'inbound picking'
+      };
+    }
+    await updateStoTracking(token, postData);
+  };
+
+  if (stoTrackInfo.pickedSku > 0) {
+    postStoTracking();
+  }
+
+  // if (!isLoading && articles.length === 0) {
+  //   setStorage('stoItems', remainingStoItems);
+  //   setStorage('stoInfo', remainingStoInfo);
+  //   setStoItems(remainingStoItems);
+  //   setStoInfo(remainingStoInfo);
+  //   setIsUpdatingSto(true);
+  //   navigation.goBack();
+  // }
 
   const goToStoArticleBins = async (article) => {
     navigation.push('PickingStoArticleBinDetails', { ...article, picker, pickerId, packer, packerId });
@@ -326,17 +398,6 @@ const PickingSto = ({ navigation, route }) => {
     )
   }
 
-  if (!isLoading && articles.length === 0) {
-    return (
-      <View className="w-full h-screen justify-center px-3">
-        <ServerError message="No data found!" />
-        <View className="w-1/4 mx-auto mt-5">
-          <Button title='Retry' onPress={() => finalStoData()} />
-        </View>
-      </View>
-    )
-  }
-
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">
       <View className="flex-1 h-full px-2">
@@ -363,11 +424,20 @@ const PickingSto = ({ navigation, route }) => {
                 Bin Info
               </Text>
             </View>
-            <FlatList
-              data={articles}
-              renderItem={renderItem}
-              keyExtractor={item => item.material}
-            />
+            {!isLoading && articles.length === 0 ? (
+              <View className="w-full h-[90%] justify-center px-3">
+                <ServerError message="No sku left" />
+                <View className="w-1/4 mx-auto mt-5">
+                  <Button title='Retry' onPress={() => finalStoData()} />
+                </View>
+              </View>
+            ) : (
+              <FlatList
+                data={articles}
+                renderItem={renderItem}
+                keyExtractor={item => item.material}
+              />
+            )}
           </View>
         </View>
       </View>

@@ -4,13 +4,16 @@ import {getStorage, setStorage} from './useStorage';
 
 const useStoTracking = () => {
   const [stoItems, setStoItems] = useState([]);
+  let [stoInfo, setStoInfo] = useState([]);
   const [isUpdatingSto, setIsUpdatingSto] = useState(false);
 
   useEffect(() => {
     const getAsyncStorage = async () => {
       await getStorage('stoItems', setStoItems, 'array');
+      await getStorage('stoInfo', setStoInfo, 'array');
     };
     getAsyncStorage();
+    setIsUpdatingSto(false);
   }, [isUpdatingSto]);
 
   const addToSTO = article => {
@@ -38,14 +41,34 @@ const useStoTracking = () => {
     setIsUpdatingSto(false);
   };
 
-  const STOInfo = {
+  const addToStoInfo = stoItem => {
+    const index = stoInfo.findIndex(item => item.sto === stoItem.sto);
+    if (index === -1) {
+      const newItems = [...stoInfo, stoItem];
+      setStorage('stoInfo', newItems);
+      setStoInfo(newItems);
+      setIsUpdatingSto(true);
+    } else {
+      const newItems = [...stoInfo];
+      newItems[index].totalSku = stoItem.totalSku;
+      setStorage('stoInfo', newItems);
+      setStoInfo(newItems);
+      setIsUpdatingSto(true);
+    }
+    setIsUpdatingSto(false);
+  };
+
+  const StoInfo = {
     stoItems,
     setStoItems,
     addToSTO,
+    addToStoInfo,
+    stoInfo,
+    setStoInfo,
     setIsUpdatingSto,
   };
 
-  return STOInfo;
+  return StoInfo;
 };
 
 export default useStoTracking;

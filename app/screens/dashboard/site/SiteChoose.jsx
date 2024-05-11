@@ -124,11 +124,10 @@ const SiteChoose = ({ navigation }) => {
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">
       <View className="flex-1">
-        <View className="screen-header flex-row items-center justify-between mb-5 px-6">
+        <View className="screen-header mb-5 px-6">
           <Text className="text-lg text-[#060239] text-center font-semibold capitalize">
             choose site
           </Text>
-          <ButtonProfile onPress={() => navigation.push('Profile')} />
         </View>
         <ScrollView>
           <View className="flex-row flex-wrap items-center px-3">

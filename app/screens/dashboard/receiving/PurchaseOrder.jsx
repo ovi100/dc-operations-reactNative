@@ -242,7 +242,6 @@ const PurchaseOrder = ({ navigation, route }) => {
   if (grnItems) {
     remainingGrnItems = grnItems.filter(grnItem => grnItem.po !== po_id);
     GrnByPo = grnItems.filter(grnItem => grnItem.po === po_id);
-    console.log('GRN by PO', GrnByPo);
   }
 
   const generateGRN = async (grnList) => {

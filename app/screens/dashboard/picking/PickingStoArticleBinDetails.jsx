@@ -6,7 +6,6 @@ import SunmiScanner from '../../../../utils/sunmi/scanner';
 
 const BinDetails = ({ navigation, route }) => {
   const { material, description, bins } = route.params;
-  // const [isLoading, setIsLoading] = useState(false);
   const tableHeader = ['Bin ID', 'Quantity'];
   const [barcode, setBarcode] = useState('');
   const { startScan, stopScan } = SunmiScanner;
@@ -22,7 +21,7 @@ const BinDetails = ({ navigation, route }) => {
       stopScan();
       DeviceEventEmitter.removeAllListeners('ScanDataReceived');
     };
-  }, []);
+  }, [navigation.isFocused()]);
 
   const renderItem = ({ item, index }) => (
     <View className="flex-row justify-between border border-tb rounded-lg mt-2.5 p-4" key={index}>

@@ -1,36 +1,30 @@
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Image, SafeAreaView, Text, TextInput, View } from 'react-native';
+import { Image, SafeAreaView, Text, TextInput, View } from 'react-native';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../../components/CustomToast';
 import { ButtonBack, ButtonLg, ButtonLoading } from '../../../../../components/buttons';
 import { BoxIcon } from '../../../../../constant/icons';
 import useAppContext from '../../../../../hooks/useAppContext';
 import { getStorage } from '../../../../../hooks/useStorage';
-import { updateStoTracking, updateArticleTracking } from '../processStoData';
+import { updateArticleTracking } from '../processStoData';
 
 const PickingStoArticle = ({ navigation, route }) => {
   const {
     sto, material, description, quantity, bins,
     picker, pickerId, packer, packerId
   } = route.params;
-  const [isLoading, setIsLoading] = useState(false);
   const [isButtonLoading, setIsButtonLoading] = useState(false);
-  const [isFirstStoItem, setIsFirstStoItem] = useState(true);
-  const [isLastStoItem, setIsLastStoItem] = useState(false);
   const [user, setUser] = useState({});
-  const [pickedSku, setPickedSku] = useState(1);
   const [token, setToken] = useState('');
-  const [pickedQuantity, setPickedQuantity] = useState(bins.quantity);
-  // const [stoTrackingInfo, setStoTrackingInfo] = useState(null);
-  const { STOInfo } = useAppContext();
-  const { addToSTO, stoItems } = STOInfo;
+  const [pickedQuantity, setPickedQuantity] = useState();
+  const { StoInfo } = useAppContext();
+  const { addToSTO } = StoInfo;
   const API_URL = 'https://shwapnooperation.onrender.com/api/';
 
   useEffect(() => {
     const getAsyncStorage = async () => {
       await getStorage('token', setToken);
       await getStorage('user', setUser, 'object');
-      // await getStorage('stoTrackingInfo', setStoTrackingInfo, 'object');
     }
     getAsyncStorage();
   }, []);
@@ -47,149 +41,19 @@ const PickingStoArticle = ({ navigation, route }) => {
     packerId,
   };
 
-  console.log('sto tracking AS info', stoTrackingInfo);
-  // const filteredSto = JSON.parse(stoTrackingInfo.stoItems).filter(
-  //   item => item.sto === stoItem.sto);
-  console.log('sto Items', stoItems);
-
-  const getStoTracking = async () => {
-    try {
-      await fetch(API_URL + `sto-tracking?filterBy=sto&value=${sto}`, {
-        method: 'GET',
-        headers: {
-          authorization: token,
-          'Content-Type': 'application/json',
-        },
-      })
-        .then(response => response.json())
-        .then(data => {
-          if (data.status) {
-            let sku = data.items[0].sku;
-            let picSku = data.items[0].pickedSku ? data.items[0].pickedSku : 0;
-            if (sku === picSku || picSku >= 1) {
-              setIsFirstStoItem(false);
-            } else {
-              setIsFirstStoItem(true);
-            }
-
-            if (sku - picSku === 1) {
-              setIsLastStoItem(true);
-            } else {
-              setIsLastStoItem(false);
-            }
-            setPickedSku(prev => prev + picSku);
-          } else {
-            setIsFirstStoItem(true);
-            setIsLastStoItem(false);
-          }
-        })
-        .catch(error => {
-          Toast.show({
-            type: 'customError',
-            text1: error.message,
-          });
-        });
-    } catch (error) {
-      Toast.show({
-        type: 'customError',
-        text1: error.message,
-      });
-    }
-  };
-
-  useEffect(() => {
-    if (token && route.params) {
-      getStoTracking();
-    }
-  }, [token, route.params]);
-
-  // const addToOnHold = async () => {
-  //   let holdObject = {
-  //     material,
-  //     onHold: Number(pickedQuantity),
-  //     bin: bins.bin,
-  //     gondola: bins.gondola,
-  //     site: user.site,
-  //   };
-
-  //   try {
-  //     await fetch(API_URL + 'inventory/hold', {
-  //       method: 'POST',
-  //       headers: {
-  //         authorization: token,
-  //         'Content-Type': 'application/json',
-  //       },
-  //       body: JSON.stringify(holdObject),
-  //     })
-  //       .then(response => response.json())
-  //       .then(result => {
-  //         console.log('on hold response', result);
-  //         Toast.show({
-  //           type: 'customInfo',
-  //           text1: result.message,
-  //         });
-  //       })
-  //       .catch(error => {
-  //         Toast.show({
-  //           type: 'customError',
-  //           text1: error.message,
-  //         });
-  //       });
-  //   } catch (error) {
-  //     Toast.show({
-  //       type: 'customError',
-  //       text1: error.message,
-  //     });
-  //   }
-  // };
-
-  const postStoTracking = async () => {
-    let postStoData = {
-      sto,
-      pickedSku,
-    };
-    let stoTrackingInfo = {};
-    if (isFirstStoItem) {
-      stoTrackingInfo = {
-        ...postStoData,
-        picker,
-        pickerId,
-        packer,
-        packerId,
-        pickingStartingTime: new Date(),
-        status: 'inbound picking'
-      };
-    } else if (isLastStoItem) {
-      stoTrackingInfo = {
-        ...postStoData,
-        pickingEndingTime: new Date(),
-        status: 'inbound picked'
-      };
-    } else {
-      stoTrackingInfo = {
-        ...postStoData
-      };
-    }
-
-    console.log('sto tracking post data', stoTrackingInfo);
-    await updateStoTracking(token, stoTrackingInfo);
-
-  };
-
   const addToArticleTracking = async () => {
     let articleTrackingInfo = {
       sto,
       code: material,
-      quantity: quantity,
       name: description,
+      quantity: quantity,
       inboundPicker: picker,
       inboundPickerId: pickerId,
       inboundPacker: packer,
       inboundPackerId: packerId,
       inboundPickedQuantity: Number(pickedQuantity),
       inboundPickingStartingTime: new Date(),
-      inboundPickingEndingTime: new Date(),
-      status: quantity === Number(pickedQuantity) ? 'inbound picked' : 'partially inbound picked'
+      status: 'partially inbound picked'
     };
 
     try {
@@ -203,21 +67,15 @@ const PickingStoArticle = ({ navigation, route }) => {
       })
         .then(response => response.json())
         .then(async result => {
-          if (result.status) {
-            const article = result.data;
-            if (!quantity === Number(pickedQuantity) && article.quantity === article.inboundPickedQuantity) {
-              let updateObject = {
-                sto: article.sto,
-                code: article.code,
-                status: "inbound picked"
-              };
-              await updateArticleTracking(token, updateObject);
-            }
-          } else {
-            Toast.show({
-              type: 'customError',
-              text1: result.message,
-            });
+          const article = result.data;
+          if (article.quantity === article.inboundPickedQuantity) {
+            let updateObject = {
+              sto: article.sto,
+              code: article.code,
+              pickingEndingTime: new Date(),
+              status: 'inbound picked'
+            };
+            await updateArticleTracking(token, updateObject);
           }
         })
         .catch(error => {
@@ -245,34 +103,21 @@ const PickingStoArticle = ({ navigation, route }) => {
         type: 'customError',
         text1: 'Quantity must be greater than zero',
       });
-    } else if (pickedQuantity > bins.quantity) {
+    } else if (pickedQuantity > bins.quantity || pickedQuantity > quantity) {
       Toast.show({
         type: 'customError',
-        text1: 'Bin quantity exceed',
+        text1: 'quantity exceed',
       });
     } else {
       if (user.site) {
         setIsButtonLoading(true);
-        await postStoTracking();
         await addToArticleTracking();
-        // await addToOnHold();
         addToSTO(article);
         setIsButtonLoading(false);
         navigation.goBack();
       }
     }
   };
-
-  if (isLoading) {
-    return (
-      <View className="w-full h-screen justify-center px-3">
-        <ActivityIndicator size="large" color="#EB4B50" />
-        <Text className="mt-4 text-gray-400 text-base text-center">
-          Loading bins data. Please wait.....
-        </Text>
-      </View>
-    )
-  }
 
   return (
     <SafeAreaView className="flex-1 bg-white pt-14">

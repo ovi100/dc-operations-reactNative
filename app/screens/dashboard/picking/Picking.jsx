@@ -26,48 +26,6 @@ const Picking = ({ navigation }) => {
     getAsyncStorage();
   }, []);
 
-  const updateSto = async (sto) => {
-    let stoTrackingInfo = {
-      sto,
-      status: 'inbound picked'
-    };
-    try {
-      await fetch(API_URL + 'sto-tracking/update', {
-        method: 'PATCH',
-        headers: {
-          authorization: token,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(stoTrackingInfo),
-      })
-        .then(response => response.json())
-        .then(data => {
-          if (data.status) {
-            Toast.show({
-              type: 'customSuccess',
-              text1: data.message,
-            });
-          } else {
-            Toast.show({
-              type: 'customError',
-              text1: data.message,
-            });
-          }
-        })
-        .catch(error => {
-          Toast.show({
-            type: 'customError',
-            text1: error.message,
-          });
-        });
-    } catch (error) {
-      Toast.show({
-        type: 'customError',
-        text1: error.message,
-      });
-    }
-  }
-
   const getStoData = async () => {
     try {
       await fetch(API_URL + `value=${user.site}`, {
@@ -79,8 +37,8 @@ const Picking = ({ navigation }) => {
         .then(response => response.json())
         .then(data => {
           if (data.status) {
-            const filteredData = data.items.filter(item => item.sku !== item.pickedSku);
-            setAssignedData(filteredData);
+            const stoTrackingData = data.items;
+            setAssignedData(stoTrackingData);
           } else {
             Toast.show({
               type: 'customError',
@@ -169,7 +127,7 @@ const Picking = ({ navigation }) => {
   const checkStatus = ['picker assigned', 'picker packer assigned', 'inbound picking'];
 
   const notPicked = assignedData.filter(item => checkStatus.some(status => status === item.status));
-  const picked = assignedData.filter(item => item.status === 'inbound picked');
+  const picked = assignedData.filter(item => item.status === 'inbound picked' || item.status === 'inbound picking');
 
   let tabInfo = [
     {

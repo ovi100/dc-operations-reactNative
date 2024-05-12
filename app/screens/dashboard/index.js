@@ -17,9 +17,8 @@ import {
   PackingIcon,
   PickingIcon,
   ReceivingIcon,
-  ReturnIcon,
   ShelvingIcon,
-  TaskAssignIcon,
+  TaskAssignIcon
 } from '../../../constant/icons';
 import useAppContext from '../../../hooks/useAppContext';
 
@@ -35,6 +34,13 @@ const Home = ({navigation}) => {
       screen: 'Receiving',
       role: 'receiver',
       access: 'receiving-access',
+    },
+    {
+      name: 'Outlet Receiving',
+      icon: ReceivingIcon,
+      screen: 'OutletReceiving',
+      role: 'receiver',
+      access: 'outlet-receiving-access',
     },
     {
       name: 'Shelving',
@@ -85,13 +91,13 @@ const Home = ({navigation}) => {
       role: 'audit',
       access: 'audit-access',
     },
-    {
-      name: 'Return',
-      icon: ReturnIcon,
-      screen: 'Return',
-      role: 'returner',
-      access: 'return-access',
-    },
+    // {
+    //   name: 'Return',
+    //   icon: ReturnIcon,
+    //   screen: 'Return',
+    //   role: 'returner',
+    //   access: 'return-access',
+    // },
   ];
 
   if (user?.hasPermission.includes('*')) {

@@ -6,6 +6,9 @@ import Home from '../screens/dashboard';
 import Audit from '../screens/dashboard/audit/Audit';
 import DeliveryNote from '../screens/dashboard/deliveryNote/DeliveryNote';
 import DeliveryPlan from '../screens/dashboard/deliveryPlan/DeliveryPlan';
+import OutletArticleDetails from '../screens/dashboard/outlet/receiving/OutletArticleDetails';
+import OutletReceiving from '../screens/dashboard/outlet/receiving/OutletReceiving';
+import PoStoDetails from '../screens/dashboard/outlet/receiving/PoStoDetails';
 import ChildPacking from '../screens/dashboard/packing/ChildPacking';
 import MasterPacking from '../screens/dashboard/packing/MasterPacking';
 import QualityCheck from '../screens/dashboard/packing/qualityCheck/QualityCheck';
@@ -44,6 +47,21 @@ const AppStack = () => {
     {id: 'receiving', name: 'Receiving', component: Receiving},
     {id: 'purchase-order', name: 'PurchaseOrder', component: PurchaseOrder},
     {id: 'po-article', name: 'PoArticle', component: PoArticle},
+    {
+      id: 'outlet-receiving',
+      name: 'OutletReceiving',
+      component: OutletReceiving,
+    },
+    {
+      id: 'outlet-po-sto-details',
+      name: 'OutletPoStoDetails',
+      component: PoStoDetails,
+    },
+    {
+      id: 'outlet-article-details',
+      name: 'OutletArticleDetails',
+      component: OutletArticleDetails,
+    },
     {id: 'shelving', name: 'Shelving', component: Shelving},
     {id: 'bin-details', name: 'BinDetails', component: BinDetails},
     {id: 'assign-bin', name: 'AssignToBin', component: AssignToBin},

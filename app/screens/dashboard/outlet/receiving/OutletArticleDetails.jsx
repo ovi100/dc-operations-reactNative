@@ -5,7 +5,9 @@ import {
   TouchableWithoutFeedback, View
 } from 'react-native';
 import Toast from 'react-native-toast-message';
+import CustomToast from '../../../../../components/CustomToast';
 import { ButtonLg, ButtonLoading } from '../../../../../components/buttons';
+import { BoxIcon } from '../../../../../constant/icons';
 import useAppContext from '../../../../../hooks/useAppContext';
 import { getStorage } from '../../../../../hooks/useStorage';
 
@@ -31,9 +33,6 @@ const OutletArticleDetails = ({ navigation, route }) => {
     };
     getAsyncStorage();
   }, []);
-
-  console.log('po', typeof po);
-  console.log('sto', typeof sto);
 
   useEffect(() => {
     const getBins = async (code, site) => {
@@ -72,20 +71,20 @@ const OutletArticleDetails = ({ navigation, route }) => {
       })
         .then(response => response.json())
         .then(data => {
-          // console.log('ready for shelving response', data);
+          console.log('ready for shelving response', data);
           if (data.status) {
             Toast.show({
               type: 'customSuccess',
               text1: data.message,
             });
             addToGRN(grnItem);
-            navigation.replace('PoStoDetails', { po, sto });
+            navigation.replace('OutletPoStoDetails', { po, sto });
           } else {
             Toast.show({
               type: 'customError',
               text1: data.message,
             });
-            navigation.replace('PoStoDetails', { po, sto });
+            navigation.replace('OutletPoStoDetails', { po, sto });
           }
         })
         .catch(error => {

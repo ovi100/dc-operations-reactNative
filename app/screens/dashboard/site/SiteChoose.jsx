@@ -4,7 +4,6 @@ import {
   TouchableOpacity, TouchableWithoutFeedback, View
 } from 'react-native';
 import Toast from 'react-native-toast-message';
-import { ButtonProfile } from '../../../../components/buttons';
 import { AvatarImage, SitesIcon } from '../../../../constant/icons';
 import useAppContext from '../../../../hooks/useAppContext';
 import { setStorage } from '../../../../hooks/useStorage';
@@ -61,6 +60,11 @@ const SiteChoose = ({ navigation }) => {
     }
   }, [token]);
 
+  useEffect(() => {
+    setUserSites(sites);
+    setStorage('userSites', sites);
+  }, [sites]);
+
   if (!Array.isArray(user.site)) {
     navigation.navigate('Home');
     return;
@@ -68,11 +72,6 @@ const SiteChoose = ({ navigation }) => {
 
   if (user.site?.length > 0 && !user.site.includes("all-site-access") && sites.length > 0) {
     sites = user.site.map(item => sites.find(elm => elm.code === item));
-    setUserSites(sites);
-    setStorage('userSites', sites);
-  } else {
-    setUserSites(sites);
-    setStorage('userSites', sites);
   }
 
   const updateUser = (site) => {
@@ -121,6 +120,8 @@ const SiteChoose = ({ navigation }) => {
     )
   }
 
+  console.log(sites)
+
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">
       <View className="flex-1">
@@ -131,7 +132,7 @@ const SiteChoose = ({ navigation }) => {
         </View>
         <ScrollView>
           <View className="flex-row flex-wrap items-center px-3">
-            {sites.map(item => (
+            {sites?.map(item => (
               <TouchableOpacity
                 className="site-box items-center w-1/3 mt-8"
                 onPress={() => updateUser(item.code)}

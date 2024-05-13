@@ -7,8 +7,8 @@ import Audit from '../screens/dashboard/audit/Audit';
 import DeliveryNote from '../screens/dashboard/deliveryNote/DeliveryNote';
 import DeliveryPlan from '../screens/dashboard/deliveryPlan/DeliveryPlan';
 import OutletArticleDetails from '../screens/dashboard/outlet/receiving/OutletArticleDetails';
+import OutletPoStoDetails from '../screens/dashboard/outlet/receiving/OutletPoStoDetails';
 import OutletReceiving from '../screens/dashboard/outlet/receiving/OutletReceiving';
-import PoStoDetails from '../screens/dashboard/outlet/receiving/PoStoDetails';
 import ChildPacking from '../screens/dashboard/packing/ChildPacking';
 import MasterPacking from '../screens/dashboard/packing/MasterPacking';
 import QualityCheck from '../screens/dashboard/packing/qualityCheck/QualityCheck';
@@ -55,7 +55,7 @@ const AppStack = () => {
     {
       id: 'outlet-po-sto-details',
       name: 'OutletPoStoDetails',
-      component: PoStoDetails,
+      component: OutletPoStoDetails,
     },
     {
       id: 'outlet-article-details',

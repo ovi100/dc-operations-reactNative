@@ -18,12 +18,12 @@ import SunmiScanner from '../../../../../utils/sunmi/scanner';
 
 const Receiving = ({ navigation }) => {
   const isFocused = useIsFocused();
-  const [isCheckingPo, setIsCheckingPo] = useState(false);
+  const [isChecking, setIsChecking] = useState(false);
   const [pressMode, setPressMode] = useState(false);
   const [token, setToken] = useState('');
   const [barcode, setBarcode] = useState('');
   const [search, setSearch] = useState('');
-  const API_URL = 'https://shwapnooperation.onrender.com/bapi/po/released';
+  const API_URL = 'https://shwapnooperation.onrender.com/';
   const { startScan, stopScan } = SunmiScanner;
 
   useEffect(() => {
@@ -46,10 +46,12 @@ const Receiving = ({ navigation }) => {
     };
   }, [isFocused]);
 
+  const isSto = search.startsWith('8') || barcode.startsWith('8');
+
 
   const checkPo = async (po) => {
     try {
-      await fetch(API_URL, {
+      await fetch(API_URL + 'bapi/po/released', {
         method: 'POST',
         headers: {
           authorization: token,
@@ -90,17 +92,53 @@ const Receiving = ({ navigation }) => {
   };
 
   const getPoDetails = async (po) => {
-    setIsCheckingPo(true);
+    setIsChecking(true);
     await checkPo(po);
-    setIsCheckingPo(false);
+    setIsChecking(false);
+  };
+
+  const checkSto = async (sto) => {
+    try {
+      await fetch(API_URL + `api/sto-tracking?filterBy=sto&value=${sto}`, {
+        method: 'GET',
+        headers: {
+          authorization: token,
+          'Content-Type': 'application/json',
+        },
+      })
+        .then(response => response.json())
+        .then(result => {
+          const status = result.items[0].status
+          if (result.status && (status === 'partially inbound picked' || status === 'inbound picked')) {
+            navigation.push('OutletPoStoDetails', { sto });
+          } else {
+            Toast.show({
+              type: 'customError',
+              text1: 'STO not received in DC',
+            });
+          }
+        })
+        .catch(error => {
+          Toast.show({
+            type: 'customError',
+            text1: error.message,
+          });
+        });
+    } catch (error) {
+      Toast.show({
+        type: 'customError',
+        text1: error.message,
+      });
+    }
   };
 
   const getStoDetails = async (sto) => {
-    navigation.push('OutletPoStoDetails', { sto });
+    setIsChecking(true);
+    await checkSto(sto);
+    setIsChecking(false);
   };
 
   const searchPo = async (searchTerms) => {
-    const isSto = searchTerms.startsWith('8');
     if (!searchTerms) {
       Toast.show({
         type: 'customError',
@@ -131,12 +169,10 @@ const Receiving = ({ navigation }) => {
   };
 
   if (barcode !== '') {
-    const isSto = barcode.startsWith('8');
     if (isSto) {
       getStoDetails(barcode);
     } else {
       getPoDetails(barcode);
-
     }
     setBarcode('');
     setSearch('');
@@ -180,10 +216,10 @@ const Receiving = ({ navigation }) => {
         </View>
       </View>
       <View className="content h-3/4 justify-center">
-        {isCheckingPo ? (
+        {isChecking ? (
           <View>
             <ActivityIndicator size="large" color="#EB4B50" />
-            <Text className="mt-4 text-gray-400 text-base text-center">Checking po number</Text>
+            <Text className="mt-4 text-gray-400 text-base text-center">Checking {isSto ? 'STO' : 'PO'} number</Text>
           </View>
         ) : (
           <View>

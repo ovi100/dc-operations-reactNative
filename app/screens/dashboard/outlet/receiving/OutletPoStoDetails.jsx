@@ -11,7 +11,7 @@ import CustomToast from '../../../../../components/CustomToast';
 import Dialog from '../../../../../components/Dialog';
 import { ButtonLg, ButtonLoading } from '../../../../../components/buttons';
 import useAppContext from '../../../../../hooks/useAppContext';
-import { getStorage } from '../../../../../hooks/useStorage';
+import { getStorage, setStorage } from '../../../../../hooks/useStorage';
 import SunmiScanner from '../../../../../utils/sunmi/scanner';
 
 const OutletPoStoDetails = ({ navigation, route }) => {
@@ -213,7 +213,7 @@ const OutletPoStoDetails = ({ navigation, route }) => {
   const renderItem = ({ item, index }) => (
     <>
       {pressMode === 'true' ? (
-        <TouchableOpacity onPress={() => navigation.replace('PoArticle', item)}>
+        <TouchableOpacity onPress={() => navigation.replace('OutletArticleDetails', item)}>
           <View
             key={index}
             className="flex-row items-center border border-tb rounded-lg mt-2.5 p-4"
@@ -277,7 +277,7 @@ const OutletPoStoDetails = ({ navigation, route }) => {
               const poItem = articles.find(item => item.material === result.data.material);
 
               if (poItem && isValidBarcode) {
-                navigation.replace('PoArticle', poItem);
+                navigation.replace('OutletArticleDetails', poItem);
               } else {
                 Toast.show({
                   type: 'customInfo',
@@ -310,8 +310,8 @@ const OutletPoStoDetails = ({ navigation, route }) => {
   }
 
   if (grnItems) {
-    remainingGrnItems = grnItems.filter(grnItem => grnItem.po !== po);
-    GrnByPo = grnItems.filter(grnItem => grnItem.po === po);
+    remainingGrnItems = grnItems.filter(grnItem => grnItem.po !== (po || sto));
+    GrnByPo = grnItems.filter(grnItem => grnItem.po === (po || sto));
   }
 
   const generateGRN = async (grnList) => {
@@ -319,7 +319,7 @@ const OutletPoStoDetails = ({ navigation, route }) => {
     setIsButtonLoading(true);
 
     let postData = {
-      po: po,
+      po: po ? po : sto,
       status: 'pending for grn',
       createdBy: user._id,
       grnData: grnList

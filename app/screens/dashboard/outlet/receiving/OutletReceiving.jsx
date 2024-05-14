@@ -63,7 +63,7 @@ const Receiving = ({ navigation }) => {
         .then(result => {
           if (result.status) {
             if (result.data.poReleasedStatus) {
-              navigation.push('OutletPoStoDetails', { po });
+              navigation.replace('OutletPoStoDetails', { po });
             } else {
               Toast.show({
                 type: 'customError',
@@ -110,7 +110,7 @@ const Receiving = ({ navigation }) => {
         .then(result => {
           const status = result.items[0].status
           if (result.status && (status === 'partially inbound picked' || status === 'inbound picked')) {
-            navigation.push('OutletPoStoDetails', { sto });
+            navigation.replace('OutletPoStoDetails', { sto });
           } else {
             Toast.show({
               type: 'customError',

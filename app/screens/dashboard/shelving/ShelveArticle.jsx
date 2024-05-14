@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator, Image, KeyboardAvoidingView,
-  SafeAreaView,
+  Platform, SafeAreaView,
   ScrollView,
   Text, TextInput,
   TouchableOpacity,
@@ -12,6 +12,7 @@ import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
 import { ButtonLg, ButtonLoading } from '../../../../components/buttons';
 import { BoxIcon, CalendarIcon } from '../../../../constant/icons';
+import useActivity from '../../../../hooks/useActivity';
 import { getStorage } from '../../../../hooks/useStorage';
 
 const ShelveArticle = ({ navigation, route }) => {
@@ -24,8 +25,8 @@ const ShelveArticle = ({ navigation, route }) => {
   const [expiryDate, setExpiryDate] = useState(new Date());
   const [user, setUser] = useState({});
   const [token, setToken] = useState('');
-
   const API_URL = 'https://shwapnooperation.onrender.com/api/';
+  const { createActivity } = useActivity();
 
   useEffect(() => {
     const getAsyncStorage = async () => {
@@ -65,12 +66,18 @@ const ShelveArticle = ({ navigation, route }) => {
         body: JSON.stringify(updateStock),
       })
         .then(response => response.json())
-        .then(inventoryData => {
+        .then(async inventoryData => {
           if (inventoryData.status) {
             Toast.show({
               type: 'customSuccess',
               text1: inventoryData.message,
             });
+            //log user activity
+            await createActivity(
+              user._id,
+              'inventory',
+              `${user.name} add material ${code} with quantity of ${newQuantity} to inventory`,
+            );
             setTimeout(() => {
               setIsButtonLoading(false);
               navigation.replace('Shelving');
@@ -113,12 +120,18 @@ const ShelveArticle = ({ navigation, route }) => {
         body: JSON.stringify(assignToShelveObject),
       })
         .then(response => response.json())
-        .then(data => {
+        .then(async data => {
           if (data.status) {
             Toast.show({
               type: 'customSuccess',
               text1: data.message,
             });
+            //log user activity
+            await createActivity(
+              user._id,
+              'in_shelf',
+              `${user.name} add material ${code} with quantity of ${newQuantity} to shelf`,
+            );
           } else {
             Toast.show({
               type: 'customError',

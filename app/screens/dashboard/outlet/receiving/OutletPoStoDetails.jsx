@@ -263,7 +263,7 @@ const OutletPoStoDetails = ({ navigation, route }) => {
   if (barcode !== '' && (pressMode === 'false' || pressMode === null)) {
     const getArticleBarcode = async (barcode) => {
       try {
-        await fetch('https://shelves-backend-1-kcgr.onrender.com/api/barcodes/barcode/' + barcode, {
+        await fetch(' https://api.shwapno.net/shelvesu/api/barcodes/barcode/' + barcode, {
           method: 'GET',
           headers: {
             authorization: token,

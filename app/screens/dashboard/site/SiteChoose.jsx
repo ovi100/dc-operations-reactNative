@@ -7,7 +7,7 @@ import Toast from 'react-native-toast-message';
 import { AvatarImage, SitesIcon } from '../../../../constant/icons';
 import useAppContext from '../../../../hooks/useAppContext';
 import { setStorage } from '../../../../hooks/useStorage';
-const API_URL = 'https://shelves-backend-1-kcgr.onrender.com/api/sites';
+const API_URL = 'https://api.shwapno.net/shelvesu/api/sites';
 
 const SiteChoose = ({ navigation }) => {
   const { authInfo } = useAppContext();
@@ -119,8 +119,6 @@ const SiteChoose = ({ navigation }) => {
       </SafeAreaView>
     )
   }
-
-  console.log(sites)
 
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">

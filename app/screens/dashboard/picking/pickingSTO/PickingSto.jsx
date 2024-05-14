@@ -3,17 +3,19 @@ import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator, Button,
   DeviceEventEmitter, FlatList,
-  SafeAreaView, TouchableHighlight,
-  Text, TouchableOpacity,
+  SafeAreaView,
+  Text,
+  TouchableHighlight,
+  TouchableOpacity,
   TouchableWithoutFeedback, View
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../../components/CustomToast';
+import ServerError from '../../../../../components/animations/ServerError';
 import useAppContext from '../../../../../hooks/useAppContext';
-import { getStorage, setStorage } from '../../../../../hooks/useStorage';
+import { getStorage } from '../../../../../hooks/useStorage';
 import SunmiScanner from '../../../../../utils/sunmi/scanner';
 import { adjustStoQuantity, mergeInventory, updateStoItems, updateStoTracking } from '../processStoData';
-import ServerError from '../../../../../components/animations/ServerError';
 
 const PickingSto = ({ navigation, route }) => {
   const { sto, picker, pickerId, packer, packerId } = route.params;
@@ -249,7 +251,7 @@ const PickingSto = ({ navigation, route }) => {
   if (barcode !== '' && (pressMode === 'false' || pressMode === null)) {
     const getArticleBarcode = async (barcode) => {
       try {
-        await fetch('https://shelves-backend-1-kcgr.onrender.com/api/barcodes/barcode/' + barcode, {
+        await fetch(' https://api.shwapno.net/shelvesu/api/barcodes/barcode/' + barcode, {
           method: 'GET',
           headers: {
             authorization: token,

@@ -4,7 +4,7 @@ const useActivity = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const API_URL =
-    'https://shelves-backend-1-kcgr.onrender.com/api/activity/create';
+    ' https://api.shwapno.net/shelvesu/api/activity/create';
 
   const createActivity = async (userId, type, activity) => {
     setLoading(true);

@@ -3,6 +3,7 @@ import { ActivityIndicator, Alert, DeviceEventEmitter, FlatList, SafeAreaView, T
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
 import Scan from '../../../../components/animations/Scan';
+import useActivity from '../../../../hooks/useActivity';
 import { getStorage } from '../../../../hooks/useStorage';
 import SunmiScanner from '../../../../utils/sunmi/scanner';
 
@@ -11,15 +12,18 @@ const BinDetails = ({ navigation, route }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isAssigning, setIsAssigning] = useState(false);
   const tableHeader = ['Bin ID', 'Gondola ID'];
+  const [user, setUser] = useState({});
   const [token, setToken] = useState('');
   const [bins, setBins] = useState([]);
   const [barcode, setBarcode] = useState('');
   const { startScan, stopScan } = SunmiScanner;
-  const API_URL = 'https://shelves-backend-dev.onrender.com/api/bins/';
+  const { createActivity } = useActivity();
+  const API_URL = ' https://api.shwapno.net/shelvesu/api/bins/';
 
   useEffect(() => {
     const getAsyncStorage = async () => {
       await getStorage('token', setToken);
+      await getStorage('user', setUser, 'object');
     }
     getAsyncStorage();
   }, []);
@@ -143,6 +147,12 @@ const BinDetails = ({ navigation, route }) => {
                   });
                 }
               });
+            //log user activity
+            await createActivity(
+              user._id,
+              'bin_assign',
+              `${user.name} assign material ${code} to bin ${result.bin.bin_ID}`,
+            );
           } else {
             Toast.show({
               type: 'customError',
@@ -165,7 +175,7 @@ const BinDetails = ({ navigation, route }) => {
   }
 
   const assignToBin = async () => {
-    if (token) {
+    if (token && user._id) {
       setIsAssigning(true);
       await addArticleToBin();
       setIsAssigning(false);
@@ -178,7 +188,7 @@ const BinDetails = ({ navigation, route }) => {
       navigation.replace('ShelveArticle', { ...route.params, bins: { bin_id: binItem.bin_ID, gondola_id: binItem.gondola_ID } });
     } else {
       const checkBin = async (code) => {
-        await fetch(`https://shelves-backend-dev.onrender.com/api/bins/checkBin/${code}`)
+        await fetch(` https://api.shwapno.net/shelvesu/api/bins/checkBin/${code}`)
           .then(res => res.json())
           .then(result => {
             if (result.status) {

@@ -5,7 +5,7 @@ import {
   DeviceEventEmitter,
   Keyboard,
   KeyboardAvoidingView,
-  SafeAreaView, Text, TextInput, TouchableHighlight,
+  Text, TextInput, TouchableHighlight,
   TouchableOpacity,
   View
 } from 'react-native';
@@ -60,7 +60,7 @@ const Receiving = ({ navigation }) => {
         .then(result => {
           if (result.status) {
             if (result.data.poReleasedStatus) {
-              navigation.push('PurchaseOrder', { po_id: po });
+              navigation.replace('PurchaseOrder', { po_id: po });
             } else {
               Toast.show({
                 type: 'customError',

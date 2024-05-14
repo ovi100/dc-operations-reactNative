@@ -50,6 +50,14 @@ const Register = ({ navigation }) => {
           type: 'customSuccess',
           text1: data.message,
         });
+        const user = data.user;
+
+        //log user activity
+        await createActivity(
+          user._id,
+          'register',
+          `${user.name} register with email ${user.email}`,
+        );
 
         setTimeout(() => {
           setIsLoading(false);

@@ -10,6 +10,7 @@ import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
 import Dialog from '../../../../components/Dialog';
 import { ButtonLg, ButtonLoading } from '../../../../components/buttons';
+import useActivity from '../../../../hooks/useActivity';
 import useAppContext from '../../../../hooks/useAppContext';
 import { getStorage, setStorage } from '../../../../hooks/useStorage';
 import { toast } from '../../../../utils';
@@ -17,6 +18,7 @@ import SunmiScanner from '../../../../utils/sunmi/scanner';
 
 const PurchaseOrder = ({ navigation, route }) => {
   const { po_id } = route.params;
+  const { createActivity } = useActivity();
   const { startScan, stopScan } = SunmiScanner;
   const [isLoading, setIsLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -193,7 +195,7 @@ const PurchaseOrder = ({ navigation, route }) => {
   if (barcode !== '' && (pressMode === 'false' || pressMode === null)) {
     const getArticleBarcode = async (barcode) => {
       try {
-        await fetch('https://shelves-backend-1-kcgr.onrender.com/api/barcodes/barcode/' + barcode, {
+        await fetch(' https://api.shwapno.net/shelvesu/api/barcodes/barcode/' + barcode, {
           method: 'GET',
           headers: {
             authorization: token,
@@ -265,15 +267,21 @@ const PurchaseOrder = ({ navigation, route }) => {
         body: JSON.stringify(postData),
       })
         .then(response => response.json())
-        .then(result => {
+        .then(async result => {
           if (result.status) {
             Toast.show({
               type: 'customSuccess',
               text1: result.message,
             });
             setStorage('grnItems', remainingGrnItems);
-            setIsUpdatingGrn(true);
             setGrnItems(remainingGrnItems);
+            setIsUpdatingGrn(true);
+            //log user activity
+            await createActivity(
+              user._id,
+              'grn_request',
+              `${user.name} send request for grn with document ${po_id}`,
+            );
             setIsButtonLoading(false);
 
           } else {
@@ -335,7 +343,7 @@ const PurchaseOrder = ({ navigation, route }) => {
                   </Text>
                 ))}
               </View>
-              {!isLoading && articles.length === 0 && GrnByPo.length > 0 ? (
+              {!isLoading && articles.length === 0 ? (
                 <Text className="text-black text-lg text-center font-bold mt-5">
                   No articles left to receive
                 </Text>

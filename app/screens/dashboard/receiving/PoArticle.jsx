@@ -8,6 +8,7 @@ import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
 import { ButtonLg, ButtonLoading } from '../../../../components/buttons';
 import { BoxIcon } from '../../../../constant/icons';
+import useActivity from '../../../../hooks/useActivity';
 import useAppContext from '../../../../hooks/useAppContext';
 import { getStorage } from '../../../../hooks/useStorage';
 
@@ -25,6 +26,7 @@ const PoArticle = ({ navigation, route }) => {
   const { user } = authInfo;
   const { addToGRN } = GRNInfo;
   const API_URL = 'https://shwapnooperation.onrender.com/api/';
+  const { createActivity } = useActivity();
 
   useEffect(() => {
     const getAsyncStorage = async () => {
@@ -36,7 +38,7 @@ const PoArticle = ({ navigation, route }) => {
   useEffect(() => {
     const getBins = async (code, site) => {
       setIsLoading(true);
-      await fetch(`https://shelves-backend-dev.onrender.com/api/bins/product/${code}/${site}`)
+      await fetch(` https://api.shwapno.net/shelvesu/api/bins/product/${code}/${site}`)
         .then(res => res.json())
         .then(result => {
           if (result.status) {
@@ -93,7 +95,6 @@ const PoArticle = ({ navigation, route }) => {
         description: description,
         userId: user._id,
         site: receivingPlant,
-        name: '',
         quantity,
         receivedQuantity: Number(newQuantity),
         receivedBy: user.name,
@@ -111,7 +112,7 @@ const PoArticle = ({ navigation, route }) => {
           body: JSON.stringify(shelvingObject),
         })
           .then(response => response.json())
-          .then(data => {
+          .then(async data => {
             // console.log('ready for shelving response', data);
             if (data.status) {
               Toast.show({
@@ -119,6 +120,12 @@ const PoArticle = ({ navigation, route }) => {
                 text1: data.message,
               });
               addToGRN(grnItem);
+              //log user activity
+              await createActivity(
+                user._id,
+                'shelving_ready',
+                `${user.name} ready material ${code} with quantity of ${newQuantity} of PO ${po} for shelving`,
+              );
               navigation.replace('PurchaseOrder', { po_id: po });
               setIsButtonLoading(false);
             } else {

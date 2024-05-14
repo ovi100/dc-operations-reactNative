@@ -22,6 +22,7 @@ const Shelving = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [pressMode, setPressMode] = useState(false);
+  const [user, setUser] = useState({});
   const [token, setToken] = useState('');
   const [barcode, setBarcode] = useState('');
   let articles = [];
@@ -35,6 +36,7 @@ const Shelving = ({ navigation }) => {
     const getAsyncStorage = async () => {
       await getStorage('token', setToken, 'string');
       await getStorage('pressMode', setPressMode);
+      await getStorage('user', setUser, 'object');
     }
     getAsyncStorage();
   }, []);
@@ -54,7 +56,7 @@ const Shelving = ({ navigation }) => {
 
   const getShelvingReadyData = async () => {
     try {
-      await fetch(API_URL + 'ready?pageSize=500', {
+      await fetch(API_URL + `ready?filterBy=site&value=${user.site}&pageSize=500`, {
         method: 'GET',
         headers: {
           authorization: token,
@@ -83,7 +85,7 @@ const Shelving = ({ navigation }) => {
 
   const getPartiallyInShelfData = async () => {
     try {
-      await fetch(API_URL + 'partially-in-shelf?pageSize=500', {
+      await fetch(API_URL + `partially-in-shelf??filterBy=site&value=${user.site}&pageSize=500`, {
         method: 'GET',
         headers: {
           authorization: token,
@@ -157,7 +159,7 @@ const Shelving = ({ navigation }) => {
   if (barcode !== '' && (pressMode === 'false' || pressMode === null)) {
     const getArticleBarcode = async (barcode) => {
       try {
-        await fetch('https://shelves-backend-1-kcgr.onrender.com/api/barcodes/barcode/' + barcode, {
+        await fetch(' https://api.shwapno.net/shelvesu/api/barcodes/barcode/' + barcode, {
           method: 'GET',
           headers: {
             authorization: token,

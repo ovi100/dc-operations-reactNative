@@ -7,6 +7,7 @@ import Toast from 'react-native-toast-message';
 import CustomToast from '../../components/CustomToast';
 import { ButtonLogin } from '../../components/buttons';
 import { EyeInvisibleIcon, EyeVisibleIcon } from '../../constant/icons';
+import useActivity from '../../hooks/useActivity';
 import styles from '../../styles/button';
 import { validateInput } from '../../utils';
 
@@ -20,6 +21,7 @@ const Register = ({ navigation }) => {
   const [password, setPassword] = useState('');
   const [passwordError, setPasswordError] = useState(null);
   const API_URL = 'https://shwapnooperation.onrender.com/api/user';
+  const { createActivity } = useActivity();
 
   const toggleType = () => {
     setInputType(current => !current);

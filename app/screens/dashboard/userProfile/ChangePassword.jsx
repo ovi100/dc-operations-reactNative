@@ -18,7 +18,8 @@ import { toast, validateInput } from "../../../../utils";
 const ChangePassword = ({ navigation, route }) => {
   const { authInfo } = useAppContext();
   const { setUser } = authInfo;
-  const [inputType, setInputType] = useState(false);
+  const [inputType1, setInputType1] = useState(false);
+  const [inputType2, setInputType2] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -31,8 +32,12 @@ const ChangePassword = ({ navigation, route }) => {
     getStorage("token", setToken);
   }, []);
 
-  const toggleType = () => {
-    setInputType((current) => !current);
+  const toggleType1 = () => {
+    setInputType1((current) => !current);
+  };
+
+  const toggleType2 = () => {
+    setInputType2((current) => !current);
   };
 
   const updatePassword = async () => {
@@ -96,7 +101,7 @@ const ChangePassword = ({ navigation, route }) => {
               placeholder="Enter current password"
               placeholderTextColor='#bcbcbc'
               selectionColor="#bcbcbc"
-              secureTextEntry={!inputType}
+              secureTextEntry={!inputType1}
               onChangeText={(value) => {
                 setCurrentPassword(value);
                 setPasswordError(validateInput("password", value));
@@ -105,11 +110,11 @@ const ChangePassword = ({ navigation, route }) => {
             {currentPassword ? (
               <TouchableOpacity
                 className="absolute right-3 top-5"
-                onPress={() => toggleType()}
+                onPress={() => toggleType1()}
               >
                 <Image
                   className="w-6 h-6"
-                  source={inputType ? EyeInvisibleIcon : EyeVisibleIcon}
+                  source={inputType1 ? EyeInvisibleIcon : EyeVisibleIcon}
                 />
               </TouchableOpacity>
             ) : null}
@@ -127,7 +132,7 @@ const ChangePassword = ({ navigation, route }) => {
               placeholder="Enter new password"
               placeholderTextColor='#bcbcbc'
               selectionColor="#bcbcbc"
-              secureTextEntry={!inputType}
+              secureTextEntry={!inputType2}
               onChangeText={(value) => {
                 setNewPassword(value);
                 setPasswordError(validateInput("password", value));
@@ -136,11 +141,11 @@ const ChangePassword = ({ navigation, route }) => {
             {newPassword ? (
               <TouchableOpacity
                 className="absolute right-3 top-5"
-                onPress={() => toggleType()}
+                onPress={() => toggleType2()}
               >
                 <Image
                   className="w-6 h-6"
-                  source={inputType ? EyeInvisibleIcon : EyeVisibleIcon}
+                  source={inputType2 ? EyeInvisibleIcon : EyeVisibleIcon}
                 />
               </TouchableOpacity>
             ) : null}

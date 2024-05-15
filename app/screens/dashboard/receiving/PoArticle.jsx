@@ -38,7 +38,7 @@ const PoArticle = ({ navigation, route }) => {
   useEffect(() => {
     const getBins = async (code, site) => {
       try {
-        await fetch(` https://api.shwapno.net/shelvesu/api/bins/product/${code}/${site}`, {
+        await fetch(`https://api.shwapno.net/shelvesu/api/bins/product/${code}/${site}`, {
           method: 'GET',
           headers: {
             authorization: token,
@@ -130,7 +130,6 @@ const PoArticle = ({ navigation, route }) => {
         })
           .then(response => response.json())
           .then(async data => {
-            // console.log('ready for shelving response', data);
             if (data.status) {
               Toast.show({
                 type: 'customSuccess',
@@ -141,7 +140,7 @@ const PoArticle = ({ navigation, route }) => {
               await createActivity(
                 user._id,
                 'shelving_ready',
-                `${user.name} ready material ${code} with quantity of ${newQuantity} of PO ${po} for shelving`,
+                `${user.name} ready material ${material} with quantity of ${newQuantity} of PO ${po} for shelving`,
               );
               navigation.replace('PurchaseOrder', { po_id: po });
               setIsButtonLoading(false);

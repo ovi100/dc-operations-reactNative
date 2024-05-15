@@ -18,7 +18,7 @@ const BinDetails = ({ navigation, route }) => {
   const [barcode, setBarcode] = useState('');
   const { startScan, stopScan } = SunmiScanner;
   const { createActivity } = useActivity();
-  const API_URL = ' https://api.shwapno.net/shelvesu/api/bins/';
+  const API_URL = 'https://api.shwapno.net/shelvesu/api/bins/';
 
   useEffect(() => {
     const getAsyncStorage = async () => {

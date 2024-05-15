@@ -25,9 +25,7 @@ const Shelving = ({ navigation }) => {
   const [user, setUser] = useState({});
   const [token, setToken] = useState('');
   const [barcode, setBarcode] = useState('');
-  let articles = [];
-  let [readyArticles, setReadyArticles] = useState([]);
-  let [partialArticles, setPartialArticles] = useState([]);
+  let [articles, setArticles] = useState([]);
   const tableHeader = ['Article Info', 'BIN ID', 'Quantity'];
   const API_URL = 'https://shwapnooperation.onrender.com/api/product-shelving/';
   const { startScan, stopScan } = SunmiScanner;
@@ -54,7 +52,7 @@ const Shelving = ({ navigation }) => {
     };
   }, [isFocused]);
 
-  const getShelvingReadyData = async () => {
+  const getShelvingData = async () => {
     try {
       await fetch(API_URL + `ready?filterBy=site&value=${user.site}&pageSize=500`, {
         method: 'GET',
@@ -63,10 +61,52 @@ const Shelving = ({ navigation }) => {
         },
       })
         .then(response => response.json())
-        .then(result => {
-          if (result.status) {
-            const readyItems = result.items;
-            setReadyArticles(readyItems);
+        .then(async readyData => {
+          if (readyData.status) {
+            await fetch(API_URL + `partially-in-shelf??filterBy=site&value=${user.site}&pageSize=500`, {
+              method: 'GET',
+              headers: {
+                authorization: token,
+              },
+            })
+              .then(res => res.json())
+              .then(result => {
+                if (result.status) {
+                  const readyItems = readyData.items;
+                  const partialData = result.items.map(item => {
+                    if (item.bins.length === 0) {
+                      const bins = item.inShelf.map(item => {
+                        return { bin_id: item.bin, gondola_id: item.gondola };
+                      });
+                      return {
+                        ...item,
+                        bins,
+                        receivedQuantity: item.receivedQuantity - item.inShelf.reduce((acc, item) => acc + item.quantity, 0)
+                      }
+                    }
+                    return {
+                      ...item,
+                      receivedQuantity: item.receivedQuantity - item.inShelf.reduce((acc, item) => acc + item.quantity, 0)
+                    }
+                  });
+                  const combinedData = [...partialData, ...readyItems];
+                  setArticles(combinedData);
+                } else {
+                  const readyItems = readyData.items;
+                  setArticles(readyItems);
+                }
+              })
+              .catch(error =>
+                Toast.show({
+                  type: 'customError',
+                  text1: error.message,
+                })
+              );
+          } else {
+            Toast.show({
+              type: 'customError',
+              text1: readyData.message,
+            });
           }
         })
         .catch(error => {
@@ -83,55 +123,6 @@ const Shelving = ({ navigation }) => {
     }
   };
 
-  const getPartiallyInShelfData = async () => {
-    try {
-      await fetch(API_URL + `partially-in-shelf??filterBy=site&value=${user.site}&pageSize=500`, {
-        method: 'GET',
-        headers: {
-          authorization: token,
-        },
-      })
-        .then(res => res.json())
-        .then(result => {
-          if (result.status) {
-            const partialData = result.items.map(item => {
-              if (item.bins.length === 0) {
-                const bins = item.inShelf.map(item => {
-                  return { bin_id: item.bin, gondola_id: item.gondola };
-                });
-                return {
-                  ...item,
-                  bins,
-                  receivedQuantity: item.receivedQuantity - item.inShelf.reduce((acc, item) => acc + item.quantity, 0)
-                }
-              }
-              return {
-                ...item,
-                receivedQuantity: item.receivedQuantity - item.inShelf.reduce((acc, item) => acc + item.quantity, 0)
-              }
-            });
-            setPartialArticles(partialData);
-          }
-        })
-        .catch(error =>
-          Toast.show({
-            type: 'customError',
-            text1: error.message,
-          })
-        );
-    } catch (error) {
-      Toast.show({
-        type: 'customError',
-        text1: error.message,
-      });
-    }
-  }
-
-  const getShelvingData = async () => {
-    await getShelvingReadyData();
-    await getPartiallyInShelfData();
-  }
-
   const getShelvingList = async () => {
     setIsLoading(true);
     await getShelvingData();
@@ -140,10 +131,10 @@ const Shelving = ({ navigation }) => {
 
   useFocusEffect(
     useCallback(() => {
-      if (token) {
+      if (token && user.site) {
         getShelvingList();
       }
-    }, [token]),
+    }, [token, user.site]),
   );
 
   const onRefresh = async () => {
@@ -152,14 +143,10 @@ const Shelving = ({ navigation }) => {
     setRefreshing(false);
   };
 
-  if (readyArticles.length > 0 || partialArticles.length > 0) {
-    articles = [...partialArticles, ...readyArticles];
-  }
-
   if (barcode !== '' && (pressMode === 'false' || pressMode === null)) {
     const getArticleBarcode = async (barcode) => {
       try {
-        await fetch(' https://api.shwapno.net/shelvesu/api/barcodes/barcode/' + barcode, {
+        await fetch('https://api.shwapno.net/shelvesu/api/barcodes/barcode/' + barcode, {
           method: 'GET',
           headers: {
             authorization: token,

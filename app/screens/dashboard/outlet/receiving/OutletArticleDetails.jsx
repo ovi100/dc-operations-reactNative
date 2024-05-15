@@ -37,7 +37,7 @@ const OutletArticleDetails = ({ navigation, route }) => {
   useEffect(() => {
     const getBins = async (code, site) => {
       setIsLoading(true);
-      await fetch(` https://api.shwapno.net/shelvesu/api/bins/product/${code}/${site}`)
+      await fetch(`https://api.shwapno.net/shelvesu/api/bins/product/${code}/${site}`)
         .then(res => res.json())
         .then(result => {
           if (result.status) {

@@ -80,7 +80,7 @@ const Receiving = ({ navigation }) => {
                     // const companyCode = poData.companyCode;
                     const poItem = poData.items[0];
                     if (poItem.receivingPlant === user.site) {
-                      navigation.push('PurchaseOrder', { po_id: po });
+                      navigation.replace('PurchaseOrder', { po_id: po });
                     } else {
                       Toast.show({
                         type: 'customError',
@@ -198,11 +198,19 @@ const Receiving = ({ navigation }) => {
           />
         </View>
         <View className="button w-1/5">
-          <TouchableOpacity onPress={() => searchPo(search)}>
-            <Text className="text-base bg-blue-600 text-white text-center rounded-tr-lg rounded-br-lg font-semibold py-3">
-              search
-            </Text>
-          </TouchableOpacity>
+          {search ? (
+            <TouchableOpacity onPress={() => searchPo(search)}>
+              <Text className="text-base bg-blue-600 text-white text-center rounded-tr-lg rounded-br-lg font-semibold py-3">
+                search
+              </Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableHighlight onPress={() => null}>
+              <Text className="text-base bg-blue-600 text-white text-center rounded-tr-lg rounded-br-lg font-semibold py-3">
+                search
+              </Text>
+            </TouchableHighlight>
+          )}
         </View>
       </View>
       <View className="content h-3/4 justify-center">

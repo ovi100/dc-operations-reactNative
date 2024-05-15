@@ -5,6 +5,7 @@ import {
   DeviceEventEmitter,
   Keyboard,
   KeyboardAvoidingView,
+  Platform,
   Text, TextInput, TouchableHighlight,
   TouchableOpacity,
   View
@@ -20,14 +21,16 @@ const Receiving = ({ navigation }) => {
   const [isCheckingPo, setIsCheckingPo] = useState(false);
   const [pressMode, setPressMode] = useState(false);
   const [token, setToken] = useState('');
+  const [user, setUser] = useState({});
   const [barcode, setBarcode] = useState('');
   const [search, setSearch] = useState('');
-  const API_URL = 'https://shwapnooperation.onrender.com/bapi/po/released';
+  const API_URL = 'https://shwapnooperation.onrender.com/bapi/po/';
   const { startScan, stopScan } = SunmiScanner;
 
   useEffect(() => {
     const getAsyncStorage = async () => {
       await getStorage('token', setToken);
+      await getStorage('user', setUser, 'object');
       await getStorage('pressMode', setPressMode);
     }
     getAsyncStorage();
@@ -45,10 +48,9 @@ const Receiving = ({ navigation }) => {
     };
   }, [isFocused]);
 
-
   const checkPo = async (po) => {
     try {
-      await fetch(API_URL, {
+      await fetch(API_URL + 'released', {
         method: 'POST',
         headers: {
           authorization: token,
@@ -57,14 +59,49 @@ const Receiving = ({ navigation }) => {
         body: JSON.stringify({ po }),
       })
         .then(response => response.json())
-        .then(result => {
+        .then(async result => {
           if (result.status) {
-            if (result.data.poReleasedStatus) {
-              navigation.replace('PurchaseOrder', { po_id: po });
+            const data = result.data;
+            if (data.poReleasedStatus) {
+              await fetch(API_URL + 'display', {
+                method: 'POST',
+                headers: {
+                  authorization: token,
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ po }),
+              })
+                .then(response => response.json())
+                .then(poDetails => {
+                  if (poDetails.status) {
+                    const poData = poDetails.data;
+                    // const companyCode = poData.companyCode;
+                    const poItem = poData.items[0];
+                    if (poItem.receivingPlant === user.site) {
+                      navigation.push('PurchaseOrder', { po_id: po });
+                    } else {
+                      Toast.show({
+                        type: 'customError',
+                        text1: 'Not authorized to receive PO',
+                      });
+                    }
+                  } else {
+                    Toast.show({
+                      type: 'customError',
+                      text1: poDetails.message.trim(),
+                    });
+                  }
+                })
+                .catch(error => {
+                  Toast.show({
+                    type: 'customError',
+                    text1: error.message,
+                  });
+                });
             } else {
               Toast.show({
                 type: 'customError',
-                text1: "PO not released",
+                text1: 'PO not released',
               });
             }
           } else {
@@ -109,14 +146,16 @@ const Receiving = ({ navigation }) => {
       });
     }
     else {
-      await getPoDetails(po);
-      setBarcode('');
-      setSearch('');
-      Keyboard.dismiss();
+      if (user.site) {
+        await getPoDetails(po);
+        setBarcode('');
+        setSearch('');
+        Keyboard.dismiss();
+      }
     }
   };
 
-  if (barcode !== '') {
+  if (barcode !== '' && user.site) {
     getPoDetails(barcode);
     setBarcode('');
     setSearch('');

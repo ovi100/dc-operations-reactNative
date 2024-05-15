@@ -3,7 +3,8 @@ import { Picker } from '@react-native-picker/picker';
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator, Alert, Image, Switch,
-  Text, TouchableHighlight, TouchableWithoutFeedback, View
+  Text,
+  TouchableWithoutFeedback, View
 } from 'react-native';
 import { ButtonBack, ButtonLogin } from '../../../../components/buttons';
 import {
@@ -138,6 +139,7 @@ const Profile = ({ navigation }) => {
                 selectedValue={selectedSite}
                 onValueChange={site => updateUser(site)}
                 style={{ color: 'black' }}>
+                <Picker.Item label='Select site' value='' />
                 {sites?.map((item, i) => (
                   <Picker.Item
                     label={item.code}

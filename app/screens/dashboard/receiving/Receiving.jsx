@@ -13,6 +13,7 @@ import {
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
 import Scan from '../../../../components/animations/Scan';
+import useActivity from '../../../../hooks/useActivity';
 import { getStorage } from '../../../../hooks/useStorage';
 import SunmiScanner from '../../../../utils/sunmi/scanner';
 
@@ -26,6 +27,7 @@ const Receiving = ({ navigation }) => {
   const [search, setSearch] = useState('');
   const API_URL = 'https://shwapnooperation.onrender.com/bapi/po/';
   const { startScan, stopScan } = SunmiScanner;
+  const { createActivity } = useActivity();
 
   useEffect(() => {
     const getAsyncStorage = async () => {
@@ -72,7 +74,7 @@ const Receiving = ({ navigation }) => {
                 body: JSON.stringify({ po }),
               })
                 .then(response => response.json())
-                .then(poDetails => {
+                .then(async poDetails => {
                   if (poDetails.status) {
                     const poData = poDetails.data;
                     // const companyCode = poData.companyCode;
@@ -90,6 +92,10 @@ const Receiving = ({ navigation }) => {
                       type: 'customError',
                       text1: poDetails.message.trim(),
                     });
+                    if (poDetails.message.trim() === 'MIS Logged Off the PC where BAPI is Hosted') {
+                      //log user activity
+                      await createActivity(user._id, 'error', result.message.trim());
+                    }
                   }
                 })
                 .catch(error => {

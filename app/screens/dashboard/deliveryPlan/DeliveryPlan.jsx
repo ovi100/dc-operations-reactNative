@@ -20,6 +20,7 @@ import Dialog from '../../../../components/Dialog';
 import Modal from '../../../../components/Modal';
 import ServerError from '../../../../components/animations/ServerError';
 import { ButtonBack, ButtonLg, ButtonLoading } from '../../../../components/buttons';
+import useActivity from '../../../../hooks/useActivity';
 import { getStorage, setStorage } from '../../../../hooks/useStorage';
 import { dateRange } from '../../../../utils';
 
@@ -42,6 +43,7 @@ const DeliveryPlan = ({ navigation }) => {
   const API_URL = 'https://shwapnooperation.onrender.com/';
   const dateObject = dateRange(15);
   const { from, to } = dateObject;
+  const { createActivity } = useActivity();
 
   useEffect(() => {
     const getAsyncStorage = async () => {
@@ -105,6 +107,14 @@ const DeliveryPlan = ({ navigation }) => {
               type: 'customError',
               text1: result.message,
             });
+            if (result.message.trim() === 'MIS Logged Off the PC where BAPI is Hosted') {
+              //log user activity
+              await createActivity(
+                user._id,
+                'error',
+                'MIS Logged Off the PC where BAPI is Hosted',
+              );
+            }
           }
         })
         .catch(error => {
@@ -228,7 +238,7 @@ const DeliveryPlan = ({ navigation }) => {
             body: JSON.stringify({ sto: item.sto }),
           })
             .then(response => response.json())
-            .then(data => {
+            .then(async data => {
               if (data.status) {
                 uncheckAll();
                 Toast.show({
@@ -243,6 +253,10 @@ const DeliveryPlan = ({ navigation }) => {
                   type: 'customError',
                   text1: data.message,
                 });
+                if (data.message.trim() === 'MIS Logged Off the PC where BAPI is Hosted') {
+                  //log user activity
+                  await createActivity(user._id, 'error', result.message.trim());
+                }
                 setIsButtonLoading(false);
                 onRefresh();
               }

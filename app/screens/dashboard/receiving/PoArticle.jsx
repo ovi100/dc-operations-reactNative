@@ -37,24 +37,41 @@ const PoArticle = ({ navigation, route }) => {
 
   useEffect(() => {
     const getBins = async (code, site) => {
-      setIsLoading(true);
-      await fetch(` https://api.shwapno.net/shelvesu/api/bins/product/${code}/${site}`)
-        .then(res => res.json())
-        .then(result => {
-          if (result.status) {
-            let binsData = result.bins.map(result => {
-              return { bin_id: result.bin_ID, gondola_id: result.gondola_ID ? result.gondola_ID : "NA" };
-            });
-            setBins(binsData);
-            setIsLoading(false);
-          } else {
-            setIsLoading(false);
+      try {
+        await fetch(` https://api.shwapno.net/shelvesu/api/bins/product/${code}/${site}`, {
+          method: 'GET',
+          headers: {
+            authorization: token,
+            'Content-Type': 'application/json',
           }
+        })
+          .then(res => res.json())
+          .then(result => {
+            if (result.status) {
+              let binsData = result.bins.map(result => {
+                return { bin_id: result.bin_ID, gondola_id: result.gondola_ID ? result.gondola_ID : "NA" };
+              });
+              setBins(binsData);
+            }
+          })
+          .catch(error => {
+            Toast.show({
+              type: 'customError',
+              text1: error.message,
+            });
+          });
+      } catch (error) {
+        Toast.show({
+          type: 'customError',
+          text1: error.message,
         });
+      }
     };
 
     if (material && user.site) {
+      setIsLoading(true);
       getBins(material, user.site);
+      setIsLoading(false);
     }
 
   }, [material, user.site]);

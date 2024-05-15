@@ -67,7 +67,7 @@ const PurchaseOrder = ({ navigation, route }) => {
       body: JSON.stringify({ po: po_id }),
     })
       .then(response => response.json())
-      .then(result => {
+      .then(async result => {
         if (result.status) {
           const poItems = result.data.items;
           const historyItems = result.data.historyTotal;
@@ -104,6 +104,10 @@ const PurchaseOrder = ({ navigation, route }) => {
             type: 'customError',
             text1: result.message,
           });
+          if (result.message.trim() === 'MIS Logged Off the PC where BAPI is Hosted') {
+            //log user activity
+            await createActivity(user._id, 'error', result.message.trim());
+          }
         }
       })
       .catch(error => {

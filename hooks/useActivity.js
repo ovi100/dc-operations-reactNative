@@ -3,8 +3,7 @@ import { useState } from 'react';
 const useActivity = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const API_URL =
-    ' https://api.shwapno.net/shelvesu/api/activity/create';
+  const API_URL = 'https://api.shwapno.net/shelvesu/api/activity/create';
 
   const createActivity = async (userId, type, activity) => {
     setLoading(true);

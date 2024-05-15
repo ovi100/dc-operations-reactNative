@@ -119,19 +119,22 @@ const Profile = ({ navigation }) => {
           </View>
           <View className="switch border-b border-gray-200 flex-row items-center py-4">
             <Image className="w-6 h-5 mr-2" source={SwitchIcon} />
-            <TouchableWithoutFeedback onPress={() => toggleSwitch()}>
-              <View className="flex-row items-center">
+            <View className="flex-row items-center">
+              <TouchableWithoutFeedback onPress={() => toggleSwitch()}>
                 <Switch
                   trackColor={{ false: 'red', true: 'green' }}
                   thumbColor={'#dddddd'}
                   ios_backgroundColor="#3e3e3e"
                   value={isEnabled}
+                  onPress={() => toggleSwitch()}
                 />
+              </TouchableWithoutFeedback>
+              <TouchableWithoutFeedback onPress={() => toggleSwitch()}>
                 <Text className={`text-base ${isEnabled ? 'text-green-600' : 'text-red-600'} font-medium`}>
                   {isEnabled ? 'Press mode is enabled' : 'Press mode is disabled'}
                 </Text>
-              </View>
-            </TouchableWithoutFeedback>
+              </TouchableWithoutFeedback>
+            </View>
           </View>
           {sites !== null && (
             <View className="site bg-white border border-solid border-gray-300 rounded mt-4">

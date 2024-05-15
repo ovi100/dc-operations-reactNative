@@ -1,7 +1,9 @@
-import { Link } from '@react-navigation/native';
-import React from 'react';
+import {Link} from '@react-navigation/native';
+import React, {useEffect} from 'react';
 import {
   ActivityIndicator,
+  Alert,
+  BackHandler,
   Image,
   SafeAreaView,
   Text,
@@ -9,7 +11,7 @@ import {
   View,
 } from 'react-native';
 import NoAccess from '../../../components/animations/NoAccess';
-import { ButtonProfile } from '../../../components/buttons';
+import {ButtonProfile} from '../../../components/buttons';
 import {
   AuditIcon,
   DeliveryNoteIcon,
@@ -18,7 +20,7 @@ import {
   PickingIcon,
   ReceivingIcon,
   ShelvingIcon,
-  TaskAssignIcon
+  TaskAssignIcon,
 } from '../../../constant/icons';
 import useAppContext from '../../../hooks/useAppContext';
 

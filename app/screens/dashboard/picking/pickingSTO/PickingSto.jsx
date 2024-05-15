@@ -235,15 +235,6 @@ const PickingSto = ({ navigation, route }) => {
     postStoTracking();
   }
 
-  // if (!isLoading && articles.length === 0) {
-  //   setStorage('stoItems', remainingStoItems);
-  //   setStorage('stoInfo', remainingStoInfo);
-  //   setStoItems(remainingStoItems);
-  //   setStoInfo(remainingStoInfo);
-  //   setIsUpdatingSto(true);
-  //   navigation.goBack();
-  // }
-
   const goToStoArticleBins = async (article) => {
     navigation.push('PickingStoArticleBinDetails', { ...article, picker, pickerId, packer, packerId });
   };

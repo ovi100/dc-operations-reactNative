@@ -1,6 +1,6 @@
 import { NavigationContainer } from '@react-navigation/native';
-import React from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import React, { useEffect } from 'react';
+import { ActivityIndicator, Alert, BackHandler, View } from 'react-native';
 import useAppContext from '../../hooks/useAppContext';
 import AppStack from './AppStack';
 import AuthStack from './AuthStack';
@@ -8,6 +8,27 @@ import AuthStack from './AuthStack';
 const AppNavigation = () => {
   const { authInfo } = useAppContext();
   const { isLoading, user } = authInfo;
+
+  useEffect(() => {
+    const backAction = () => {
+      Alert.alert('Hold on!', 'Are you sure you want to exit app?', [
+        {
+          text: 'Cancel',
+          onPress: () => null,
+          style: 'cancel',
+        },
+        { text: 'YES', onPress: () => BackHandler.exitApp() },
+      ]);
+      return true;
+    };
+
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      backAction,
+    );
+
+    return () => backHandler.remove();
+  }, []);
 
   if (isLoading) {
     return (

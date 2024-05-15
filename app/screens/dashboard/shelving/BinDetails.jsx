@@ -1,5 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, DeviceEventEmitter, FlatList, SafeAreaView, Text, View } from 'react-native';
+import {
+  ActivityIndicator, Alert, BackHandler,
+  DeviceEventEmitter, FlatList, SafeAreaView,
+  Text, View
+} from 'react-native';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
 import Scan from '../../../../components/animations/Scan';
@@ -21,6 +25,20 @@ const BinDetails = ({ navigation, route }) => {
   const API_URL = 'https://api.shwapno.net/shelvesu/api/bins/';
 
   useEffect(() => {
+    const backAction = () => {
+      navigation.replace('Shelving');
+      return true;
+    };
+
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      backAction,
+    );
+
+    return () => backHandler.remove();
+  }, []);
+
+  useEffect(() => {
     const getAsyncStorage = async () => {
       await getStorage('token', setToken);
       await getStorage('user', setUser, 'object');
@@ -30,7 +48,7 @@ const BinDetails = ({ navigation, route }) => {
 
   const getBins = async (code) => {
     try {
-      await fetch(API_URL + `product/${code}`, {
+      await fetch(API_URL + `product/${code}/${user.site}`, {
         method: 'GET',
         headers: {
           authorization: token,
@@ -69,10 +87,10 @@ const BinDetails = ({ navigation, route }) => {
   }
 
   useEffect(() => {
-    if (token && route.params) {
+    if (token && route.params && user.site) {
       getBinsInfo();
     }
-  }, [token, route.params]);
+  }, [token, route.params, user.site]);
 
   useEffect(() => {
     startScan();
@@ -188,7 +206,7 @@ const BinDetails = ({ navigation, route }) => {
       navigation.replace('ShelveArticle', { ...route.params, bins: { bin_id: binItem.bin_ID, gondola_id: binItem.gondola_ID } });
     } else {
       const checkBin = async (code) => {
-        await fetch(` https://api.shwapno.net/shelvesu/api/bins/checkBin/${code}`)
+        await fetch(API_URL + `checkBin/${code}`)
           .then(res => res.json())
           .then(result => {
             if (result.status) {

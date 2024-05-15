@@ -61,17 +61,27 @@ const SiteChoose = ({ navigation }) => {
   }, [token]);
 
   useEffect(() => {
-    setUserSites(sites);
-    setStorage('userSites', sites);
-  }, [sites]);
+    if (user.site?.length > 0 && !user.site.includes("all-site-access") && sites.length > 0) {
+      sites = user.site.map(item => sites.find(elm => elm.code === item));
+      setUserSites(sites);
+      setStorage('userSites', sites);
+    }
+  }, [sites, user.site]);
+
+  useEffect(() => {
+    if (user.site.length === 1 && sites.length > 0) {
+      const result = user.site.map(item => sites.find(elm => elm.code === item));
+      let newUser = { ...user, site: result[0].code };
+      setUser(newUser);
+      setStorage("user", newUser);
+      navigation.navigate('Home');
+    }
+  }, [sites, user.site]);
+
 
   if (!Array.isArray(user.site)) {
     navigation.navigate('Home');
     return;
-  }
-
-  if (user.site?.length > 0 && !user.site.includes("all-site-access") && sites.length > 0) {
-    sites = user.site.map(item => sites.find(elm => elm.code === item));
   }
 
   const updateUser = (site) => {

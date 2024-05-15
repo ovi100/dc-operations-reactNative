@@ -1,7 +1,8 @@
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import React from 'react';
-// screens
 import useAppContext from '../../hooks/useAppContext';
+// screens components
+import SiteChoose from '../screens/dashboard/site/SiteChoose';
 import Home from '../screens/dashboard';
 import Audit from '../screens/dashboard/audit/Audit';
 import DeliveryNote from '../screens/dashboard/deliveryNote/DeliveryNote';
@@ -23,11 +24,9 @@ import PurchaseOrder from '../screens/dashboard/receiving/PurchaseOrder';
 import Receiving from '../screens/dashboard/receiving/Receiving';
 import Return from '../screens/dashboard/return/Return';
 import ReturnDetails from '../screens/dashboard/return/returnDetails/ReturnDetails';
-import AssignToBin from '../screens/dashboard/shelving/AssignToBin';
+import Shelving from '../screens/dashboard/shelving/Shelving';
 import BinDetails from '../screens/dashboard/shelving/BinDetails';
 import ShelveArticle from '../screens/dashboard/shelving/ShelveArticle';
-import Shelving from '../screens/dashboard/shelving/Shelving';
-import SiteChoose from '../screens/dashboard/site/SiteChoose';
 import PickerPackerTaskAssign from '../screens/dashboard/taskAssign/PickerPackerTaskAssign/PickerPackerTaskAssign';
 import TaskAssign from '../screens/dashboard/taskAssign/TaskAssign';
 import ChangePassword from '../screens/dashboard/userProfile/ChangePassword';
@@ -64,7 +63,6 @@ const AppStack = () => {
     },
     {id: 'shelving', name: 'Shelving', component: Shelving},
     {id: 'bin-details', name: 'BinDetails', component: BinDetails},
-    {id: 'assign-bin', name: 'AssignToBin', component: AssignToBin},
     {id: 'shelve-article', name: 'ShelveArticle', component: ShelveArticle},
     {id: 'delivery-plan', name: 'DeliveryPlan', component: DeliveryPlan},
     {id: 'task-assign', name: 'TaskAssign', component: TaskAssign},

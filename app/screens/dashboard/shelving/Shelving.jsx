@@ -42,7 +42,6 @@ const Shelving = ({ navigation }) => {
   useEffect(() => {
     startScan();
     DeviceEventEmitter.addListener('ScanDataReceived', data => {
-      console.log(data.code)
       setBarcode(data.code);
     });
 

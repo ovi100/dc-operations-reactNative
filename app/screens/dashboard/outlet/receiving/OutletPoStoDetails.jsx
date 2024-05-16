@@ -3,14 +3,15 @@ import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   DeviceEventEmitter, FlatList,
-  RefreshControl,
-  SafeAreaView, Text, TouchableHighlight, TouchableOpacity, View
+  RefreshControl, SafeAreaView, Text,
+  TouchableHighlight, TouchableOpacity, View
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../../components/CustomToast';
 import Dialog from '../../../../../components/Dialog';
 import { ButtonLg, ButtonLoading } from '../../../../../components/buttons';
 import useAppContext from '../../../../../hooks/useAppContext';
+import useBackHandler from '../../../../../hooks/useBackHandler';
 import { getStorage, setStorage } from '../../../../../hooks/useStorage';
 import SunmiScanner from '../../../../../utils/sunmi/scanner';
 
@@ -32,6 +33,9 @@ const OutletPoStoDetails = ({ navigation, route }) => {
   const { grnItems, setGrnItems, setIsUpdatingGrn } = GRNInfo;
   let GrnByPo = [];
   let remainingGrnItems = [];
+
+  // Custom hook to navigate screen
+  useBackHandler('OutletReceiving');
 
   useEffect(() => {
     const getAsyncStorage = async () => {

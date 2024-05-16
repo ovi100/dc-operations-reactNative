@@ -14,6 +14,7 @@ const SiteChoose = ({ navigation }) => {
   const { user, setUser, setUserSites, token, logout } = authInfo;
   const [isLoading, setIsLoading] = useState(false);
   let [sites, setSites] = useState([]);
+  let singleSite = '';
 
   const getSites = async () => {
     try {
@@ -61,35 +62,34 @@ const SiteChoose = ({ navigation }) => {
   }, [token]);
 
   useEffect(() => {
-    if (user.site?.length > 0 && !user.site.includes("all-site-access") && sites.length > 0) {
-      sites = user.site.map(item => sites.find(elm => elm.code === item));
-      setUserSites(sites);
-      setStorage('userSites', sites);
-    }
-  }, [sites, user.site]);
+    setUserSites(sites);
+    setStorage('userSites', sites);
+  }, [sites]);
 
-  useEffect(() => {
-    if (user.site.length === 1 && sites.length > 0) {
-      const result = user.site.map(item => sites.find(elm => elm.code === item));
-      let newUser = { ...user, site: result[0].code };
-      setUser(newUser);
-      setStorage("user", newUser);
-      navigation.navigate('Home');
-    }
-  }, [sites, user.site]);
-
+  const updateUser = async (newSite) => {
+    let newUser = { ...user, site: newSite };
+    setUser(newUser);
+    await setStorage("user", newUser);
+    navigation.navigate('Home');
+  };
 
   if (!Array.isArray(user.site)) {
     navigation.navigate('Home');
     return;
   }
 
-  const updateUser = (site) => {
-    let newUser = { ...user, site: site };
-    setUser(newUser);
-    setStorage("user", newUser);
-    navigation.navigate('Home');
-  };
+  if (user.site.length > 1 && !user.site.includes("all-site-access") && sites.length > 0) {
+    sites = user.site.map(item => sites.find(site => site.code === item));
+  }
+
+  if (user.site.length === 1 && !user.site.includes("all-site-access") && sites.length > 0) {
+    sites = user.site.map(item => sites.find(site => site.code === item));
+    singleSite = sites.find(site => site.code === user.site[0]);
+  }
+
+  if (singleSite) {
+    updateUser(singleSite.code);
+  }
 
   if (isLoading) {
     return (
@@ -102,7 +102,7 @@ const SiteChoose = ({ navigation }) => {
     );
   }
 
-  if (user.site?.length === 0) {
+  if (user.site.length === 0) {
     return (
       <SafeAreaView className="flex-1 bg-white pt-8">
         <View className="flex-1">

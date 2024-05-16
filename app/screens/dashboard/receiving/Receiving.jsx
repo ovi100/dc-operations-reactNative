@@ -1,4 +1,3 @@
-import { useIsFocused } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -18,7 +17,6 @@ import { getStorage } from '../../../../hooks/useStorage';
 import SunmiScanner from '../../../../utils/sunmi/scanner';
 
 const Receiving = ({ navigation }) => {
-  const isFocused = useIsFocused();
   const [isCheckingPo, setIsCheckingPo] = useState(false);
   const [pressMode, setPressMode] = useState(false);
   const [token, setToken] = useState('');
@@ -48,7 +46,7 @@ const Receiving = ({ navigation }) => {
       stopScan();
       DeviceEventEmitter.removeAllListeners('ScanDataReceived');
     };
-  }, [isFocused]);
+  }, [navigation.isFocused()]);
 
   const checkPo = async (po) => {
     try {
@@ -80,7 +78,7 @@ const Receiving = ({ navigation }) => {
                     // const companyCode = poData.companyCode;
                     const poItem = poData.items[0];
                     if (poItem.receivingPlant === user.site) {
-                      navigation.replace('PurchaseOrder', { po_id: po });
+                      navigation.replace('PurchaseOrder', { po });
                     } else {
                       Toast.show({
                         type: 'customError',
@@ -152,7 +150,7 @@ const Receiving = ({ navigation }) => {
       });
     }
     else {
-      if (user.site) {
+      if (po && user.site) {
         await getPoDetails(po);
         setBarcode('');
         setSearch('');

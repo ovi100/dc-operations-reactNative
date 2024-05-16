@@ -149,25 +149,29 @@ const Audit = ({ navigation }) => {
           <Text className="text-lg text-sh text-center font-semibold capitalize">
             Audit
           </Text>
-
           <Text className="invisible mx-2"></Text>
         </View>
         <View style={{ flex: 1 }}>
-          <View className="flex flex-row justify-between  mb-4">
-            <TextInput
-              className="bg-[#F5F6FA] h-[50px] text-black rounded-lg px-4 flex-1  mr-2"
-              placeholder="Search Product by Code"
-              keyboardType="phone-pad"
-              placeholderTextColor="#CBC9D9"
-              selectionColor="#CBC9D9"
-              onChangeText={e => handleSearchQuery(e)}
-              value={searchQuery}
-            />
-            <TouchableOpacity
-              onPress={() => fetchData()}
-              className="bg-red-600 flex justify-center items-center px-6 rounded">
-              <Text className="text-white font-medium">SEARCH</Text>
-            </TouchableOpacity>
+          {/* Search Box */}
+          <View className="search flex-row">
+            <View className="input-box w-4/5">
+              <TextInput
+                className="bg-[#F5F6FA] text-black rounded-bl-lg rounded-tl-lg px-4"
+                placeholder="Search by purchase order"
+                keyboardType="phone-pad"
+                placeholderTextColor="#CBC9D9"
+                selectionColor="#CBC9D9"
+                onChangeText={(e) => handleSearchQuery(e)}
+                value={searchQuery}
+              />
+            </View>
+            <View className="button w-1/5">
+              <TouchableOpacity onPress={() => fetchData()}>
+                <Text className="text-base bg-blue-600 text-white text-center rounded-tr-lg rounded-br-lg font-semibold py-3">
+                  search
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
 
           {isLoading && (
@@ -222,14 +226,14 @@ const Audit = ({ navigation }) => {
             </View>
           )}
 
-          {searchQuery && searchResult?.length <= 0 && (
+          {searchQuery && searchResult?.length === 0 && (
             <View className="flex justify-center items-center gap-3 mt-10">
               <Image className='w-32 h-32' source={EmptyBoxIcon} />
               <Text className="text-black text-lg font-medium">No Product found</Text>
             </View>
           )}
 
-          {searchResult === null && (
+          {!isLoading && searchResult === null && (
             <View className="flex justify-center items-center gap-3 mt-10">
               <Image className='w-32 h-32' source={ClosedBoxIcon} />
               <Text className="text-black text-lg font-medium">Search and Audit Products</Text>

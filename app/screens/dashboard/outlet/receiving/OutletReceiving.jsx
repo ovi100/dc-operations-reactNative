@@ -1,4 +1,3 @@
-import { useIsFocused } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -17,7 +16,6 @@ import SunmiScanner from '../../../../../utils/sunmi/scanner';
 
 
 const Receiving = ({ navigation }) => {
-  const isFocused = useIsFocused();
   const [isChecking, setIsChecking] = useState(false);
   const [pressMode, setPressMode] = useState(false);
   const [token, setToken] = useState('');
@@ -44,10 +42,9 @@ const Receiving = ({ navigation }) => {
       stopScan();
       DeviceEventEmitter.removeAllListeners('ScanDataReceived');
     };
-  }, [isFocused]);
+  }, [navigation.isFocused()]);
 
   const isSto = search.startsWith('8') || barcode.startsWith('8');
-
 
   const checkPo = async (po) => {
     try {
@@ -184,12 +181,12 @@ const Receiving = ({ navigation }) => {
         {pressMode === 'true' ? (
           <TouchableHighlight onPress={() => null}>
             <Text className="text-lg text-sh font-semibold capitalize">
-              outlet receiving screen
+              outlet receiving
             </Text>
           </TouchableHighlight>
         ) : (
           <Text className="text-lg text-sh font-semibold capitalize">
-            outlet receiving screen
+            outlet receiving
           </Text>
         )}
       </View>
@@ -208,11 +205,19 @@ const Receiving = ({ navigation }) => {
           />
         </View>
         <View className="button w-1/5">
-          <TouchableOpacity onPress={() => searchPo(search)}>
-            <Text className="text-base bg-blue-600 text-white text-center rounded-tr-lg rounded-br-lg font-semibold py-3">
-              search
-            </Text>
-          </TouchableOpacity>
+          {search ? (
+            <TouchableOpacity onPress={() => searchPo(search)}>
+              <Text className="text-base bg-blue-600 text-white text-center rounded-tr-lg rounded-br-lg font-semibold py-3">
+                search
+              </Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableHighlight onPress={() => null}>
+              <Text className="text-base bg-blue-600 text-white text-center rounded-tr-lg rounded-br-lg font-semibold py-3">
+                search
+              </Text>
+            </TouchableHighlight>
+          )}
         </View>
       </View>
       <View className="content h-3/4 justify-center">

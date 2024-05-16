@@ -11,7 +11,7 @@ const AppNavigation = () => {
 
   useEffect(() => {
     const backAction = () => {
-      Alert.alert('Hold on!', 'Are you sure you want to exit app?', [
+      Alert.alert('Hold on!', 'Are you sure you want to exit the app?', [
         {
           text: 'Cancel',
           onPress: () => null,

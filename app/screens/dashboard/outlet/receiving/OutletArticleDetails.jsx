@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
-  Image, SafeAreaView, Text, TextInput,
+  ActivityIndicator, Image,
+  SafeAreaView, Text, TextInput,
   TouchableWithoutFeedback, View
 } from 'react-native';
 import Toast from 'react-native-toast-message';
@@ -9,6 +9,7 @@ import CustomToast from '../../../../../components/CustomToast';
 import { ButtonLg, ButtonLoading } from '../../../../../components/buttons';
 import { BoxIcon } from '../../../../../constant/icons';
 import useAppContext from '../../../../../hooks/useAppContext';
+import useBackHandler from '../../../../../hooks/useBackHandler';
 import { getStorage } from '../../../../../hooks/useStorage';
 
 
@@ -26,6 +27,9 @@ const OutletArticleDetails = ({ navigation, route }) => {
   const { user } = authInfo;
   const { addToGRN } = GRNInfo;
   const API_URL = 'https://shwapnooperation.onrender.com/api/';
+
+  // Custom hook to navigate screen
+  useBackHandler('OutletPoStoDetails', { po, sto });
 
   useEffect(() => {
     const getAsyncStorage = async () => {
@@ -71,7 +75,6 @@ const OutletArticleDetails = ({ navigation, route }) => {
       })
         .then(response => response.json())
         .then(data => {
-          console.log('ready for shelving response', data);
           if (data.status) {
             Toast.show({
               type: 'customSuccess',

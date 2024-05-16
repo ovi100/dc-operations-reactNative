@@ -12,12 +12,13 @@ import Dialog from '../../../../components/Dialog';
 import { ButtonLg, ButtonLoading } from '../../../../components/buttons';
 import useActivity from '../../../../hooks/useActivity';
 import useAppContext from '../../../../hooks/useAppContext';
+import useBackHandler from '../../../../hooks/useBackHandler';
 import { getStorage, setStorage } from '../../../../hooks/useStorage';
 import { toast } from '../../../../utils';
 import SunmiScanner from '../../../../utils/sunmi/scanner';
 
 const PurchaseOrder = ({ navigation, route }) => {
-  const { po_id } = route.params;
+  const { po } = route.params;
   const { createActivity } = useActivity();
   const { startScan, stopScan } = SunmiScanner;
   const [isLoading, setIsLoading] = useState(false);
@@ -35,6 +36,9 @@ const PurchaseOrder = ({ navigation, route }) => {
   const { grnItems, setGrnItems, setIsUpdatingGrn } = GRNInfo;
   let GrnByPo = [];
   let remainingGrnItems = [];
+
+  // Custom hook to navigate screen
+  useBackHandler('Receiving');
 
   useEffect(() => {
     const getAsyncStorage = async () => {
@@ -64,7 +68,7 @@ const PurchaseOrder = ({ navigation, route }) => {
         authorization: token,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ po: po_id }),
+      body: JSON.stringify({ po: po }),
     })
       .then(response => response.json())
       .then(async result => {
@@ -130,10 +134,10 @@ const PurchaseOrder = ({ navigation, route }) => {
 
   useFocusEffect(
     useCallback(() => {
-      if (token && po_id) {
+      if (token && po) {
         getPoInfo();
       }
-    }, [token, po_id]),
+    }, [token, po]),
   );
 
   const onRefresh = async () => {
@@ -246,8 +250,8 @@ const PurchaseOrder = ({ navigation, route }) => {
   }
 
   if (grnItems) {
-    remainingGrnItems = grnItems.filter(grnItem => grnItem.po !== po_id);
-    GrnByPo = grnItems.filter(grnItem => grnItem.po === po_id);
+    remainingGrnItems = grnItems.filter(grnItem => grnItem.po !== po);
+    GrnByPo = grnItems.filter(grnItem => grnItem.po === po);
   }
 
   const generateGRN = async (grnList) => {
@@ -255,7 +259,7 @@ const PurchaseOrder = ({ navigation, route }) => {
     setIsButtonLoading(true);
 
     let postData = {
-      po: po_id,
+      po: po,
       status: 'pending for grn',
       createdBy: user._id,
       grnData: grnList
@@ -284,7 +288,7 @@ const PurchaseOrder = ({ navigation, route }) => {
             await createActivity(
               user._id,
               'grn_request',
-              `${user.name} send request for grn with document ${po_id}`,
+              `${user.name} send request for grn with document ${po}`,
             );
             setIsButtonLoading(false);
 
@@ -328,12 +332,12 @@ const PurchaseOrder = ({ navigation, route }) => {
           {pressMode === 'true' ? (
             <TouchableHighlight onPress={() => null}>
               <Text className="text-lg text-sh font-semibold uppercase">
-                po {po_id}
+                po {po}
               </Text>
             </TouchableHighlight>
           ) : (
             <Text className="text-lg text-sh font-semibold uppercase">
-              po {po_id}
+              po {po}
             </Text>
           )}
         </View>

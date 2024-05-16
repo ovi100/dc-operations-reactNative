@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
-  ActivityIndicator, Alert, BackHandler,
+  ActivityIndicator, Alert,
   DeviceEventEmitter, FlatList, SafeAreaView,
   Text, View
 } from 'react-native';
@@ -8,6 +8,7 @@ import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
 import Scan from '../../../../components/animations/Scan';
 import useActivity from '../../../../hooks/useActivity';
+import useBackHandler from '../../../../hooks/useBackHandler';
 import { getStorage } from '../../../../hooks/useStorage';
 import SunmiScanner from '../../../../utils/sunmi/scanner';
 
@@ -24,19 +25,8 @@ const BinDetails = ({ navigation, route }) => {
   const { createActivity } = useActivity();
   const API_URL = 'https://api.shwapno.net/shelvesu/api/bins/';
 
-  useEffect(() => {
-    const backAction = () => {
-      navigation.replace('Shelving');
-      return true;
-    };
-
-    const backHandler = BackHandler.addEventListener(
-      'hardwareBackPress',
-      backAction,
-    );
-
-    return () => backHandler.remove();
-  }, []);
+  // Custom hook to navigate screen
+  useBackHandler('Shelving');
 
   useEffect(() => {
     const getAsyncStorage = async () => {

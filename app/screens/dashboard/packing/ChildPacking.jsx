@@ -49,7 +49,7 @@ const ChildPacking = ({ navigation }) => {
         .then(response => response.json())
         .then(articleTrackingData => {
           if (articleTrackingData.status) {
-            const articleTrackingItems = articleTrackingData.items;
+            const articleTrackingItems = articleTrackingData.items.filter(article => article.inboundPackerId === user._id);
             const finalList = articleTrackingItems.map(item => {
               return { ...item, supplyingSite: user.site, selected: false };
             });

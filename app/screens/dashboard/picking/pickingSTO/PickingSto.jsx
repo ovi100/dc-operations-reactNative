@@ -187,9 +187,9 @@ const PickingSto = ({ navigation, route }) => {
     const isFirstItem = stoTrackInfo.sku > 1 && stoTrackInfo.pickedSku === 1 && articles.length > 1;
     const isLastItem = stoTrackInfo.sku - stoTrackInfo.pickedSku === 0 && stoTrackInfo.pickedSku > 1;
 
-    console.log('isOnlyItem', isOnlyItem);
-    console.log('isFirstItem', isFirstItem);
-    console.log('isLastItem', isLastItem);
+    // console.log('isOnlyItem', isOnlyItem);
+    // console.log('isFirstItem', isFirstItem);
+    // console.log('isLastItem', isLastItem);
 
     if (isOnlyItem) {
       postData = {

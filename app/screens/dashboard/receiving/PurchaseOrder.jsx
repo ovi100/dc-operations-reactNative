@@ -75,8 +75,9 @@ const PurchaseOrder = ({ navigation, route }) => {
         if (result.status) {
           const poItems = result.data.items;
           const historyItems = result.data.historyTotal;
+          let finalPoItems = [];
           if (historyItems.length > 0) {
-            let remainingPoItems = poItems.map(poItem => {
+            finalPoItems = poItems.map(poItem => {
               const matchedItem = historyItems.find(
                 historyItem => historyItem.material === poItem.material
               );
@@ -92,17 +93,16 @@ const PurchaseOrder = ({ navigation, route }) => {
                 };
               }
             }).filter(item => item.remainingQuantity !== 0);
-            setArticles(remainingPoItems);
           }
           else {
-            let poItems = result.data.items.map(item => {
+            finalPoItems = result.data.items.map(item => {
               return {
                 ...item,
                 remainingQuantity: item.quantity
               };
             });
-            setArticles(poItems);
           }
+          setArticles(finalPoItems);
         } else {
           Toast.show({
             type: 'customError',
@@ -134,10 +134,10 @@ const PurchaseOrder = ({ navigation, route }) => {
 
   useFocusEffect(
     useCallback(() => {
-      if (token && po) {
+      if (token && po && user.site) {
         getPoInfo();
       }
-    }, [token, po]),
+    }, [token, po, user.site]),
   );
 
   const onRefresh = async () => {
@@ -149,6 +149,8 @@ const PurchaseOrder = ({ navigation, route }) => {
     const time = (end - start) / 1000
     toast(`Refreshing time: ${time.toFixed(2)} Seconds`);
   };
+
+  console.log(articles);
 
   const renderItem = ({ item, index }) => (
     <>

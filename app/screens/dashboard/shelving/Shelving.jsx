@@ -210,7 +210,7 @@ const Shelving = ({ navigation }) => {
               {item.bins.length > 0 ? (
                 <Text
                   className="text-black text-center mb-1 last:mb-0"
-                  numberOfLines={1}>
+                  numberOfLines={2}>
                   {item.bins[0].bin_id}
                 </Text>
               ) : (<Text className="text-black text-center">No bin has been assigned</Text>)}

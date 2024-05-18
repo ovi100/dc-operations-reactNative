@@ -8,10 +8,14 @@ import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../../components/CustomToast';
 import { ButtonBack, ButtonLg } from '../../../../../components/buttons';
 import { getStorage } from '../../../../../hooks/useStorage';
+import { updateArticleTracking, updateStoTracking } from '../processStoData';
+import Dialog from '../../../../../components/Dialog';
 
 const PickedSto = ({ navigation, route }) => {
   const { sto } = route.params;
   const [isLoading, setIsLoading] = useState(false);
+  const [isSending, setIsSending] = useState(false);
+  const [dialogVisible, setDialogVisible] = useState(false);
   const [user, setUser] = useState({});
   const [token, setToken] = useState('');
   let tableHeader = ['Article Code', 'Article Name', 'Picked Qnt', 'Packed Qnt'];
@@ -53,7 +57,7 @@ const PickedSto = ({ navigation, route }) => {
                   // console.log('article tracking response', articleTrackingData);
                   if (articleTrackingData.status) {
                     const stoItems = stoDetails.data.items;
-                    const articleTrackingItems = articleTrackingData.items;
+                    const articleTrackingItems = articleTrackingData.items.filter(article => article.sto === sto && article.inboundPickerId === user._id);
                     const stoPickedItems = articleTrackingItems.map(item => {
                       const matchedItem = stoItems.find(
                         stoItem => item.code === stoItem.material
@@ -80,7 +84,6 @@ const PickedSto = ({ navigation, route }) => {
                 text1: error.message,
               });
             }
-            // addToStoInfo({ sto, sku: stoDetails.data.items.length });
           } else {
             Toast.show({
               type: 'customError',
@@ -132,7 +135,6 @@ const PickedSto = ({ navigation, route }) => {
     } else {
       const newItems = [...articles];
       newItems[index].inboundPackedQuantity = quantity;
-      // newItems[index].remainingPackedQuantity = item.remainingPackedQuantity - quantity;
       setArticles(newItems);
     }
   }
@@ -157,15 +159,74 @@ const PickedSto = ({ navigation, route }) => {
           className="text-black border border-gray-200 text-center rounded-md px-4 focus:border-blue-500"
           keyboardType="numeric"
           placeholder={item.remainingPackedQuantity.toString()}
-          // value={item.remainingPackedQuantity.toString()}
           onChangeText={quantity => handleInputBox(item, Number(quantity))}
         />
       </View>
     </TouchableOpacity>
   );
 
-  const updatePackingZone = () => {
-    Alert.alert('packing zone button pressed');
+  const sendToPackingZone = () => {
+    setDialogVisible(false);
+    setIsSending(true);
+    try {
+      articles.map(async item => {
+        let updateArticle = {
+          sto: item.sto,
+          code: item.code,
+          packedQuantity: item.inboundPackedQuantity
+        };
+        let updateSto = {
+          sto: item.sto,
+        };
+
+        if (item.inboundPackedQuantity) {
+          if (item.remainingPackedQuantity === item.inboundPackedQuantity && item.packingStartingTime === null) {
+            updateSto = {
+              ...updateSto,
+              packingStartingTime: new Date(),
+              packingEndingTime: new Date(),
+              status: 'inbound packed'
+            }
+            updateArticle = {
+              ...updateArticle,
+              packingStartingTime: new Date(),
+              packingEndingTime: new Date(),
+              status: 'inbound packed'
+            };
+          } else if (item.remainingPackedQuantity > item.inboundPackedQuantity && item.packingStartingTime === null) {
+            updateSto = {
+              ...updateSto,
+              packingStartingTime: new Date(),
+              status: 'partially inbound packed'
+            }
+            updateArticle = {
+              ...updateArticle,
+              packingStartingTime: new Date(),
+              status: 'partially inbound packed'
+            };
+          } else if (item.remainingPackedQuantity > item.inboundPackedQuantity && item.packingStartingTime !== null) {
+            updateSto = {
+              ...updateSto,
+              status: 'partially inbound packed'
+            }
+            updateArticle = { ...updateArticle };
+          } else {
+            updateArticle = {
+              ...updateArticle,
+              packingEndingTime: new Date(),
+              status: 'inbound packed'
+            };
+          }
+          await updateStoTracking(token, updateSto);
+          await updateArticleTracking(token, updateArticle);
+        }
+      })
+    } catch (error) {
+      Toast.show({
+        type: 'customError',
+        text1: error.message,
+      });
+    }
   };
 
   if (isLoading && articles.length === 0) {
@@ -174,6 +235,17 @@ const PickedSto = ({ navigation, route }) => {
         <ActivityIndicator size="large" color="#EB4B50" />
         <Text className="mt-4 text-gray-400 text-base text-center">
           Loading sto articles. Please wait......
+        </Text>
+      </View>
+    )
+  }
+
+  if (isSending) {
+    return (
+      <View className="w-full h-screen justify-center px-3">
+        <ActivityIndicator size="large" color="#EB4B50" />
+        <Text className="mt-4 text-gray-400 text-base text-center">
+          Sending to packing zone. Please wait......
         </Text>
       </View>
     )
@@ -215,11 +287,20 @@ const PickedSto = ({ navigation, route }) => {
           <View className="button">
             <ButtonLg
               title="Send to Packing Zone"
-              onPress={() => updatePackingZone()}
+              onPress={() => setDialogVisible(true)()}
             />
           </View>
         </View>
       </View>
+      <Dialog
+        isOpen={dialogVisible}
+        modalHeader="Are you sure?"
+        modalSubHeader="Do you want to send this item to packing zone?"
+        onClose={() => setDialogVisible(false)}
+        onSubmit={() => sendToPackingZone()}
+        leftButtonText="cancel"
+        rightButtonText="proceed"
+      />
       <CustomToast />
     </SafeAreaView>
   );

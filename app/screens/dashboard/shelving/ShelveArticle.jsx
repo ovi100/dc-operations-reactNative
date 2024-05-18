@@ -71,10 +71,8 @@ const ShelveArticle = ({ navigation, route }) => {
               'inventory',
               `${user.name} add material ${code} with quantity of ${newQuantity} to inventory`,
             );
-            setTimeout(() => {
-              setIsButtonLoading(false);
-              navigation.replace('Shelving');
-            }, 1500);
+            setIsButtonLoading(false);
+            navigation.replace('Shelving');
           } else {
             Toast.show({
               type: 'customError',

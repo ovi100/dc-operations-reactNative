@@ -143,47 +143,51 @@ const ChildPacking = ({ navigation }) => {
     if (selectedList.length > 0) {
       setDialogVisible(false);
       setIsButtonLoading(true);
+      const formattedData = selectedList.map(item => ({
+        sto: item.sto,
+        dn: item.dn,
+        supplyingSite: item.supplyingSite,
+        receivingSite: item.receivingSite,
+        packedBy: item.inboundPackerId,
+        dateTimePacked: new Date(),
+        list: [
+          {
+            material: item.code,
+            description: item.name,
+            quantity: item.quantity,
+          }
+        ]
+      }));
+
       try {
-        await fetch(API_URL + 'api/child-packing', {
-          method: 'POST',
-          headers: {
-            authorization: token,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({}),
-        })
-          .then(response => response.json())
-          .then(data => {
-            if (data.status) {
-              uncheckAll();
-              Toast.show({
-                type: 'customInfo',
-                text1: data.message,
-              });
-              setIsButtonLoading(false);
-              onRefresh();
-            } else {
-              uncheckAll();
+        formattedData.map(async item => {
+          await fetch(API_URL + 'api/child-packing', {
+            method: 'POST',
+            headers: {
+              authorization: token,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(item),
+          })
+            .then(response => response.json())
+            .then(data => data)
+            .catch(error => {
               Toast.show({
                 type: 'customError',
-                text1: data.message,
+                text1: error.message,
               });
-              setIsButtonLoading(false);
-              onRefresh();
-            }
-          })
-          .catch(error => {
-            Toast.show({
-              type: 'customError',
-              text1: error.message,
             });
-          });
+        })
 
       } catch (error) {
         Toast.show({
           type: 'customError',
           text1: error.message,
         });
+      } finally {
+        uncheckAll();
+        setIsButtonLoading(false);
+        onRefresh();
       }
     } else {
       Toast.show({

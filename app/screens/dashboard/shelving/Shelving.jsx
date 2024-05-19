@@ -62,7 +62,7 @@ const Shelving = ({ navigation }) => {
         .then(response => response.json())
         .then(async readyData => {
           if (readyData.status) {
-            await fetch(API_URL + `partially-in-shelf??filterBy=site&value=${user.site}&pageSize=500`, {
+            await fetch(API_URL + `partially-in-shelf?filterBy=site&value=${user.site}&pageSize=500`, {
               method: 'GET',
               headers: {
                 authorization: token,
@@ -71,7 +71,7 @@ const Shelving = ({ navigation }) => {
               .then(res => res.json())
               .then(result => {
                 if (result.status) {
-                  const readyItems = readyData.items;
+                  const readyItems = readyData.items
                   const partialData = result.items.map(item => {
                     if (item.bins.length === 0) {
                       const bins = item.inShelf.map(item => {
@@ -197,12 +197,12 @@ const Shelving = ({ navigation }) => {
         <TouchableOpacity onPress={() => navigation.replace('BinDetails', item)}>
           <View
             key={index}
-            className="flex-row items-center justify-between border border-tb rounded-lg mt-2.5 p-3">
-            <View className="w-[45%]">
+            className="flex-row items-center border border-tb rounded-lg mt-2.5 p-3">
+            <View className="w-[50%]">
               <Text className="text-xs text-black" numberOfLines={1}>
                 {item.code}
               </Text>
-              <Text className="w-36 text-black text-base mt-1" numberOfLines={2}>
+              <Text className="w-32 text-black text-base mt-1" numberOfLines={2}>
                 {item.description}
               </Text>
             </View>
@@ -215,7 +215,7 @@ const Shelving = ({ navigation }) => {
                 </Text>
               ) : (<Text className="text-black text-center">No bin has been assigned</Text>)}
             </View>
-            <Text className="w-[15%] text-black text-right" numberOfLines={1}>
+            <Text className="w-[10%] text-black text-right" numberOfLines={1}>
               {item.receivedQuantity}
             </Text>
           </View>
@@ -223,12 +223,12 @@ const Shelving = ({ navigation }) => {
       ) : (
         <View
           key={index}
-          className="flex-row items-center justify-between border border-tb rounded-lg mt-2.5 p-3">
-          <View className="w-[45%]">
+          className="flex-row items-center border border-tb rounded-lg mt-2.5 p-3">
+          <View className="w-[50%]">
             <Text className="text-xs text-black" numberOfLines={1}>
               {item.code}
             </Text>
-            <Text className="w-36 text-black text-base mt-1" numberOfLines={2}>
+            <Text className="w-32 text-black text-base mt-1" numberOfLines={2}>
               {item.description}
             </Text>
           </View>
@@ -241,7 +241,7 @@ const Shelving = ({ navigation }) => {
               </Text>
             ) : (<Text className="text-black text-center">No bin has been assigned</Text>)}
           </View>
-          <Text className="w-[15%] text-black text-right" numberOfLines={1}>
+          <Text className="w-[10%] text-black text-right" numberOfLines={1}>
             {item.receivedQuantity}
           </Text>
         </View>

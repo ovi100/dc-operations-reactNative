@@ -46,76 +46,76 @@ export enum AlignValue {
 
 type SunmiPrinterType = {
   /*
-   * 初始化打印机，重置打印逻辑程序，但不清空缓存区数据，因此
-   * 未完成的打印工作将在重置后继续
+   * Initialize the printer and reset the printing logic program, but do not clear the buffer data, so
+   * Unfinished print jobs will be continued after reset
    */
   printerInit: () => void;
   /**
-   * 打印自检
+   * Print self-test
    */
   printerSelfChecking: () => void;
   /*
-   * 获取打印机序号
+   * Get printer serial number
    * */
   getPrinterSerialNo: () => Promise<string>;
   /*
-   * 获取打印机固件版本号
+   * Get printer firmware version number
    * */
   getPrinterVersion: () => Promise<string>;
   /**
-   * 获取打印机服务版本号
-   * 此接⼝返回值可适⽤于所有商⽶机器判断但部分状态由于硬件配置不会拿到（例如⼿持机不⽀持
-   * 开盖检测）
+   * Get the printer service version number
+   * The return value of this interface can be applied to all commercial machine judgments, but some status will not be obtained due to hardware configuration (for example, the mobile phone does not support
+   *Open lid detection)
    */
   getServiceVersion: () => Promise<string>;
   /*
-   * 获取打印机型号
+   * Get printer model
    */
   getPrinterModal: () => Promise<string>;
   /**
-   * 获取打印机当前的纸张规格
-   * ⼿持打印机默认为58mm的纸张规格，台式打印机默认为80mm的纸张规格，但可以通过增加挡
-   * 板并进⾏打印机配置设置为使⽤58mm的纸张规格，此接⼝会返回当前打印机设置的纸张规格；
+   * Get the current paper specifications of the printer
+   * The default paper specification for handheld printers is 58mm, and the default paper specification for desktop printers is 80mm, but you can increase the
+   * After setting the printer configuration to use 58mm paper specification, this interface will return the paper specification of the current printer setting;
    */
   getPrinterPaper: () => Promise<string>;
   /**
-   * 获取打印头打印长度
-   * ⽬前可获取到上电以来的打印⻓度，由于台式机和⼿持机的硬件区别，获取打印结果的返回略有
-   * 不同，即⼿持机通过ICallback callback接⼝获取打印⻓度，台式机通过返回值直接获取⻓度。
+   * Get the print head printing length
+   * Currently, the printing length since power-on can be obtained. Due to the hardware difference between desktop and mobile computers, the return of the printing results is slightly different.
+   * Different, that is, the handheld computer obtains the printing length through the ICallback callback interface, and the desktop computer obtains the length directly through the return value.
    */
   getPrintedLength: () => void;
   /**
-   * 获取打印机的最新状态
+   * Get the latest status of your printer
    */
   updatePrinterState: () => Promise<number>;
   /**
-   * 打印ESC/POS格式指令
+   * Print ESC/POS format instructions
    * @param data
    */
   sendRAWData: (data: string) => void;
   /**
-   * 设置打印机的样式
+   * Set printer style
    * @param key
-   * @description 定义设置不同的属性
+   * @description Define and set different properties
    * @param value
-   * @description 对应属性设置状态或大小
+   * @description Corresponding attribute setting status or size
    */
   setPrinterStyle: (
     key: PrinterStyleKey,
     val: PrinterStyleValue | number,
   ) => void;
   /**
-   * 设置对齐模式
-   * 全局⽅法，对之后执⾏的打印有影响，打印机初始化时取消相关设置。
+   * Set alignment mode
+   * Global method, which has an impact on subsequent printing. Related settings will be canceled when the printer is initialized.
    *
    * @param align
-   * @description 对⻬⽅式：AlignValue.LEFT => 居左；AlignValue.CENTER => 居中;AlignValue.RIGHT => 居右
+   * @description AlignValue.LEFT => Left; AlignValue.CENTER => Center; AlignValue.RIGHT => Right
    */
   setAlignment: (align: AlignValue) => void;
   /**
-   * 设置自定义字体
+   * Set custom font
    * @param typeface
-   * @description 指定要使⽤的⾃定义字体名称，⽬前仅⽀持⽮量字体，字体需预置在应⽤assets⽬录
+   * @description Specify the name of the custom font to be used. Currently, only redundant fonts are supported. The fonts must be preset in the application assets directory.
    */
   setFontName: (typeface: string) => void;
   /**
@@ -178,14 +178,14 @@ type SunmiPrinterType = {
     aligns: number[],
   ) => void;
   /**
-   * 打印表格的⼀⾏，可以指定列宽、对齐⽅式
+   * To print a row of the table, you can specify the column width and alignment method.
    *
    * @param texts
-   * @description 字符串数组
+   * @description string array
    * @param widths
-   * @description 各列宽度数组
+   * @description array of widths of each column
    * @param aligns
-   * @description 各列对⻬⽅式： AlignValue.LEFT => 居左, AlignValue.CENTER => 居中, AlignValue.RIGHT => 居右。
+   * @description Alignment of each column: AlignValue.LEFT => Left, AlignValue.CENTER => Center, AlignValue.RIGHT => Right.
    */
   printColumnsString: (
     texts: string[],
@@ -193,20 +193,20 @@ type SunmiPrinterType = {
     aligns: number[],
   ) => void;
   /**
-   * 打印⼀维条码
+   * Print 1D barcode
    *
    * @param data
-   * @description 维码内容
+   * @description QR code content
    * @param symbology
-   * @description 条码类型(0-8)：0 -> UPC-A, 1 -> UPC-E, 2 -> JAN13(ENA13), 3 -> JAN8(EAN8), 4 -> CODE39, 5 -> ITF, 6 -> CODABAR, 7 -> CODE93, 8 -> CODE128
+   * @description barcode type(0-8)：0 -> UPC-A, 1 -> UPC-E, 2 -> JAN13(ENA13), 3 -> JAN8(EAN8), 4 -> CODE39, 5 -> ITF, 6 -> CODABAR, 7 -> CODE93, 8 -> CODE128
    * @param height
    * @default 162
-   * @description 条码⾼度, 取值 1 - 255
+   * @description Barcode height, value 1 - 255
    * @param width
    * @default 2
-   * @description 条码宽度, 取值 2 - 6,
+   * @description Barcode width, value 2 - 6,
    * @param textPosition
-   * @description ⽂字位置（0 - 3）：0 -> 不打印文字, 1 -> 文字在条码上方, 2 -> ⽂字在条码下⽅, 3 -> 条码上下⽅均打印
+   * @description Text position (0 - 3): 0 -> no text printed, 1 -> text above the barcode, 2 -> text below the barcode, 3 -> print both above and below the barcode
    */
   printBarCode: (
     data: string,

@@ -3,33 +3,33 @@ import {NativeModules} from 'react-native';
 const {SunmiPrinter} = NativeModules;
 
 export enum PrinterStyleKey {
-  // 文本倍宽
+  // double text width
   ENABLE_DOUBLE_WIDTH = 1000,
-  // 文本倍高
+  //Double text height
   ENABLE_DOUBLE_HEIGHT = 1001,
-  // 文本加粗
+  // Bold text
   ENABLE_BOLD = 1002,
-  // 文本下划线
+  // text underline
   ENABLE_UNDERLINE = 1003,
-  // 文本反白
+  //Highlight text
   ENABLE_ANTI_WHITE = 1004,
-  // 文本删除线
+  //Text strikethrough
   ENABLE_STRIKETHROUGH = 1005,
-  // 文本斜体
+  // italicize text
   ENABLE_ILALIC = 1006,
-  // 文本倒影
+  //Text reflection
   ENABLE_INVERT = 1007,
-  // 设置文本左右间距
+  //Set the left and right spacing of text
   SET_TEXT_RIGHT_SPACING = 2000,
-  // 设置相对位置
+  //Set relative position
   SET_RELATIVE_POSITION = 2001,
-  // 设置绝对位置
+  //Set absolute position
   SET_ABSOLUATE_POSITION = 2002,
-  // 设置行间距
+  //Set line spacing
   SET_LINE_SPACING = 2003,
-  // 设置左边距
+  //Set left margin
   SET_LEFT_SPACING = 2004,
-  // 设置删除线的样式
+  //Set the style of strikethrough
   SET_STRIKETHROUGH_STYLE = 2005,
 }
 
@@ -64,7 +64,8 @@ type SunmiPrinterType = {
   getPrinterVersion: () => Promise<string>;
   /**
    * Get the printer service version number
-   * The return value of this interface can be applied to all commercial machine judgments, but some status will not be obtained due to hardware configuration (for example, the mobile phone does not support
+   * The return value of this interface can be applied to all commercial machine judgments, but some status will not be obtained due to hardware configuration
+   * (for example, the mobile phone does not support
    *Open lid detection)
    */
   getServiceVersion: () => Promise<string>;
@@ -80,8 +81,10 @@ type SunmiPrinterType = {
   getPrinterPaper: () => Promise<string>;
   /**
    * Get the print head printing length
-   * Currently, the printing length since power-on can be obtained. Due to the hardware difference between desktop and mobile computers, the return of the printing results is slightly different.
-   * Different, that is, the handheld computer obtains the printing length through the ICallback callback interface, and the desktop computer obtains the length directly through the return value.
+   * Currently, the printing length since power-on can be obtained. Due to the hardware difference between desktop and mobile computers, the return of the printing
+   * results is slightly different.
+   * Different, that is, the handheld computer obtains the printing length through the ICallback callback interface, and the desktop computer obtains the length
+   * directly through the return value.
    */
   getPrintedLength: () => void;
   /**
@@ -119,58 +122,61 @@ type SunmiPrinterType = {
    */
   setFontName: (typeface: string) => void;
   /**
-   * 设置字体大小
+   * Set font size
    *
    * @param size
-   * @description 全局⽅法，对之后打印有影响，初始化能取消设置，字体⼤⼩是超出标准国际指令的打印⽅式，
-   * 调整字体⼤⼩会影响字符宽度，每⾏字符数量也会随之改变，因此按等宽字体形成的排版可能会错乱。
+   * @description Global method, which affects subsequent printing. The setting can be canceled during initialization. The font size is a printing method that exceeds
+   * standard international instructions.
+   * Adjusting the font size will affect the character width, and the number of characters per line will also change accordingly, so the layout formed by a fixed-width
+   * font may be disordered.
    */
   setFontSize: (size: number) => void;
   /**
-   * 设置与取消加粗
+   * Set and cancel bolding
    *
    * @param isWeight
    * @default false
    */
   setFontWeight: (isWeight: boolean) => void;
   /**
-   * 打印文字
-   * 若要修改打印⽂本的样式（如：对⻬⽅式、字体⼤⼩、加粗等），请在调⽤printText⽅法前设
-   * 置。
+   * Print text
+   * If you want to modify the style of printed text (such as orientation, font size, bold, etc.), please set it before calling the printText method.
+   * Set.
    *
    * @param text
    */
   printerText: (text: string) => void;
   /**
-   * 打印指定字体，⼤⼩的⽂本
-   * 字体设置只对本次有效
+   * Print text with specified font and size
+   * The font setting is only valid for this time
    *
    * @param text
-   * @description 打印内容，⽂字宽度超出⼀⾏⾃动换⾏排版，不满⼀⾏或超出⼀⾏不满⼀⾏部分需要在结尾
-   * 加强制换⾏符"\n"才会即时打印出来，否则会缓存在缓存区。
+   * @description Print content, the text width exceeds one line and automatically wraps and typeset. The part that is less than one line or exceeds one line and
+   * is less than one line needs to be at the end.
+   * Add the forced newline character "\n" to print it out immediately, otherwise it will be cached in the cache area.
    * @param typeface
-   * @description 字体名称（现有版本暂时不⽀持设置字体，默认）。
+   * @description font name (the existing version does not support setting fonts, default).
    * @param fontsize
-   * @description 字体⼤⼩，只对该⽅法有效。
+   * @description Font size, only valid for this method.
    */
   printTextWithFont: (text: string, typeface: string, fontsize: number) => void;
   /**
-   * 打印矢量文字
-   * ⽂字按⽮量⽂字宽度原样输出，即每个字符不等宽。
+   * Print vector text
+   * The text is output as is according to the text width, that is, each character is not of equal width.
    *
    * @param text
-   * @description ⽂字按⽮量⽂字宽度原样输出，即每个字符不等宽。
+   * @description The text is output as is according to the text width, that is, each character is not of equal width.
    */
   printOriginalText: (text: string) => void;
   /**
-   * 打印表格的一行（不支持阿拉伯字符）
+   * Print a row of the table (Arabic characters are not supported)
    *
    * @param texts
-   * @description 字符串数组
+   * @description string array
    * @param widths
-   * @description 各列宽度数组
+   * @description array of widths of each column
    * @param aligns
-   * @description 各列对⻬⽅式： AlignValue.LEFT => 居左, AlignValue.CENTER => 居中, AlignValue.RIGHT => 居右。
+   * @description Alignment of each column: AlignValue.LEFT => Left, AlignValue.CENTER => Center, AlignValue.RIGHT => Right.
    */
   printColumnsText: (
     texts: string[],
@@ -216,30 +222,33 @@ type SunmiPrinterType = {
     textPosition: number,
   ) => void;
   /**
-   * 打印QR条码
-   * @description 普通打印状态下在调⽤该⽅法后会直接输出打印，每个⼆维码块为 4 个像素点（⼩于 4 扫码解析
-   * 有可能失败）。最⼤⽀持 version19（93*93）的模式。
+   * Print QR barcode
+   * @description In the normal printing state, after calling this method, the output will be printed directly. Each QR code block is 4 pixels (less than 4 scan code analysis
+   * May fail). The maximum supported mode is version19 (93*93).
    *
    * @param data
-   * @description QR码内容
+   * @description QR code content
    * @param modulesize
-   * @description QR码块⼤⼩，单位:点, 取值 4 ⾄ 16。
+   * @description QR code block size, unit: points, value 4 to 16.
    * @param errorlevel
-   * @description ⼆维码纠错等级(0 - 3)：0 -> 纠错级别 L ( 7%), 1 -> 纠错级别 M (15%), 2 -> 纠错级别 Q (25%), 3 -> 纠错级别 H (30%)
+   * @description 2D code error correction level (0 - 3): 0 -> error correction level L (7%), 1 -> error correction level M (15%), 2 -> error correction level Q (25%) ,
+   * 3 -> Error correction level H (30%)
    */
   printQRCode: (data: string, modulesize: number, errorlevel: number) => void;
   /**
-   * 打印⼆维条码
-   * @description 普通打印状态下在调⽤该⽅法后会直接输出打印；此接⼝在4.1.2版本后⽀持;
+   * Print 2D barcode
+   * @description In normal printing state, printing will be output directly after calling this method; this interface is supported after version 4.1.2;
    *
    * @param data
-   * @description 二维码内容
+   * @description QR code content
    * @param symbology
-   * @description 二维码类型：1 -> Qr（同printQRCode接⼝）, 2 -> PDF417, 3 -> DataMatrix
+   * @description QR code type: 1 -> Qr (same as printQRCode interface), 2 -> PDF417, 3 -> DataMatrix
    * @param modulesize
-   * @description ⼆维码有效块⼤⼩，根据码类型不同，⽀持的最佳块⼤⼩不同：Qr -> 4～16（同printQRCode接⼝）, PDF417 -> 1～4, DataMatrix -> 4～16
+   * @description Valid block size of QR code. Depending on the code type, the optimal block size supported is different: Qr -> 4～16 (same as printQRCode interface),
+   * PDF417 -> 1～4, DataMatrix -> 4 ~16
    * @param errorlevel
-   * @description ⼆维码纠错等级，根据码类型不同，⽀持等级范围不同：Qr -> 0～3（同printQRCode接⼝）, PDF417 -> 0～8, DataMatrix -> 默认使⽤ECC200⾃动纠错 不⽀持设置
+   * @description 2D code error correction level. Depending on the code type, the supported level range is different: Qr -> 0～3 (same as printQRCode interface),
+   * PDF417 -> 0～8, DataMatrix -> ECC200 is used automatically by default Error correction does not support setting
    */
   print2DCode: (
     data: string,
@@ -248,89 +257,92 @@ type SunmiPrinterType = {
     errorlevel: number,
   ) => void;
   /**
-   * 包事务打印专⽤接⼝
+   * Dedicated interface for package transaction printing
    *
    * @param tranBean
-   * @description 任务列表
+   * @description task list
    */
   commitPrint: (list: any) => void;
   /**
-   * 进⼊事务模式
+   * Enter transaction mode
    *
    * @param clear
-   * @description 是否清除缓冲区内容：true -> 清除上⼀次事务打印未提交的内容；false -> 不清除上⼀次事务打印未提交的内容，下次提交将包含上次的内容。
+   * @description Whether to clear the buffer content: true -> clear the last transaction and print uncommitted content; false -> do not clear the last transaction
+   * and print uncommitted content, and the next submission will include the last content.
    */
   enterPrinterBuffer: (clear: boolean) => void;
   /**
    * exitPrinterBuffer
-   * @support 除V1设备
+   * @support except V1 devices
    * @param commit
-   * @description 是否打印出缓冲区内容：true -> 会打印出事务队列中的所有内容；false -> 不会打印事务队列中的内容，此内容将保存直到下次提交。
+   * @description Whether to print out the buffer contents: true -> will print out all the contents in the transaction queue; false -> will not print the contents in the
+   * transaction queue, this content will be saved until the next submission.
    */
   exitPrinterBuffer: (commit: boolean) => void;
   /**
-   * 提交事务打印
-   * @support 除V1设备
-   * @description 将事务队列中的所有内容提交并打印，之后仍然处于事务打印模式。
+   * Submit transaction printing
+   * @support except V1 devices
+   * @description Submit and print everything in the transaction queue, and then still be in transaction printing mode.
    */
   commitPrinterBuffer: () => void;
   /**
-   * 提交事务打印并回调结果
+   * Submit the transaction to print and call back the results
    *
-   * @support 除V1版本
+   * @support except V1 version
    */
   commitPrinterBufferWithCallbacka: () => void;
   /**
-   * 打印机⾛纸n⾏
-   * @description 强制换⾏，结束之前的打印内容后⾛纸 n ⾏。
+   * Printer paper n lines
+   * @description Forces a line break, ending the previous printing content by n lines of paper.
    *
    * @param num
-   * @description 走纸行数
+   * @description Number of paper rows
    */
   lineWrap: (num: number) => void;
   /**
-   * 切纸
-   * @supported 仅⽀持台式机带切⼑功能机器
-   * @description 由于打印头和切⼑有⼀定距离，调⽤接⼝将⾃动补全这段距离；
+   * Cut paper
+   * @supported Only supports desktop machines with cutting function
+   * @description Since there is a certain distance between the print head and the cutter, the calling interface will automatically complete this distance;
    */
   cutPaper: () => void;
   /**
-   * 获取切⼑次数
+   * Get the number of cuts
    */
   getCutPaperTimes: () => Promise<number>;
   /**
-   * 打开钱箱
-   * @supported 仅⽀持台式机带钱箱功能机器。
+   * Open the cash box
+   * @supported Only supports desktop machines with cash drawer function.
    */
   openDrawer: () => void;
   /**
-   * 获取当前的钱箱状态
-   * @supported ⽬前仅对S2、T2、T2mini机器 v4.0.0版本以上⽀持此接⼝
-   * @description 可以通过此接⼝在部分具有连接钱箱功能的机型上获取钱箱开关状态,
+   * Get the current cash box status
+   * @supported Currently, this interface is only supported for S2, T2, and T2mini machines v4.0.0 and above.
+   * @description You can use this interface to obtain the status of the cash drawer switch on some models that have the function of connecting to a cash drawer.
    */
   getDrawerStatus: () => void;
   /**
-   * 打印图片
-   * 图⽚最⼤像素需要宽x⾼⼩于250万，且宽度根据纸张规格设置（58为384像素，80为576像素），
-   * 如果超过纸张宽度将不显示
+   * Print pictures
+   * The maximum pixels of the picture need to be less than 2.5 million in width x height, and the width is set according to the paper specifications
+   * (58 is 384 pixels, 80 is 576 pixels),
+   * Will not be displayed if it exceeds the paper width
    * https://github.com/Surile/react-native-sunmi-printer/issues/1#issuecomment-1088685896
    * @param encodedString
    * @param pixelWidth
    */
   printBitmap: (encodedString: string, pixelWidth: number) => void;
   /**
-   * 打印图⽚(2)
-   * 图⽚像素分辨率⼩于200万，且宽度根据纸张规格设置（58为384像素，80为576像素），如果超
-   * 过纸张宽度将不显示
+   * Print pictures(2)
+   * The picture pixel resolution is less than 2 million, and the width is set according to the paper specifications (58 is 384 pixels, 80 is 576 pixels), if it exceeds
+   * Will not be displayed if it exceeds the paper width
    *
    * @param bitmap
    * @param type
    */
   printBitmapCustom: (bitmap: any, type: number) => void;
   /**
-   * 打印图⽚(3)
-   * 图⽚像素分辨率⼩于200万，且宽度根据纸张规格设置（58为384像素，80为576像素），如果超
-   * 过纸张宽度将不显示
+   * Print pictures(3)
+   * The picture pixel resolution is less than 2 million, and the width is set according to the paper specifications (58 is 384 pixels, 80 is 576 pixels), if it exceeds
+   * Will not be displayed if it exceeds the paper width
    *
    * @param encodedString
    * @param pixelWidth
@@ -342,7 +354,7 @@ type SunmiPrinterType = {
     type: number,
   ) => void;
   /**
-   * 是否存在打印机服务
+   * Is there a printer service?
    */
   hasPrinter: () => Promise<boolean>;
 };

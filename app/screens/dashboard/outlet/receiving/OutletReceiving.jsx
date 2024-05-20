@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Button,
   DeviceEventEmitter,
   Keyboard,
   KeyboardAvoidingView,
@@ -45,6 +46,9 @@ const Receiving = ({ navigation }) => {
   }, [navigation.isFocused()]);
 
   const isSto = search.startsWith('8') || barcode.startsWith('8');
+  const isDn = search.startsWith('01') || barcode.startsWith('01');
+  const isPo = (search.startsWith('1') || barcode.startsWith('1')) || (search.startsWith('2') || barcode.startsWith('2')) || (search.startsWith('3') || barcode.startsWith('3'))
+    || (search.startsWith('4') || barcode.startsWith('4')) || (search.startsWith('6') || barcode.startsWith('6')) || (search.startsWith('7') || barcode.startsWith('7'));
 
   const checkPo = async (po) => {
     try {
@@ -235,9 +239,10 @@ const Receiving = ({ navigation }) => {
             <Text className="text-xl text-gray-400 text-center font-semibold my-3">
               OR
             </Text>
-            <Text className="text-lg text-gray-400 text-center font-semibold">
+            <Text className="text-lg text-gray-400 text-center font-semibold mb-5">
               Search by a PO or sto number
             </Text>
+            <Button title='go to po/dn details' onPress={() => navigation.replace('OutletPoStoDetails', { sto: '8000331438' })} />
           </View>
         )}
       </View>

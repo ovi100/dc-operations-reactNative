@@ -6,7 +6,7 @@ import {
   SafeAreaView,
   Text,
   TouchableWithoutFeedback,
-  View
+  View,
 } from 'react-native';
 import NoAccess from '../../../components/animations/NoAccess';
 import { ButtonProfile } from '../../../components/buttons';
@@ -16,7 +16,6 @@ import {
   DeliveryPlanIcon,
   PackingIcon,
   PickingIcon,
-  PrinterIcon,
   ReceivingIcon,
   ShelvingIcon,
   TaskAssignIcon,
@@ -99,13 +98,6 @@ const Home = ({navigation}) => {
     //   role: 'returner',
     //   access: 'return-access',
     // },
-    {
-      name: 'Print',
-      icon: PrinterIcon,
-      screen: 'Print',
-      role: 'printer',
-      access: 'printing-access',
-    },
   ];
 
   if (user?.hasPermission.includes('*')) {

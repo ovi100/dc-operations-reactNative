@@ -1,8 +1,7 @@
-import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React from 'react';
 import useAppContext from '../../hooks/useAppContext';
 // screens components
-import SiteChoose from '../screens/dashboard/site/SiteChoose';
 import Home from '../screens/dashboard';
 import Audit from '../screens/dashboard/audit/Audit';
 import DeliveryNote from '../screens/dashboard/deliveryNote/DeliveryNote';
@@ -18,15 +17,15 @@ import PickingStoArticleBinDetails from '../screens/dashboard/picking/PickingSto
 import PickedSto from '../screens/dashboard/picking/pickedSTO/PickedSto';
 import PickingSto from '../screens/dashboard/picking/pickingSTO/PickingSto';
 import PickingStoArticle from '../screens/dashboard/picking/pickingStoArticle/PickingStoArticle';
-import Print from '../screens/dashboard/print/Print';
 import PoArticle from '../screens/dashboard/receiving/PoArticle';
 import PurchaseOrder from '../screens/dashboard/receiving/PurchaseOrder';
 import Receiving from '../screens/dashboard/receiving/Receiving';
 import Return from '../screens/dashboard/return/Return';
 import ReturnDetails from '../screens/dashboard/return/returnDetails/ReturnDetails';
-import Shelving from '../screens/dashboard/shelving/Shelving';
 import BinDetails from '../screens/dashboard/shelving/BinDetails';
 import ShelveArticle from '../screens/dashboard/shelving/ShelveArticle';
+import Shelving from '../screens/dashboard/shelving/Shelving';
+import SiteChoose from '../screens/dashboard/site/SiteChoose';
 import PickerPackerTaskAssign from '../screens/dashboard/taskAssign/PickerPackerTaskAssign/PickerPackerTaskAssign';
 import TaskAssign from '../screens/dashboard/taskAssign/TaskAssign';
 import ChangePassword from '../screens/dashboard/userProfile/ChangePassword';
@@ -90,7 +89,6 @@ const AppStack = () => {
     {id: 'delivery-note', name: 'DeliveryNote', component: DeliveryNote},
     {id: 'return', name: 'Return', component: Return},
     {id: 'return-details', name: 'ReturnDetails', component: ReturnDetails},
-    {id: 'print', name: 'Print', component: Print},
   ];
 
   return (

@@ -27,6 +27,7 @@ const OutletPoStoDetails = ({ navigation, route }) => {
   const [user, setUser] = useState({});
   const [token, setToken] = useState('');
   const [articles, setArticles] = useState([]);
+  const [shelvingArticles, setShelvingArticles] = useState([]);
   const tableHeader = ['Article Code', 'Article Name', 'Quantity'];
   const API_URL = 'https://shwapnooperation.onrender.com/';
   const { GRNInfo } = useAppContext();
@@ -57,6 +58,68 @@ const OutletPoStoDetails = ({ navigation, route }) => {
       DeviceEventEmitter.removeAllListeners('ScanDataReceived');
     };
   }, []);
+
+  const getShelvingData = async () => {
+    try {
+      const fetchOptions = {
+        method: 'GET',
+        headers: {
+          authorization: token,
+        }
+      };
+      // Fetch data from both APIs simultaneously
+      const [readyResponse, partialResponse, inShelfResponse] = await Promise.all([
+        fetch(API_URL + `api/product-shelving/ready?filterBy=site&value=${user.site}&pageSize=500`, fetchOptions),
+        fetch(API_URL + `api/product-shelving/partially-in-shelf?filterBy=site&value=${user.site}&pageSize=500`, fetchOptions),
+        fetch(API_URL + `api/product-shelving/in-shelf?filterBy=site&value=${user.site}&pageSize=500`, fetchOptions)
+      ]);
+
+      // Check if both fetch requests were successful
+      if (!readyResponse.ok || !partialResponse.ok || !inShelfResponse.ok) {
+        // throw new Error('Failed to fetch data from APIs');
+        Toast.show({
+          type: 'customError',
+          text1: "Failed to fetch data from APIs",
+        });
+      }
+
+      // Parse the JSON data from the responses
+      const readyData = await readyResponse.json();
+      const partialData = await partialResponse.json();
+      const inShelfData = await inShelfResponse.json();
+
+      const readyItems = readyData.items;
+      const partialItems = partialData.items.map(item => {
+        return {
+          ...item,
+          receivedQuantity: item.receivedQuantity - item.inShelf.reduce((acc, item) => acc + item.quantity, 0)
+        }
+      });
+      const inShelfItems = inShelfData.items;
+
+      const mergedData = [...readyItems, ...partialItems, ...inShelfItems];
+
+      setShelvingArticles(mergedData);
+
+    } catch (error) {
+      Toast.show({
+        type: 'customError',
+        text1: error.message,
+      });
+    }
+  };
+
+  const shelvingInfo = async () => {
+    setIsLoading(true);
+    await getShelvingData();
+    setIsLoading(false);
+  }
+
+  useEffect(() => {
+    if (token && user.site) {
+      shelvingInfo();
+    }
+  }, [token, user.site]);
 
   const getPoDetails = async () => {
     await fetch(API_URL + 'bapi/po/display', {
@@ -134,36 +197,13 @@ const OutletPoStoDetails = ({ navigation, route }) => {
         .then(response => response.json())
         .then(async stoDetails => {
           if (stoDetails.status) {
-            const stoItems = stoDetails.data.items;
-            const historyItems = stoDetails.data.historyTotal;
-            if (historyItems.length > 0) {
-              let remainingStoItems = stoItems.map(stoItem => {
-                const matchedItem = historyItems.find(
-                  historyItem => historyItem.material === stoItem.material
-                );
-                if (matchedItem) {
-                  return {
-                    ...stoItem,
-                    remainingQuantity: stoItem.quantity - matchedItem.grnQuantity
-                  };
-                } else {
-                  return {
-                    ...stoItem,
-                    remainingQuantity: stoItem.quantity
-                  };
-                }
-              }).filter(item => item.remainingQuantity !== 0);
-              setArticles(remainingStoItems);
-            }
-            else {
-              const stoItems = stoDetails.data.items.map(item => {
-                return {
-                  ...item,
-                  remainingQuantity: item.quantity
-                }
-              });
-              setArticles(stoItems);
-            }
+            const stoItems = stoDetails.data.items.map(item => {
+              return {
+                ...item,
+                remainingQuantity: item.quantity
+              }
+            });
+            setArticles(stoItems);
           } else {
             Toast.show({
               type: 'customError',
@@ -194,15 +234,41 @@ const OutletPoStoDetails = ({ navigation, route }) => {
   useFocusEffect(
     useCallback(() => {
       if (token && po) {
+        getShelvingData();
         getPoInfo();
         return;
       }
       if (token && sto) {
+        getShelvingData();
         getStoInfo();
         return;
       }
     }, [token, po, sto]),
   );
+
+  useEffect(() => {
+    if (articles.length > 0) {
+      setIsLoading(true);
+      let adjustedArticles = articles.map(article => {
+        const matchedItem = shelvingArticles.find(
+          saItem => saItem.code === article.material
+        );
+        if (matchedItem) {
+          return {
+            ...article,
+            remainingQuantity: article.quantity - matchedItem.receivedQuantity
+          };
+        } else {
+          return {
+            ...article,
+            remainingQuantity: article.quantity
+          };
+        }
+      }).filter(item => item.remainingQuantity !== 0);
+      setArticles(adjustedArticles);
+      setIsLoading(false);
+    }
+  }, [articles]);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -382,6 +448,9 @@ const OutletPoStoDetails = ({ navigation, route }) => {
       </View>
     )
   }
+
+  // console.log('shelving articles', shelvingArticles);
+  // console.log('articles', articles);
 
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">

@@ -53,67 +53,53 @@ const Shelving = ({ navigation }) => {
 
   const getShelvingData = async () => {
     try {
-      await fetch(API_URL + `ready?filterBy=site&value=${user.site}&pageSize=500`, {
+      const fetchOptions = {
         method: 'GET',
         headers: {
           authorization: token,
-        },
-      })
-        .then(response => response.json())
-        .then(async readyData => {
-          if (readyData.status) {
-            await fetch(API_URL + `partially-in-shelf?filterBy=site&value=${user.site}&pageSize=500`, {
-              method: 'GET',
-              headers: {
-                authorization: token,
-              },
-            })
-              .then(res => res.json())
-              .then(result => {
-                if (result.status) {
-                  const readyItems = readyData.items
-                  const partialData = result.items.map(item => {
-                    if (item.bins.length === 0) {
-                      const bins = item.inShelf.map(item => {
-                        return { bin_id: item.bin, gondola_id: item.gondola };
-                      });
-                      return {
-                        ...item,
-                        bins,
-                        receivedQuantity: item.receivedQuantity - item.inShelf.reduce((acc, item) => acc + item.quantity, 0)
-                      }
-                    }
-                    return {
-                      ...item,
-                      receivedQuantity: item.receivedQuantity - item.inShelf.reduce((acc, item) => acc + item.quantity, 0)
-                    }
-                  });
-                  const combinedData = [...partialData, ...readyItems];
-                  setArticles(combinedData);
-                } else {
-                  const readyItems = readyData.items;
-                  setArticles(readyItems);
-                }
-              })
-              .catch(error =>
-                Toast.show({
-                  type: 'customError',
-                  text1: error.message,
-                })
-              );
-          } else {
-            Toast.show({
-              type: 'customError',
-              text1: readyData.message,
-            });
-          }
-        })
-        .catch(error => {
-          Toast.show({
-            type: 'customError',
-            text1: error.message,
-          });
+        }
+      };
+      // Fetch data from both APIs simultaneously
+      const [readyResponse, partialResponse] = await Promise.all([
+        fetch(API_URL + `ready?filterBy=site&value=${user.site}&pageSize=500`, fetchOptions),
+        fetch(API_URL + `partially-in-shelf?filterBy=site&value=${user.site}&pageSize=500`, fetchOptions)
+      ]);
+
+      // Check if both fetch requests were successful
+      if (!readyResponse.ok || !partialResponse.ok) {
+        // throw new Error('Failed to fetch data from APIs');
+        Toast.show({
+          type: 'customError',
+          text1: "Failed to fetch data from APIs",
         });
+      }
+
+      // Parse the JSON data from the responses
+      const readyData = await readyResponse.json();
+      const partialData = await partialResponse.json();
+
+      const readyItems = readyData.items;
+      const partialItems = partialData.items.map(item => {
+        if (item.bins.length === 0) {
+          const bins = item.inShelf.map(item => {
+            return { bin_ID: item.bin, gondola_ID: item.gondola };
+          });
+          return {
+            ...item,
+            bins,
+            receivedQuantity: item.receivedQuantity - item.inShelf.reduce((acc, item) => acc + item.quantity, 0)
+          }
+        }
+        return {
+          ...item,
+          receivedQuantity: item.receivedQuantity - item.inShelf.reduce((acc, item) => acc + item.quantity, 0)
+        }
+      });
+
+      const mergedData = [...partialItems, ...readyItems];
+
+      setArticles(mergedData);
+
     } catch (error) {
       Toast.show({
         type: 'customError',
@@ -211,7 +197,7 @@ const Shelving = ({ navigation }) => {
                 <Text
                   className="text-black text-center mb-1 last:mb-0"
                   numberOfLines={2}>
-                  {item.bins[0].bin_id}
+                  {item.bins[0].bin_ID}
                 </Text>
               ) : (<Text className="text-black text-center">No bin has been assigned</Text>)}
             </View>
@@ -273,6 +259,8 @@ const Shelving = ({ navigation }) => {
       </View>
     )
   }
+
+  console.log(JSON.stringify(articles))
 
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">

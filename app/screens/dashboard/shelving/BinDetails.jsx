@@ -13,13 +13,13 @@ import { getStorage } from '../../../../hooks/useStorage';
 import SunmiScanner from '../../../../utils/sunmi/scanner';
 
 const BinDetails = ({ navigation, route }) => {
-  const { code, description } = route.params;
+  const { code, bins, description } = route.params;
   const [isLoading, setIsLoading] = useState(false);
   const [isAssigning, setIsAssigning] = useState(false);
   const tableHeader = ['Bin ID', 'Gondola ID'];
   const [user, setUser] = useState({});
   const [token, setToken] = useState('');
-  const [bins, setBins] = useState([]);
+  const [binsData, setBinsData] = useState([]);
   const [barcode, setBarcode] = useState('');
   const { startScan, stopScan } = SunmiScanner;
   const { createActivity } = useActivity();
@@ -48,7 +48,7 @@ const BinDetails = ({ navigation, route }) => {
         .then(response => response.json())
         .then(result => {
           if (result.status) {
-            setBins(result.bins);
+            setBinsData(result.bins);
           } else {
             Toast.show({
               type: 'customError',
@@ -77,10 +77,12 @@ const BinDetails = ({ navigation, route }) => {
   }
 
   useEffect(() => {
-    if (token && route.params && user.site) {
+    if (token && code && user.site && bins.length === 0) {
       getBinsInfo();
+    } else {
+      setBinsData(bins);
     }
-  }, [token, route.params, user.site]);
+  }, [token, code, user.site, bins.length]);
 
   useEffect(() => {
     startScan();
@@ -263,7 +265,7 @@ const BinDetails = ({ navigation, route }) => {
         </View>
 
         <View className="content flex-1 justify-between py-5">
-          {!isLoading && bins.length > 0 ? (
+          {!isLoading && binsData.length > 0 ? (
             <View className="table h-full pb-2">
               <View className="flex-row bg-th text-center mb-2 py-2">
                 {tableHeader.map(th => (
@@ -273,9 +275,9 @@ const BinDetails = ({ navigation, route }) => {
                 ))}
               </View>
               <FlatList
-                data={bins}
+                data={binsData}
                 renderItem={renderItem}
-                keyExtractor={item => item._id}
+                keyExtractor={item => item.bin_ID}
               />
             </View>
           ) : (

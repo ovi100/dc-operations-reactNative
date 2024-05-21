@@ -261,9 +261,9 @@ const PoArticle = ({ navigation, route }) => {
               </View>
               <View className="date-picker mt-6">
                 <TouchableOpacity onPress={() => setOpenDatePicker(true)}>
-                  <View className="flex-row items-center justify-center bg-green-600 rounded-md p-4">
-                    <Image className="w-7 h-7 mr-3" source={CalendarIcon} />
-                    <Text className="text-lg font-bold text-white capitalize">select expiry date</Text>
+                  <View className="flex-row items-center justify-center bg-green-600 rounded-md p-2.5">
+                    <Image className="w-6 h-6 mr-3" source={CalendarIcon} />
+                    <Text className="text-base font-bold text-white capitalize">select expiry date</Text>
                   </View>
                 </TouchableOpacity>
                 <DatePicker

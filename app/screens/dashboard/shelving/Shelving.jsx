@@ -82,7 +82,7 @@ const Shelving = ({ navigation }) => {
       const partialItems = partialData.items.map(item => {
         if (item.bins.length === 0) {
           const bins = item.inShelf.map(item => {
-            return { bin_ID: item.bin, gondola_ID: item.gondola };
+            return { bin_id: item.bin, gondola_id: item.gondola };
           });
           return {
             ...item,
@@ -197,7 +197,7 @@ const Shelving = ({ navigation }) => {
                 <Text
                   className="text-black text-center mb-1 last:mb-0"
                   numberOfLines={2}>
-                  {item.bins[0].bin_ID}
+                  {item.bins[0].bin_id}
                 </Text>
               ) : (<Text className="text-black text-center">No bin has been assigned</Text>)}
             </View>
@@ -259,8 +259,6 @@ const Shelving = ({ navigation }) => {
       </View>
     )
   }
-
-  console.log(JSON.stringify(articles))
 
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">

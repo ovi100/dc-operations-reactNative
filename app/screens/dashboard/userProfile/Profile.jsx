@@ -6,6 +6,7 @@ import {
   Text,
   TouchableWithoutFeedback, View
 } from 'react-native';
+import Dialog from '../../../../components/Dialog';
 import { ButtonBack, ButtonLogin } from '../../../../components/buttons';
 import {
   AvatarImage,
@@ -13,6 +14,7 @@ import {
   IdIcon,
   PasswordIcon,
   ProfileIcon,
+  StoreIcon,
   SwitchIcon
 } from '../../../../constant/icons';
 import useAppContext from '../../../../hooks/useAppContext';
@@ -22,6 +24,7 @@ import styles from '../../../../styles/button';
 const Profile = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isEnabled, setIsEnabled] = useState(false);
+  const [dialogVisible, setDialogVisible] = useState(false);
   const [selectedSite, setSelectedSite] = useState('');
   const [user, setLsUser] = useState({});
   const [sites, setSites] = useState([]);
@@ -137,13 +140,13 @@ const Profile = ({ navigation }) => {
                 </TouchableWithoutFeedback>
               </View>
             </View>
-            {sites !== null && (
+            {sites !== null && sites.length > 1 ? (
               <View className="site bg-white border border-solid border-gray-300 rounded mt-4">
                 <Picker
                   selectedValue={selectedSite}
                   onValueChange={site => updateUser(site)}
                   style={{ color: 'black' }}>
-                  <Picker.Item label='Select site' value='' />
+                  <Picker.Item label='Change site' value='' />
                   {sites?.map((item, i) => (
                     <Picker.Item
                       label={item.code}
@@ -154,12 +157,19 @@ const Profile = ({ navigation }) => {
                   ))}
                 </Picker>
               </View>
+            ) : (
+              <View className="site border-b border-gray-200 flex-row items-center py-4">
+                <Image className="w-5 h-5 mr-3" source={StoreIcon} />
+                <Text className="text-base text-gray-400 font-medium uppercase">
+                  {sites[0]?.code}
+                </Text>
+              </View>
             )}
 
             <View className="mt-5">
               <ButtonLogin
                 title="Logout"
-                onPress={logout}
+                onPress={() => setDialogVisible(true)}
                 buttonStyles={styles.buttonLogin}
                 textStyles={styles.lgText}
               />
@@ -167,6 +177,15 @@ const Profile = ({ navigation }) => {
           </View>
         </View>
       </ScrollView>
+      <Dialog
+        isOpen={dialogVisible}
+        modalHeader="Are you sure?"
+        modalSubHeader="Some saved data and setting might be lost."
+        onClose={() => setDialogVisible(false)}
+        onSubmit={() => logout()}
+        leftButtonText="cancel"
+        rightButtonText="confirm"
+      />
     </View>
   );
 };

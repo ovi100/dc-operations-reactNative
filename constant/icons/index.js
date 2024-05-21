@@ -19,15 +19,15 @@ import PackingIcon from './packing-icon.png';
 import PasswordIcon from './password-icon.png';
 import PhoneIcon from './phone-icon.png';
 import PickingIcon from './picking-icon.png';
-import PrinterIcon from './printer-icon.png';
 import ProfileIcon from './profile-icon.png';
 import ReceivingIcon from './receiving-icon.png';
 import ReturnIcon from './return-icon.png';
 import SearchIcon from './search-icon.png';
 import ShelvingIcon from './shelving-icon.png';
-import SitesIcon from './site-icon.jpg';
+import SitesIcon from './site-icon.png';
 import StoNotPickedIcon from './sto-not-picked-icon.png';
 import StoPickedIcon from './sto-picked-icon.png';
+import StoreIcon from './store-icon.png';
 import SwitchIcon from './switch-icon.png';
 import TaskAssignIcon from './task-assign-icon.png';
 import UserIcon from './user-icon.png';
@@ -55,7 +55,6 @@ export {
   PasswordIcon,
   PhoneIcon,
   PickingIcon,
-  PrinterIcon,
   ProfileIcon,
   ReceivingIcon,
   ReturnIcon,
@@ -64,6 +63,7 @@ export {
   SitesIcon,
   StoNotPickedIcon,
   StoPickedIcon,
+  StoreIcon,
   SwitchIcon,
   TaskAssignIcon,
   UserIcon,

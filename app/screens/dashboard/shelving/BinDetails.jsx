@@ -48,7 +48,10 @@ const BinDetails = ({ navigation, route }) => {
         .then(response => response.json())
         .then(result => {
           if (result.status) {
-            setBinsData(result.bins);
+            let binsData = result.bins.map(item => {
+              return { bin_id: item.bin_ID, gondola_id: item.gondola_ID ? item.gondola_ID : "NA" };
+            });
+            setBinsData(binsData);
           } else {
             Toast.show({
               type: 'customError',
@@ -102,12 +105,12 @@ const BinDetails = ({ navigation, route }) => {
       <Text
         className="flex-1 text-black text-center"
         numberOfLines={1}>
-        {item.bin_ID}
+        {item.bin_id}
       </Text>
       <Text
         className="flex-1 text-black text-center"
         numberOfLines={1}>
-        {item.gondola_ID}
+        {item.gondola_id}
       </Text>
     </View>
   );
@@ -192,10 +195,12 @@ const BinDetails = ({ navigation, route }) => {
     }
   }
 
+  console.log('Bins from route', bins);
+
   if (barcode !== '') {
-    const binItem = bins.find(item => item.bin_ID === barcode);
+    const binItem = binsData.find(item => item.bin_id === barcode);
     if (binItem) {
-      navigation.replace('ShelveArticle', { ...route.params, bins: { bin_id: binItem.bin_ID, gondola_id: binItem.gondola_ID } });
+      navigation.replace('ShelveArticle', { ...route.params, bins: { bin_id: binItem.bin_id, gondola_id: binItem.gondola_id } });
     } else {
       const checkBin = async (code) => {
         await fetch(API_URL + `checkBin/${code}`)

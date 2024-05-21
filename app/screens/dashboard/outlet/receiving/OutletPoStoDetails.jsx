@@ -2,6 +2,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   DeviceEventEmitter, FlatList,
   RefreshControl, SafeAreaView, Text,
   TouchableHighlight, TouchableOpacity, View
@@ -27,8 +28,7 @@ const OutletPoStoDetails = ({ navigation, route }) => {
   const [user, setUser] = useState({});
   const [token, setToken] = useState('');
   const [articles, setArticles] = useState([]);
-  const [shelvingArticles, setShelvingArticles] = useState([]);
-  const tableHeader = ['Article Code', 'Article Name', 'Quantity'];
+  const tableHeader = ['Article Code', 'Quantity', 'Action'];
   const API_URL = 'https://shwapnooperation.onrender.com/';
   const { GRNInfo } = useAppContext();
   const { grnItems, setGrnItems, setIsUpdatingGrn } = GRNInfo;
@@ -59,24 +59,31 @@ const OutletPoStoDetails = ({ navigation, route }) => {
     };
   }, []);
 
-  const getShelvingData = async () => {
+  const getPoDetails = async () => {
+    const getOptions = {
+      method: 'GET',
+      headers: {
+        authorization: token,
+      }
+    };
+    const postOptions = {
+      method: 'POST',
+      headers: {
+        authorization: token,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ po }),
+    };
+    const readyFetch = fetch(API_URL + `api/product-shelving/ready?filterBy=site&value=${user.site}&pageSize=500`, getOptions);
+    const partialFetch = fetch(API_URL + `api/product-shelving/partially-in-shelf?filterBy=site&value=${user.site}&pageSize=500`, getOptions);
+    const inShelfFetch = fetch(API_URL + `api/product-shelving/in-shelf?filterBy=site&value=${user.site}&pageSize=500`, getOptions);
+    const poFetch = fetch(API_URL + 'bapi/po/display', postOptions);
     try {
-      const fetchOptions = {
-        method: 'GET',
-        headers: {
-          authorization: token,
-        }
-      };
       // Fetch data from both APIs simultaneously
-      const [readyResponse, partialResponse, inShelfResponse] = await Promise.all([
-        fetch(API_URL + `api/product-shelving/ready?filterBy=site&value=${user.site}&pageSize=500`, fetchOptions),
-        fetch(API_URL + `api/product-shelving/partially-in-shelf?filterBy=site&value=${user.site}&pageSize=500`, fetchOptions),
-        fetch(API_URL + `api/product-shelving/in-shelf?filterBy=site&value=${user.site}&pageSize=500`, fetchOptions)
-      ]);
+      const [readyResponse, partialResponse, inShelfResponse, poResponse] = await Promise.all([readyFetch, partialFetch, inShelfFetch, poFetch]);
 
       // Check if both fetch requests were successful
-      if (!readyResponse.ok || !partialResponse.ok || !inShelfResponse.ok) {
-        // throw new Error('Failed to fetch data from APIs');
+      if (!readyResponse.ok || !partialResponse.ok || !inShelfResponse.ok || !poResponse.ok) {
         Toast.show({
           type: 'customError',
           text1: "Failed to fetch data from APIs",
@@ -87,6 +94,7 @@ const OutletPoStoDetails = ({ navigation, route }) => {
       const readyData = await readyResponse.json();
       const partialData = await partialResponse.json();
       const inShelfData = await inShelfResponse.json();
+      const poData = await poResponse.json();
 
       const readyItems = readyData.items;
       const partialItems = partialData.items.map(item => {
@@ -97,85 +105,61 @@ const OutletPoStoDetails = ({ navigation, route }) => {
       });
       const inShelfItems = inShelfData.items;
 
-      const mergedData = [...readyItems, ...partialItems, ...inShelfItems];
+      const shelvingItems = [...readyItems, ...partialItems, ...inShelfItems];
 
-      setShelvingArticles(mergedData);
+      let poItems = poData.data.items;
+      const historyItems = poData.data.historyTotal;
 
+      if (historyItems.length > 0) {
+        poItems = poItems.map(poItem => {
+          const matchedItem = historyItems.find(
+            historyItem => historyItem.material === poItem.material
+          );
+          if (matchedItem) {
+            return {
+              ...poItem,
+              remainingQuantity: poItem.quantity - matchedItem.grnQuantity
+            };
+          } else {
+            return {
+              ...poItem,
+              remainingQuantity: poItem.quantity
+            };
+          }
+        }).filter(item => item.remainingQuantity !== 0);
+      }
+      else {
+        poItems = poItems.map(item => {
+          return {
+            ...item,
+            remainingQuantity: item.quantity
+          };
+        });
+      }
+
+      let adjustedArticles = poItems.map(poItem => {
+        const matchedItem = shelvingItems.find(
+          shItem => shItem.code === poItem.material
+        );
+        if (matchedItem) {
+          return {
+            ...poItem,
+            remainingQuantity: poItem.quantity - matchedItem.receivedQuantity
+          };
+        } else {
+          return {
+            ...poItem,
+            remainingQuantity: poItem.quantity
+          };
+        }
+      }).filter(item => item.remainingQuantity !== 0);
+      setArticles(adjustedArticles);
     } catch (error) {
       Toast.show({
         type: 'customError',
         text1: error.message,
       });
     }
-  };
-
-  const shelvingInfo = async () => {
-    setIsLoading(true);
-    await getShelvingData();
-    setIsLoading(false);
-  }
-
-  useEffect(() => {
-    if (token && user.site) {
-      shelvingInfo();
-    }
-  }, [token, user.site]);
-
-  const getPoDetails = async () => {
-    await fetch(API_URL + 'bapi/po/display', {
-      method: 'POST',
-      headers: {
-        authorization: token,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ po: po }),
-    })
-      .then(response => response.json())
-      .then(result => {
-        if (result.status) {
-          const poItems = result.data.items;
-          const historyItems = result.data.historyTotal;
-          if (historyItems.length > 0) {
-            let remainingPoItems = poItems.map(poItem => {
-              const matchedItem = historyItems.find(
-                historyItem => historyItem.material === poItem.material
-              );
-              if (matchedItem) {
-                return {
-                  ...poItem,
-                  remainingQuantity: poItem.quantity - matchedItem.grnQuantity
-                };
-              } else {
-                return {
-                  ...poItem,
-                  remainingQuantity: poItem.quantity
-                };
-              }
-            }).filter(item => item.remainingQuantity !== 0);
-            setArticles(remainingPoItems);
-          }
-          else {
-            let poItems = result.data.items.map(item => {
-              return {
-                ...item,
-                remainingQuantity: item.quantity
-              };
-            });
-            setArticles(poItems);
-          }
-        } else {
-          Toast.show({
-            type: 'customError',
-            text1: result.message,
-          });
-        }
-      })
-      .catch(error => {
-        Toast.show({
-          type: 'customError',
-          text1: error.message,
-        });
-      });
   };
 
   const getPoInfo = async () => {
@@ -185,38 +169,77 @@ const OutletPoStoDetails = ({ navigation, route }) => {
   }
 
   const getStoDetails = async () => {
+    const getOptions = {
+      method: 'GET',
+      headers: {
+        authorization: token,
+      }
+    };
+    const postOptions = {
+      method: 'POST',
+      headers: {
+        authorization: token,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ sto }),
+    };
+    const readyFetch = fetch(API_URL + `api/product-shelving/ready?filterBy=site&value=${user.site}&pageSize=500`, getOptions);
+    const partialFetch = fetch(API_URL + `api/product-shelving/partially-in-shelf?filterBy=site&value=${user.site}&pageSize=500`, getOptions);
+    const inShelfFetch = fetch(API_URL + `api/product-shelving/in-shelf?filterBy=site&value=${user.site}&pageSize=500`, getOptions);
+    const stoFetch = fetch(API_URL + 'bapi/sto/display', postOptions);
     try {
-      await fetch(API_URL + 'bapi/sto/display', {
-        method: 'POST',
-        headers: {
-          authorization: token,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ sto }),
-      })
-        .then(response => response.json())
-        .then(async stoDetails => {
-          if (stoDetails.status) {
-            const stoItems = stoDetails.data.items.map(item => {
-              return {
-                ...item,
-                remainingQuantity: item.quantity
-              }
-            });
-            setArticles(stoItems);
-          } else {
-            Toast.show({
-              type: 'customError',
-              text1: stoDetails.message,
-            });
-          }
-        })
-        .catch(error => {
-          Toast.show({
-            type: 'customError',
-            text1: error.message,
-          });
+      // Fetch data from both APIs simultaneously
+      const [readyResponse, partialResponse, inShelfResponse, stoResponse] = await Promise.all([readyFetch, partialFetch, inShelfFetch, stoFetch]);
+
+      // Check if both fetch requests were successful
+      if (!readyResponse.ok || !partialResponse.ok || !inShelfResponse.ok || !stoResponse.ok) {
+        Toast.show({
+          type: 'customError',
+          text1: "Failed to fetch data from APIs",
         });
+      }
+
+      // Parse the JSON data from the responses
+      const readyData = await readyResponse.json();
+      const partialData = await partialResponse.json();
+      const inShelfData = await inShelfResponse.json();
+      const stoData = await stoResponse.json();
+
+      const readyItems = readyData.items;
+      const partialItems = partialData.items.map(item => {
+        return {
+          ...item,
+          receivedQuantity: item.receivedQuantity - item.inShelf.reduce((acc, item) => acc + item.quantity, 0)
+        }
+      });
+      const inShelfItems = inShelfData.items;
+
+      const shelvingItems = [...readyItems, ...partialItems, ...inShelfItems];
+
+      const stoItems = stoData.data.items.map(item => {
+        return {
+          ...item,
+          remainingQuantity: item.quantity
+        }
+      });
+
+      let adjustedArticles = stoItems.map(stoItem => {
+        const matchedItem = shelvingItems.find(
+          shItem => shItem.code === stoItem.material
+        );
+        if (matchedItem) {
+          return {
+            ...stoItem,
+            remainingQuantity: stoItem.quantity - matchedItem.receivedQuantity
+          };
+        } else {
+          return {
+            ...stoItem,
+            remainingQuantity: stoItem.quantity
+          };
+        }
+      }).filter(item => item.remainingQuantity !== 0);
+      setArticles(adjustedArticles);
     } catch (error) {
       Toast.show({
         type: 'customError',
@@ -233,42 +256,16 @@ const OutletPoStoDetails = ({ navigation, route }) => {
 
   useFocusEffect(
     useCallback(() => {
-      if (token && po) {
-        getShelvingData();
+      if (token && po && user.site) {
         getPoInfo();
         return;
       }
-      if (token && sto) {
-        getShelvingData();
+      if (token && sto && user.site) {
         getStoInfo();
         return;
       }
-    }, [token, po, sto]),
+    }, [token, po, sto, user.site]),
   );
-
-  useEffect(() => {
-    if (articles.length > 0) {
-      setIsLoading(true);
-      let adjustedArticles = articles.map(article => {
-        const matchedItem = shelvingArticles.find(
-          saItem => saItem.code === article.material
-        );
-        if (matchedItem) {
-          return {
-            ...article,
-            remainingQuantity: article.quantity - matchedItem.receivedQuantity
-          };
-        } else {
-          return {
-            ...article,
-            remainingQuantity: article.quantity
-          };
-        }
-      }).filter(item => item.remainingQuantity !== 0);
-      setArticles(adjustedArticles);
-      setIsLoading(false);
-    }
-  }, [articles]);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -283,28 +280,28 @@ const OutletPoStoDetails = ({ navigation, route }) => {
   const renderItem = ({ item, index }) => (
     <>
       {pressMode === 'true' ? (
-        <TouchableOpacity onPress={() => navigation.replace('OutletArticleDetails', item)}>
-          <View
-            key={index}
-            className="flex-row items-center border border-tb rounded-lg mt-2.5 p-4"
-          >
+        <View key={index} className="flex-row items-center border border-tb rounded-lg mt-2.5 p-4">
+          <TouchableOpacity className="w-4/5 flex-row items-center" onPress={() => navigation.replace('OutletArticleDetails', item)}>
+            <View className="w-2/5">
+              <Text className="text-black" numberOfLines={1}>
+                {item.material}
+              </Text>
+              <Text className="w-36 text-black" numberOfLines={2}>
+                {item.description}
+              </Text>
+            </View>
             <Text
-              className="w-1/5 text-black"
-              numberOfLines={1}>
-              {item.material}
-            </Text>
-            <Text
-              className="w-3/5 h-9 leading-9 text-black text-center"
-              numberOfLines={2}>
-              {item.description}
-            </Text>
-            <Text
-              className="w-1/5 text-black text-center"
+              className="w-3/5 text-black text-center"
               numberOfLines={1}>
               {item.remainingQuantity}
             </Text>
-          </View>
-        </TouchableOpacity>
+          </TouchableOpacity>
+          <TouchableOpacity className="w-1/5" onPress={() => Alert.alert("Are you sure")}>
+            <Text className="bg-blue-600 text-white text-center rounded capitalize p-1.5">
+              report
+            </Text>
+          </TouchableOpacity>
+        </View>
       ) : (
         <View
           key={index}
@@ -448,9 +445,6 @@ const OutletPoStoDetails = ({ navigation, route }) => {
       </View>
     )
   }
-
-  // console.log('shelving articles', shelvingArticles);
-  // console.log('articles', articles);
 
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">

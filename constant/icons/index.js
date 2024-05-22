@@ -6,6 +6,7 @@ import CalendarIcon from './calendar-icon.png';
 import CameraIcon from './camera-icon.png';
 import CloseIcon from './close-icon.png';
 import ClosedBoxIcon from './closed-box-icon.png';
+import DeleteIcon from './delete-icon.png';
 import DeliveryNoteIcon from './delivery-note-icon.png';
 import DeliveryPlanIcon from './delivery-plan-icon.png';
 import EmailIcon from './email-icon.png';
@@ -21,6 +22,7 @@ import PhoneIcon from './phone-icon.png';
 import PickingIcon from './picking-icon.png';
 import ProfileIcon from './profile-icon.png';
 import ReceivingIcon from './receiving-icon.png';
+import RefreshIcon from './refresh-icon.png';
 import ReturnIcon from './return-icon.png';
 import SearchIcon from './search-icon.png';
 import ShelvingIcon from './shelving-icon.png';
@@ -42,6 +44,7 @@ export {
   CameraIcon,
   CloseIcon,
   ClosedBoxIcon,
+  DeleteIcon,
   DeliveryNoteIcon,
   DeliveryPlanIcon,
   EmailIcon,
@@ -57,6 +60,7 @@ export {
   PickingIcon,
   ProfileIcon,
   ReceivingIcon,
+  RefreshIcon,
   ReturnIcon,
   SearchIcon,
   ShelvingIcon,
@@ -67,6 +71,5 @@ export {
   SwitchIcon,
   TaskAssignIcon,
   UserIcon,
-  WarehouseIcon
+  WarehouseIcon,
 };
-

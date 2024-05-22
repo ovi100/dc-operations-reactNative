@@ -1,4 +1,4 @@
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import React from 'react';
 import useAppContext from '../../hooks/useAppContext';
 // screens components
@@ -30,6 +30,7 @@ import PickerPackerTaskAssign from '../screens/dashboard/taskAssign/PickerPacker
 import TaskAssign from '../screens/dashboard/taskAssign/TaskAssign';
 import ChangePassword from '../screens/dashboard/userProfile/ChangePassword';
 import Profile from '../screens/dashboard/userProfile/Profile';
+import OutletArticleReport from '../screens/dashboard/outlet/receiving/OutletArticleReport';
 
 const Stack = createNativeStackNavigator();
 
@@ -59,6 +60,11 @@ const AppStack = () => {
       id: 'outlet-article-details',
       name: 'OutletArticleDetails',
       component: OutletArticleDetails,
+    },
+    {
+      id: 'outlet-article-report',
+      name: 'OutletArticleReport',
+      component: OutletArticleReport,
     },
     {id: 'shelving', name: 'Shelving', component: Shelving},
     {id: 'bin-details', name: 'BinDetails', component: BinDetails},

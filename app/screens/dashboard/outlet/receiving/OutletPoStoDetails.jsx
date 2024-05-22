@@ -23,11 +23,14 @@ const OutletPoStoDetails = ({ navigation, route }) => {
   const [refreshing, setRefreshing] = useState(false);
   const [isButtonLoading, setIsButtonLoading] = useState(false);
   const [dialogVisible, setDialogVisible] = useState(false);
+  const [reportDialogVisible, setReportDialogVisible] = useState(false);
   const [pressMode, setPressMode] = useState(false);
   const [barcode, setBarcode] = useState('');
   const [user, setUser] = useState({});
   const [token, setToken] = useState('');
   const [articles, setArticles] = useState([]);
+  const [reportArticle, setReportArticle] = useState({});
+  const [reportText, setReportText] = useState('');
   const tableHeader = ['Article Code', 'Quantity', 'Action'];
   const API_URL = 'https://shwapnooperation.onrender.com/';
   const { GRNInfo } = useAppContext();
@@ -296,7 +299,7 @@ const OutletPoStoDetails = ({ navigation, route }) => {
               {item.remainingQuantity}
             </Text>
           </TouchableOpacity>
-          <TouchableOpacity className="w-1/5" onPress={() => Alert.alert("Are you sure")}>
+          <TouchableOpacity className="w-1/5" onPress={() => confirmReport(item)}>
             <Text className="bg-blue-600 text-white text-center rounded capitalize p-1.5">
               report
             </Text>
@@ -379,6 +382,23 @@ const OutletPoStoDetails = ({ navigation, route }) => {
   if (grnItems) {
     remainingGrnItems = grnItems.filter(grnItem => grnItem.po !== (po || sto));
     GrnByPo = grnItems.filter(grnItem => grnItem.po === (po || sto));
+  }
+
+  const confirmReport = (article) => {
+    setReportArticle(article);
+    if (article.quantity === article.remainingQuantity) {
+      setReportText('No quantity received yet. Do you want to continue?');
+    } else {
+      setReportText('Do you want to report?');
+    }
+    setReportDialogVisible(true);
+    //console.log(article);
+  }
+
+  const gotoReport = () => {
+    setReportDialogVisible(false);
+    navigation.push('OutletArticleReport', reportArticle);
+    setReportArticle({});
   }
 
   const generateGRN = async (grnList) => {
@@ -516,6 +536,15 @@ const OutletPoStoDetails = ({ navigation, route }) => {
         onSubmit={() => generateGRN(GrnByPo)}
         leftButtonText="cancel"
         rightButtonText="proceed"
+      />
+      <Dialog
+        isOpen={reportDialogVisible}
+        modalHeader="Are you sure?"
+        modalSubHeader={reportText}
+        onClose={() => setReportDialogVisible(false)}
+        onSubmit={() => gotoReport()}
+        leftButtonText="cancel"
+        rightButtonText="confirm"
       />
     </SafeAreaView >
   );

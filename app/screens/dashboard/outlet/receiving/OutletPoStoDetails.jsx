@@ -1,11 +1,10 @@
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  DeviceEventEmitter, FlatList,
-  RefreshControl, SafeAreaView, Text,
-  TouchableHighlight, TouchableOpacity, View
+  ActivityIndicator, DeviceEventEmitter, FlatList,
+  RefreshControl, SafeAreaView, Text, TouchableHighlight,
+  TouchableWithoutFeedback, TouchableOpacity, View,
+  ScrollView
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../../components/CustomToast';
@@ -15,6 +14,8 @@ import useAppContext from '../../../../../hooks/useAppContext';
 import useBackHandler from '../../../../../hooks/useBackHandler';
 import { getStorage, setStorage } from '../../../../../hooks/useStorage';
 import SunmiScanner from '../../../../../utils/sunmi/scanner';
+import Modal from '../../../../../components/Modal';
+import { toast } from '../../../../../utils';
 
 const OutletPoStoDetails = ({ navigation, route }) => {
   const { po, sto } = route.params;
@@ -22,6 +23,7 @@ const OutletPoStoDetails = ({ navigation, route }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [isButtonLoading, setIsButtonLoading] = useState(false);
+  const [grnModal, setGrnModal] = useState(false);
   const [dialogVisible, setDialogVisible] = useState(false);
   const [reportDialogVisible, setReportDialogVisible] = useState(false);
   const [pressMode, setPressMode] = useState(false);
@@ -37,6 +39,7 @@ const OutletPoStoDetails = ({ navigation, route }) => {
   const { grnItems, setGrnItems, setIsUpdatingGrn } = GRNInfo;
   let GrnByPo = [];
   let remainingGrnItems = [];
+  // const [percentage, setPercentage] = useState(0);
 
   // Custom hook to navigate screen
   useBackHandler('OutletReceiving');
@@ -172,6 +175,13 @@ const OutletPoStoDetails = ({ navigation, route }) => {
   }
 
   const getStoDetails = async () => {
+    // let seconds = 1, interval;
+    // interval = setInterval(() => {
+    //   seconds++;
+    //   setPercentage((seconds / 10) * 100);
+    //   console.log(seconds);
+    //   console.log((seconds / 10) * 100);
+    // }, 1000)
     const getOptions = {
       method: 'GET',
       headers: {
@@ -462,6 +472,9 @@ const OutletPoStoDetails = ({ navigation, route }) => {
       <View className="w-full h-screen justify-center px-3">
         <ActivityIndicator size="large" color="#EB4B50" />
         <Text className="mt-4 text-gray-400 text-base text-center">Loading {po ? 'po' : 'sto'} articles. Please wait......</Text>
+        {/* <View className="w-full h-1 bg-gray-400 relative rounded mt-4">
+          <View className="h-0.5 rounded bg-green-600 absolute top-[1px]" style={{ width: percentage.toFixed(2) + '%' }}></View>
+        </View> */}
       </View>
     )
   }
@@ -519,7 +532,7 @@ const OutletPoStoDetails = ({ navigation, route }) => {
                 {isButtonLoading ? <ButtonLoading styles='bg-theme rounded-md p-5' /> :
                   <ButtonLg
                     title="Generate GRN"
-                    onPress={() => setDialogVisible(true)}
+                    onPress={() => setGrnModal(true)}
                   />
                 }
               </View>
@@ -527,7 +540,35 @@ const OutletPoStoDetails = ({ navigation, route }) => {
           </>
         </View>
       </View>
-      <CustomToast />
+      <Modal
+        isOpen={grnModal}
+        modalHeader="Review GRN"
+        onPress={() => setGrnModal(false)}
+      >
+        <View className="content">
+          <View className="grn-list mt-3 pb-3">
+            {GrnByPo.length > 0 ? (
+              <ScrollView>
+                {GrnByPo.map((item) => (
+                  <View className="flex-row items-center justify-between rounded mr-1 px-2 py-1" key={item.material}>
+                    <Text className="text-sh">{item.material}</Text>
+                    <Text className="text-sh">{item.quantity}</Text>
+                  </View>
+                ))}
+              </ScrollView>
+            ) : (
+              <View className="outlet">
+                <Text>No outlet selected</Text>
+              </View>
+            )}
+          </View>
+          <View className="button w-1/3 mx-auto">
+            <TouchableWithoutFeedback onPress={() => setDialogVisible(true)}>
+              <Text className="bg-blue-600 text-white text-base text-center rounded p-1.5">confirm</Text>
+            </TouchableWithoutFeedback>
+          </View>
+        </View>
+      </Modal>
       <Dialog
         isOpen={dialogVisible}
         modalHeader="Are you sure?"
@@ -546,6 +587,7 @@ const OutletPoStoDetails = ({ navigation, route }) => {
         leftButtonText="cancel"
         rightButtonText="confirm"
       />
+      <CustomToast />
     </SafeAreaView >
   );
 };

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Picker } from '@react-native-picker/picker';
 import {
-  ActivityIndicator, Image,
+  ActivityIndicator, Alert, Image,
   KeyboardAvoidingView, Platform,
   SafeAreaView, ScrollView, Text, TextInput,
   TouchableOpacity, TouchableWithoutFeedback, View
@@ -20,19 +20,23 @@ const OutletArticleReport = ({ navigation, route }) => {
     remainingQuantity, receivingPlant, storageLocation, unit
   } = route.params;
   const types = [
-    "Types",
+    "Report Types",
     "Damage",
     "Missing",
   ];
   const reasons = [
-    "Reasons",
-    "Product size mismatched",
-    "Product package has scratch or damaged",
-    "Wrong product issued",
-    "Product is missing expiry date",
-    "Product has expired or damaged",
-    "Others",
+    "Damage Types",
+    "Physical Damage",
+    "Airless Packet",
+    "BSTI Seal Not available",
+    "Near Expiry",
+    "Expired",
+    "Torn Package",
+    "Rotten",
+    "Broken",
+    "Importer Seal Not Available",
   ];
+
   const [isLoading, setIsLoading] = useState(false);
   const [isButtonLoading, setIsButtonLoading] = useState(false);
   const [newQuantity, setNewQuantity] = useState(remainingQuantity);
@@ -41,7 +45,6 @@ const OutletArticleReport = ({ navigation, route }) => {
   const [token, setToken] = useState('');
   const [selectedType, setSelectedType] = useState(types[0]);
   const [selectedReason, setSelectedReason] = useState(reasons[0]);
-  const [reasonText, setReasonText] = useState('');
   const API_URL = 'https://shwapnooperation.onrender.com/api/';
 
   useEffect(() => {
@@ -83,6 +86,10 @@ const OutletArticleReport = ({ navigation, route }) => {
   const reTake = () => {
     setImage(null);
     pickImage();
+  };
+
+  const submitReport = () => {
+    Alert.alert('submitting report');
   };
 
   if (isLoading) {
@@ -178,7 +185,7 @@ const OutletArticleReport = ({ navigation, route }) => {
             )}
 
             {/* Upload Damage Prove */}
-            {selectedType === 'Damage' && selectedReason !== "Others" && selectedReason !== "Reasons" && (
+            {selectedType === 'Damage' && selectedReason !== "Damage Types" && (
               <View className="image-upload mt-4">
                 {isLoading && (
                   <View className="image-picker h-60 items-center justify-center border border-dashed border-theme">
@@ -205,41 +212,15 @@ const OutletArticleReport = ({ navigation, route }) => {
                       <TouchableOpacity onPress={() => reTake()}>
                         <Image className="w-12 h-12" source={RefreshIcon} />
                       </TouchableOpacity>
-                      {/* <ButtonLg title="Remove" onPress={() => removeImage()} /> */}
-                      {/* <ButtonLg title="Retake" onPress={() => reTake()} /> */}
                     </View>
                   </View>
                 )}
               </View>
             )}
 
-            {/* Report Reason */}
-            {selectedReason === "Others" && (
-              <View className="product-batch bg-[#FEFBFB] border border-[#F2EFEF] rounded mt-4 p-5">
-                <View className="box-header flex-row items-center justify-between">
-                  <View>
-                    <Text className="text-base text-[#2E2C3B] font-medium capitalize">
-                      reason
-                    </Text>
-                  </View>
-                </View>
-                <View className="input-box mt-6">
-                  <TextInput
-                    className="bg-[#F5F6FA] border border-t-0 border-black/25 h-[50px] text-[#5D80C5] rounded-2xl mb-3 px-4"
-                    multiline={true}
-                    numberOfLines={5}
-                    placeholder="Please enter reason"
-                    onChangeText={setReasonText}
-                    value={reasonText}
-                    style={{ textAlignVertical: "top" }}
-                  />
-                </View>
-              </View>
-            )}
-
             <View className="button mt-4">
               {isButtonLoading ? <ButtonLoading styles='bg-theme rounded-md p-5' /> :
-                <ButtonLg title="submit" onPress={() => readyForShelve()} />
+                <ButtonLg title="submit" onPress={() => submitReport()} />
               }
             </View>
           </View>

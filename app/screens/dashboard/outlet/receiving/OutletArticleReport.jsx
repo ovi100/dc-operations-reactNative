@@ -1,13 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import storage from '@react-native-firebase/storage';
 import { Picker } from '@react-native-picker/picker';
+import React, { useEffect, useState } from 'react';
 import {
-  ActivityIndicator, Alert, Image,
+  ActivityIndicator,
+  Image,
   KeyboardAvoidingView, Platform,
   SafeAreaView, ScrollView, Text, TextInput,
   TouchableOpacity, TouchableWithoutFeedback, View
 } from 'react-native';
 import { launchCamera } from 'react-native-image-picker';
-// import Toast from 'react-native-toast-message';
+import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../../components/CustomToast';
 import { ButtonLg, ButtonLoading } from '../../../../../components/buttons';
 import { BoxIcon, DeleteIcon, ImageIcon, RefreshIcon } from '../../../../../constant/icons';
@@ -41,6 +43,8 @@ const OutletArticleReport = ({ navigation, route }) => {
   const [isButtonLoading, setIsButtonLoading] = useState(false);
   const [newQuantity, setNewQuantity] = useState(remainingQuantity);
   const [image, setImage] = useState(null);
+  const [filePath, setFilePath] = useState('');
+  const [progress, setProgress] = useState(0);
   const [user, setUser] = useState({});
   const [token, setToken] = useState('');
   const [selectedType, setSelectedType] = useState(types[0]);
@@ -60,8 +64,7 @@ const OutletArticleReport = ({ navigation, route }) => {
   const pickImage = async () => {
     try {
       setIsLoading(true);
-      const result = await launchCamera({ mediaType: 'photo', quality: 1 });
-      console.log(result);
+      const result = await launchCamera({ mediaType: 'photo', quality: 0.18 });
 
       if (result.didCancel) {
         setImage(null);
@@ -70,6 +73,7 @@ const OutletArticleReport = ({ navigation, route }) => {
       }
 
       if (result.assets[0].uri) {
+        console.log(result.assets[0]);
         setImage(result.assets[0].uri);
         setIsLoading(false);
         return;
@@ -88,8 +92,54 @@ const OutletArticleReport = ({ navigation, route }) => {
     pickImage();
   };
 
-  const submitReport = () => {
-    Alert.alert('submitting report');
+  const uploadImageToFirebase = async uri => {
+    let filename = uri.substring(uri.lastIndexOf('/') + 1);
+    filename = filename.replace(filename, `${user.site}(${new Date().toLocaleDateString('en-UK').replaceAll('/', '-')})-${po ? po : sto}-${material}-${selectedReason.toLowerCase()}.jpg`);
+    console.log(filename)
+    const storageRef = storage().ref(`damage images/${filename}`);
+
+    const task = storageRef.putFile(uri);
+
+    task.on('state_changed', taskSnapshot => {
+      const progress =
+        (taskSnapshot.bytesTransferred / taskSnapshot.totalBytes) * 100;
+      setProgress(progress.toFixed(2));
+      console.log(taskSnapshot.bytesTransferred);
+    });
+
+    try {
+      await task;
+      const url = await storageRef.getDownloadURL();
+      setProgress(0);
+      return url;
+    } catch (error) {
+      Toast.show({
+        type: 'customError',
+        text1: error.message,
+      });
+      // console.log(error.message);
+    }
+  };
+
+  const submitReport = async () => {
+    if (selectedType === "Damage" && selectedReason === "Damage Types") {
+      Toast.show({
+        type: 'customError',
+        text1: 'please select a damage type',
+      });
+      return;
+    }
+    if (selectedType === "Damage" && !image) {
+      Toast.show({
+        type: 'customError',
+        text1: 'please upload an image',
+      });
+      return;
+    }
+    setIsButtonLoading(true);
+    const imageLink = await uploadImageToFirebase(image);
+    // console.log('Firebase image link', imageLink)
+    setIsButtonLoading(false);
   };
 
   if (isLoading) {
@@ -205,9 +255,9 @@ const OutletArticleReport = ({ navigation, route }) => {
                 {image && (
                   <View className="image-preview relative">
                     <Image className="w-full h-60 rounded" source={{ uri: image }} />
-                    <View className="buttons absolute top-5 right-5 flex-col gap-5">
+                    <View className="buttons absolute top-5 right-5 flex-col gap-8">
                       <TouchableOpacity onPress={() => removeImage()}>
-                        <Image className="w-12 h-12" source={DeleteIcon} />
+                        <Image className="w-12 h-12 bg-white rounded-full" source={DeleteIcon} />
                       </TouchableOpacity>
                       <TouchableOpacity onPress={() => reTake()}>
                         <Image className="w-12 h-12" source={RefreshIcon} />
@@ -223,6 +273,11 @@ const OutletArticleReport = ({ navigation, route }) => {
                 <ButtonLg title="submit" onPress={() => submitReport()} />
               }
             </View>
+            {progress > 0 && (
+              <View className="progress relative bg-gray-300 w-full h-1 rounded-full mt-4" >
+                <View className="absolute top-0 bg-green-600 h-1 rounded-full" style={{ width: `${progress}%` }}></View>
+              </View>
+            )}
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

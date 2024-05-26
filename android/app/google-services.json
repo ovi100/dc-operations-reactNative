@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1036142263926",
+    "project_id": "shwapno-operations",
+    "storage_bucket": "shwapno-operations.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1036142263926:android:cecaa36dd0c424a95ce957",
+        "android_client_info": {
+          "package_name": "com.dcoperations"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAD9-tLNkLG4s8cerYFCPmss5ESMOeS4Kw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

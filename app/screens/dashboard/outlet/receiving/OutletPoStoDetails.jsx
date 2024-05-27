@@ -102,6 +102,15 @@ const OutletPoStoDetails = ({ navigation, route }) => {
       const inShelfData = await inShelfResponse.json();
       const poData = await poResponse.json();
 
+      const poItem = poData.items[0];
+      if (poItem.receivingPlant !== user.site) {
+        Toast.show({
+          type: 'customError',
+          text1: 'Not authorized to receive PO',
+        });
+        return;
+      }
+
       const readyItems = readyData.items;
       const partialItems = partialData.items.map(item => {
         return {
@@ -175,13 +184,6 @@ const OutletPoStoDetails = ({ navigation, route }) => {
   }
 
   const getStoDetails = async () => {
-    // let seconds = 1, interval;
-    // interval = setInterval(() => {
-    //   seconds++;
-    //   setPercentage((seconds / 10) * 100);
-    //   console.log(seconds);
-    //   console.log((seconds / 10) * 100);
-    // }, 1000)
     const getOptions = {
       method: 'GET',
       headers: {
@@ -217,6 +219,15 @@ const OutletPoStoDetails = ({ navigation, route }) => {
       const partialData = await partialResponse.json();
       const inShelfData = await inShelfResponse.json();
       const stoData = await stoResponse.json();
+
+      const stoItem = stoData.items[0];
+      if (stoItem.receivingPlant !== user.site) {
+        Toast.show({
+          type: 'customError',
+          text1: 'Not authorized to receive STO',
+        });
+        return;
+      }
 
       const readyItems = readyData.items;
       const partialItems = partialData.items.map(item => {
@@ -410,6 +421,8 @@ const OutletPoStoDetails = ({ navigation, route }) => {
     navigation.push('OutletArticleReport', reportArticle);
     setReportArticle({});
   }
+
+  // console.log(JSON.stringify(articles));
 
   const generateGRN = async (grnList) => {
     setDialogVisible(false);

@@ -13,6 +13,7 @@ import { BoxIcon, CalendarIcon } from '../../../../../constant/icons';
 import useAppContext from '../../../../../hooks/useAppContext';
 import useBackHandler from '../../../../../hooks/useBackHandler';
 import { getStorage } from '../../../../../hooks/useStorage';
+import useActivity from '../../../../../hooks/useActivity';
 
 
 const OutletArticleDetails = ({ navigation, route }) => {
@@ -28,6 +29,7 @@ const OutletArticleDetails = ({ navigation, route }) => {
   const [batchNo, setBatchNo] = useState(null);
   const [expiryDate, setExpiryDate] = useState(new Date());
   const [token, setToken] = useState('');
+  const { createActivity } = useActivity();
   const { GRNInfo, authInfo } = useAppContext();
   const { user } = authInfo;
   const { addToGRN } = GRNInfo;
@@ -79,20 +81,29 @@ const OutletArticleDetails = ({ navigation, route }) => {
         body: JSON.stringify(postData),
       })
         .then(response => response.json())
-        .then(data => {
+        .then(async data => {
+          // console.log('ready response', data);
           if (data.status) {
             Toast.show({
               type: 'customSuccess',
               text1: data.message,
             });
             addToGRN(grnItem);
+            //log user activity
+            await createActivity(
+              user._id,
+              'shelving_ready',
+              `${user.name} ready material ${material} with quantity of ${newQuantity} of PO ${po} for shelving`,
+            );
             navigation.replace('OutletPoStoDetails', { po, sto });
           } else {
             Toast.show({
               type: 'customError',
               text1: data.message,
             });
-            navigation.replace('OutletPoStoDetails', { po, sto });
+            // setTimeout(() => {
+            //   navigation.replace('OutletPoStoDetails', { po, sto });
+            // }, 1500);
           }
         })
         .catch(error => {

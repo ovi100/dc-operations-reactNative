@@ -133,7 +133,7 @@ const PoArticle = ({ navigation, route }) => {
         expiryDate: expiryDate > new Date() ? expiryDate : null
       };
 
-      console.log('shelving object', shelvingObject);
+      // console.log('shelving object', shelvingObject);
 
       try {
         setIsButtonLoading(true);
@@ -147,6 +147,7 @@ const PoArticle = ({ navigation, route }) => {
         })
           .then(response => response.json())
           .then(async data => {
+            // console.log('ready response', data);
             if (data.status) {
               Toast.show({
                 type: 'customSuccess',
@@ -160,14 +161,12 @@ const PoArticle = ({ navigation, route }) => {
                 `${user.name} ready material ${material} with quantity of ${newQuantity} of PO ${po} for shelving`,
               );
               navigation.replace('PurchaseOrder', { po });
-              setIsButtonLoading(false);
             } else {
               Toast.show({
                 type: 'customError',
                 text1: data.message,
               });
-              navigation.replace('PurchaseOrder', { po });
-              setIsButtonLoading(false);
+              // navigation.replace('PurchaseOrder', { po });
             }
           })
           .catch(error => {
@@ -175,15 +174,15 @@ const PoArticle = ({ navigation, route }) => {
               type: 'customError',
               text1: error.message,
             });
-            setIsButtonLoading(false);
           });
       } catch (error) {
         Toast.show({
           type: 'customError',
           text1: error.message,
         });
+      } finally {
         setIsButtonLoading(false);
-      }
+      };
     }
   };
 

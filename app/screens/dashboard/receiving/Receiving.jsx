@@ -19,8 +19,8 @@ import SunmiScanner from '../../../../utils/sunmi/scanner';
 const Receiving = ({ navigation }) => {
   const [isCheckingPo, setIsCheckingPo] = useState(false);
   const [pressMode, setPressMode] = useState(false);
-  const [token, setToken] = useState('');
   const [user, setUser] = useState({});
+  const [token, setToken] = useState('');
   const [barcode, setBarcode] = useState('');
   const [search, setSearch] = useState('');
   const API_URL = 'https://shwapnooperation.onrender.com/bapi/po/';

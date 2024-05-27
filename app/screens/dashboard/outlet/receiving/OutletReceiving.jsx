@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
-  Button,
   DeviceEventEmitter,
   Keyboard,
   KeyboardAvoidingView,
+  Platform,
   Text, TextInput, TouchableHighlight,
   TouchableOpacity,
   View
@@ -14,19 +14,22 @@ import CustomToast from '../../../../../components/CustomToast';
 import Scan from '../../../../../components/animations/Scan';
 import { getStorage } from '../../../../../hooks/useStorage';
 import SunmiScanner from '../../../../../utils/sunmi/scanner';
-
+import useActivity from '../../../../../hooks/useActivity';
 
 const Receiving = ({ navigation }) => {
   const [isChecking, setIsChecking] = useState(false);
   const [pressMode, setPressMode] = useState(false);
+  const [user, setUser] = useState({});
   const [token, setToken] = useState('');
   const [barcode, setBarcode] = useState('');
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState('8000331438');
   const API_URL = 'https://shwapnooperation.onrender.com/';
   const { startScan, stopScan } = SunmiScanner;
+  const { createActivity } = useActivity();
 
   useEffect(() => {
     const getAsyncStorage = async () => {
+      await getStorage('user', setUser, 'object');
       await getStorage('token', setToken);
       await getStorage('pressMode', setPressMode);
     }
@@ -61,10 +64,49 @@ const Receiving = ({ navigation }) => {
         body: JSON.stringify({ po }),
       })
         .then(response => response.json())
-        .then(result => {
+        .then(async result => {
           if (result.status) {
-            if (result.data.poReleasedStatus) {
-              navigation.replace('OutletPoStoDetails', { po });
+            const data = result.data;
+            if (data.poReleasedStatus) {
+              await fetch(API_URL + 'bapi/po/display', {
+                method: 'POST',
+                headers: {
+                  authorization: token,
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ po }),
+              })
+                .then(response => response.json())
+                .then(async poDetails => {
+                  if (poDetails.status) {
+                    const poData = poDetails.data;
+                    // const companyCode = poData.companyCode;
+                    const poItem = poData.items[0];
+                    if (poItem.receivingPlant === user.site) {
+                      navigation.replace('OutletPoStoDetails', { po });
+                    } else {
+                      Toast.show({
+                        type: 'customError',
+                        text1: 'Not authorized to receive PO',
+                      });
+                    }
+                  } else {
+                    Toast.show({
+                      type: 'customError',
+                      text1: poDetails.message.trim(),
+                    });
+                    if (poDetails.message.trim() === 'MIS Logged Off the PC where BAPI is Hosted') {
+                      //log user activity
+                      await createActivity(user._id, 'error', result.message.trim());
+                    }
+                  }
+                })
+                .catch(error => {
+                  Toast.show({
+                    type: 'customError',
+                    text1: error.message,
+                  });
+                });
             } else {
               Toast.show({
                 type: 'customError',
@@ -109,9 +151,17 @@ const Receiving = ({ navigation }) => {
       })
         .then(response => response.json())
         .then(result => {
-          const status = result.items[0].status
-          if (result.status && (status === 'partially inbound picked' || status === 'inbound picked')) {
-            navigation.replace('OutletPoStoDetails', { sto });
+          console.log(result);
+          if (result.status) {
+            const status = result.items[0].status;
+            if (status === 'partially inbound picked' || status === 'inbound picked') {
+              navigation.replace('OutletPoStoDetails', { sto });
+            } else {
+              Toast.show({
+                type: 'customError',
+                text1: 'STO not received in DC',
+              });
+            }
           } else {
             Toast.show({
               type: 'customError',
@@ -145,7 +195,6 @@ const Receiving = ({ navigation }) => {
         type: 'customError',
         text1: `Please enter a ${isSto ? 'STO' : 'PO'} number`,
       });
-      setBarcode('');
       setSearch('');
       return;
     }
@@ -158,13 +207,11 @@ const Receiving = ({ navigation }) => {
     }
     if (isSto) {
       await getStoDetails(searchTerms);
-      setBarcode('');
       setSearch('');
       Keyboard.dismiss();
     } else {
       await getPoDetails(searchTerms);
       setBarcode('');
-      setSearch('');
       Keyboard.dismiss();
     }
   };
@@ -242,7 +289,6 @@ const Receiving = ({ navigation }) => {
             <Text className="text-lg text-gray-400 text-center font-semibold mb-5">
               Search by a PO or sto number
             </Text>
-            <Button title='go to po/dn details' onPress={() => navigation.replace('OutletPoStoDetails', { sto: '8000331438' })} />
           </View>
         )}
       </View>

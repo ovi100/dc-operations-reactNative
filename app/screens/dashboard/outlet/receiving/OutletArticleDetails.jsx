@@ -10,15 +10,15 @@ import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../../components/CustomToast';
 import { ButtonLg, ButtonLoading } from '../../../../../components/buttons';
 import { BoxIcon, CalendarIcon } from '../../../../../constant/icons';
+import useActivity from '../../../../../hooks/useActivity';
 import useAppContext from '../../../../../hooks/useAppContext';
 import useBackHandler from '../../../../../hooks/useBackHandler';
 import { getStorage } from '../../../../../hooks/useStorage';
-import useActivity from '../../../../../hooks/useActivity';
 
 
 const OutletArticleDetails = ({ navigation, route }) => {
   const {
-    description, material, po, poItem, sto, stoItem, quantity,
+    description, material, po, poItem, sto, dn, dnItem, quantity,
     remainingQuantity, receivingPlant, storageLocation, unit
   } = route.params;
   const [isLoading, setIsLoading] = useState(false);
@@ -36,7 +36,7 @@ const OutletArticleDetails = ({ navigation, route }) => {
   const API_URL = 'https://shwapnooperation.onrender.com/api/';
 
   // Custom hook to navigate screen
-  useBackHandler('OutletPoStoDetails', { po, sto });
+  useBackHandler('OutletPoStoDetails', { po, dn });
 
   useEffect(() => {
     const getAsyncStorage = async () => {
@@ -95,7 +95,7 @@ const OutletArticleDetails = ({ navigation, route }) => {
               'shelving_ready',
               `${user.name} ready material ${material} with quantity of ${newQuantity} of PO ${po} for shelving`,
             );
-            navigation.replace('OutletPoStoDetails', { po, sto });
+            navigation.replace('OutletPoStoDetails', { po, dn });
           } else {
             Toast.show({
               type: 'customError',
@@ -140,18 +140,36 @@ const OutletArticleDetails = ({ navigation, route }) => {
         text1: 'Quantity exceed',
       });
     } else {
-      const grnItem = {
-        movementType: '101',
-        movementIndicator: 'B',
-        storageLocation,
-        po: po ? po : sto,
-        poItem: Number(po ? poItem : stoItem).toString(),
-        material: material,
-        plant: receivingPlant,
-        quantity: Number(newQuantity),
-        uom: unit,
-        uomIso: unit,
-      };
+      let grnItem = {};
+      if (po) {
+        grnItem = {
+          movementType: '101',
+          movementIndicator: 'B',
+          storageLocation,
+          po,
+          poItem: Number(poItem).toString(),
+          material: material,
+          plant: receivingPlant,
+          quantity: Number(newQuantity),
+          uom: unit,
+          uomIso: unit,
+        };
+      } else {
+        grnItem = {
+          movementType: '101',
+          movementIndicator: '',
+          storageLocation: '0001',
+          sto,
+          dn,
+          stoItem: Number(dnItem).toString(),
+          dnItem: Number(dnItem).toString(),
+          material: material,
+          plant: receivingPlant,
+          quantity: Number(newQuantity),
+          uom: unit,
+          uomIso: unit,
+        };
+      }
 
       let shelvingObject = {
         code: material,
@@ -163,6 +181,8 @@ const OutletArticleDetails = ({ navigation, route }) => {
         receivedBy: user.name,
         bins,
       };
+
+      console.log(shelvingObject)
 
       if (po) {
         shelvingObject.po = po;

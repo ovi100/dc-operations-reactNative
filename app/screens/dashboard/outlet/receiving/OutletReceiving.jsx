@@ -12,9 +12,9 @@ import {
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../../components/CustomToast';
 import Scan from '../../../../../components/animations/Scan';
+import useActivity from '../../../../../hooks/useActivity';
 import { getStorage } from '../../../../../hooks/useStorage';
 import SunmiScanner from '../../../../../utils/sunmi/scanner';
-import useActivity from '../../../../../hooks/useActivity';
 
 const Receiving = ({ navigation }) => {
   const [isChecking, setIsChecking] = useState(false);
@@ -22,10 +22,11 @@ const Receiving = ({ navigation }) => {
   const [user, setUser] = useState({});
   const [token, setToken] = useState('');
   const [barcode, setBarcode] = useState('');
-  const [search, setSearch] = useState('8000331438');
+  const [search, setSearch] = useState('');
   const API_URL = 'https://shwapnooperation.onrender.com/';
   const { startScan, stopScan } = SunmiScanner;
   const { createActivity } = useActivity();
+  let isDn;
 
   useEffect(() => {
     const getAsyncStorage = async () => {
@@ -48,8 +49,6 @@ const Receiving = ({ navigation }) => {
     };
   }, [navigation.isFocused()]);
 
-  const isSto = search.startsWith('8') || barcode.startsWith('8');
-  const isDn = search.startsWith('01') || barcode.startsWith('01');
   const isPo = (search.startsWith('1') || barcode.startsWith('1')) || (search.startsWith('2') || barcode.startsWith('2')) || (search.startsWith('3') || barcode.startsWith('3'))
     || (search.startsWith('4') || barcode.startsWith('4')) || (search.startsWith('6') || barcode.startsWith('6')) || (search.startsWith('7') || barcode.startsWith('7'));
 
@@ -140,33 +139,38 @@ const Receiving = ({ navigation }) => {
     setIsChecking(false);
   };
 
-  const checkSto = async (sto) => {
+  const checkDn = async (dn) => {
     try {
-      await fetch(API_URL + `api/sto-tracking?filterBy=sto&value=${sto}`, {
-        method: 'GET',
+      await fetch(API_URL + 'bapi/dn/display', {
+        method: 'POST',
         headers: {
           authorization: token,
           'Content-Type': 'application/json',
         },
+        body: JSON.stringify({ dn }),
       })
         .then(response => response.json())
-        .then(result => {
-          console.log(result);
+        .then(async result => {
           if (result.status) {
-            const status = result.items[0].status;
-            if (status === 'partially inbound picked' || status === 'inbound picked') {
-              navigation.replace('OutletPoStoDetails', { sto });
+            const data = result.data;
+            if (data.receivingPlant === user.site) {
+              navigation.replace('OutletPoStoDetails', { dn });
             } else {
               Toast.show({
                 type: 'customError',
-                text1: 'STO not received in DC',
+                text1: 'Not authorized to receive DN',
               });
             }
+
           } else {
             Toast.show({
               type: 'customError',
-              text1: 'STO not received in DC',
+              text1: result.message,
             });
+            if (result.message.trim() === 'MIS Logged Off the PC where BAPI is Hosted') {
+              //log user activity
+              await createActivity(user._id, 'error', result.message.trim());
+            }
           }
         })
         .catch(error => {
@@ -183,17 +187,18 @@ const Receiving = ({ navigation }) => {
     }
   };
 
-  const getStoDetails = async (sto) => {
+  const getDnDetails = async (dn) => {
     setIsChecking(true);
-    await checkSto(sto);
+    await checkDn(dn);
     setIsChecking(false);
   };
 
   const searchPo = async (searchTerms) => {
+    isDn = searchTerms.startsWith('01');
     if (!searchTerms) {
       Toast.show({
         type: 'customError',
-        text1: `Please enter a ${isSto ? 'STO' : 'PO'} number`,
+        text1: `Please enter a ${isDn ? 'DN' : 'PO'} number`,
       });
       setSearch('');
       return;
@@ -201,12 +206,13 @@ const Receiving = ({ navigation }) => {
     if (searchTerms.length !== 10) {
       Toast.show({
         type: 'customError',
-        text1: `Enter 10 digit ${isSto ? 'STO' : 'PO'} number`,
+        text1: `Enter 10 digit ${isDn ? 'DN' : 'PO'} number`,
       });
       return;
     }
-    if (isSto) {
-      await getStoDetails(searchTerms);
+
+    if (isDn) {
+      await getDnDetails(searchTerms);
       setSearch('');
       Keyboard.dismiss();
     } else {
@@ -217,8 +223,10 @@ const Receiving = ({ navigation }) => {
   };
 
   if (barcode !== '') {
-    if (isSto) {
-      getStoDetails(barcode);
+    isDn = barcode.startsWith('01');
+    console.log('is dn', isDn);
+    if (isDn) {
+      getDnDetails(barcode);
     } else {
       getPoDetails(barcode);
     }
@@ -247,7 +255,7 @@ const Receiving = ({ navigation }) => {
         <View className="input-box w-4/5">
           <TextInput
             className="bg-[#F5F6FA] text-black rounded-bl-lg rounded-tl-lg px-4"
-            placeholder="Search by po or sto"
+            placeholder="Search by po or dn number"
             keyboardType="phone-pad"
             placeholderTextColor="#CBC9D9"
             selectionColor="#CBC9D9"
@@ -275,19 +283,19 @@ const Receiving = ({ navigation }) => {
         {isChecking ? (
           <View>
             <ActivityIndicator size="large" color="#EB4B50" />
-            <Text className="mt-4 text-gray-400 text-base text-center">Checking {isSto ? 'STO' : 'PO'} number</Text>
+            <Text className="mt-4 text-gray-400 text-base text-center">Checking number</Text>
           </View>
         ) : (
           <View>
             <Scan />
             <Text className="text-lg text-gray-400 text-center font-semibold">
-              Scan a PO or sto barcode
+              Scan a PO or DN barcode
             </Text>
             <Text className="text-xl text-gray-400 text-center font-semibold my-3">
               OR
             </Text>
             <Text className="text-lg text-gray-400 text-center font-semibold mb-5">
-              Search by a PO or sto number
+              Search by a PO or DN number
             </Text>
           </View>
         )}

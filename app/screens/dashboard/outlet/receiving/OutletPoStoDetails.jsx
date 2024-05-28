@@ -2,23 +2,25 @@ import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator, DeviceEventEmitter, FlatList,
-  RefreshControl, SafeAreaView, Text, TouchableHighlight,
-  TouchableWithoutFeedback, TouchableOpacity, View,
-  ScrollView
+  RefreshControl, SafeAreaView,
+  ScrollView,
+  Text, TouchableHighlight,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../../components/CustomToast';
 import Dialog from '../../../../../components/Dialog';
+import Modal from '../../../../../components/Modal';
 import { ButtonLg, ButtonLoading } from '../../../../../components/buttons';
 import useAppContext from '../../../../../hooks/useAppContext';
 import useBackHandler from '../../../../../hooks/useBackHandler';
 import { getStorage, setStorage } from '../../../../../hooks/useStorage';
 import SunmiScanner from '../../../../../utils/sunmi/scanner';
-import Modal from '../../../../../components/Modal';
-import { toast } from '../../../../../utils';
 
 const OutletPoStoDetails = ({ navigation, route }) => {
-  const { po, sto } = route.params;
+  const { po, dn } = route.params;
   const { startScan, stopScan } = SunmiScanner;
   const [isLoading, setIsLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -183,7 +185,7 @@ const OutletPoStoDetails = ({ navigation, route }) => {
     setIsLoading(false);
   }
 
-  const getStoDetails = async () => {
+  const getDnDetails = async () => {
     const getOptions = {
       method: 'GET',
       headers: {
@@ -196,12 +198,12 @@ const OutletPoStoDetails = ({ navigation, route }) => {
         authorization: token,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ sto }),
+      body: JSON.stringify({ dn }),
     };
     const readyFetch = fetch(API_URL + `api/product-shelving/ready?filterBy=site&value=${user.site}&pageSize=500`, getOptions);
     const partialFetch = fetch(API_URL + `api/product-shelving/partially-in-shelf?filterBy=site&value=${user.site}&pageSize=500`, getOptions);
     const inShelfFetch = fetch(API_URL + `api/product-shelving/in-shelf?filterBy=site&value=${user.site}&pageSize=500`, getOptions);
-    const stoFetch = fetch(API_URL + 'bapi/sto/display', postOptions);
+    const stoFetch = fetch(API_URL + 'bapi/dn/display', postOptions);
     try {
       // Fetch data from both APIs simultaneously
       const [readyResponse, partialResponse, inShelfResponse, stoResponse] = await Promise.all([readyFetch, partialFetch, inShelfFetch, stoFetch]);
@@ -219,15 +221,6 @@ const OutletPoStoDetails = ({ navigation, route }) => {
       const partialData = await partialResponse.json();
       const inShelfData = await inShelfResponse.json();
       const stoData = await stoResponse.json();
-
-      const stoItem = stoData.items[0];
-      if (stoItem.receivingPlant !== user.site) {
-        Toast.show({
-          type: 'customError',
-          text1: 'Not authorized to receive STO',
-        });
-        return;
-      }
 
       const readyItems = readyData.items;
       const partialItems = partialData.items.map(item => {
@@ -272,9 +265,9 @@ const OutletPoStoDetails = ({ navigation, route }) => {
     }
   };
 
-  const getStoInfo = async () => {
+  const getDnInfo = async () => {
     setIsLoading(true);
-    await getStoDetails();
+    await getDnDetails();
     setIsLoading(false);
   }
 
@@ -284,11 +277,11 @@ const OutletPoStoDetails = ({ navigation, route }) => {
         getPoInfo();
         return;
       }
-      if (token && sto && user.site) {
-        getStoInfo();
+      if (token && dn && user.site) {
+        getDnInfo();
         return;
       }
-    }, [token, po, sto, user.site]),
+    }, [token, po, dn, user.site]),
   );
 
   const onRefresh = async () => {
@@ -296,7 +289,7 @@ const OutletPoStoDetails = ({ navigation, route }) => {
     if (po) {
       await getPoDetails();
     } else {
-      await getStoDetails();
+      await getDnInfo();
     }
     setRefreshing(false);
   };
@@ -365,10 +358,10 @@ const OutletPoStoDetails = ({ navigation, route }) => {
           .then(result => {
             if (result.status) {
               const isValidBarcode = result.data.barcode.includes(barcode);
-              const poItem = articles.find(item => item.material === result.data.material);
+              const dnItem = articles.find(item => item.material === result.data.material);
 
-              if (poItem && isValidBarcode) {
-                navigation.replace('OutletArticleDetails', poItem);
+              if (dnItem && isValidBarcode) {
+                navigation.replace('OutletArticleDetails', dnItem);
               } else {
                 Toast.show({
                   type: 'customInfo',
@@ -401,8 +394,8 @@ const OutletPoStoDetails = ({ navigation, route }) => {
   }
 
   if (grnItems) {
-    remainingGrnItems = grnItems.filter(grnItem => grnItem.po !== (po || sto));
-    GrnByPo = grnItems.filter(grnItem => grnItem.po === (po || sto));
+    remainingGrnItems = grnItems.filter(grnItem => grnItem.po !== (po || dn));
+    GrnByPo = grnItems.filter(grnItem => grnItem.po === po || grnItem.dn === dn);
   }
 
   const confirmReport = (article) => {
@@ -429,7 +422,7 @@ const OutletPoStoDetails = ({ navigation, route }) => {
     setIsButtonLoading(true);
 
     let postData = {
-      po: po ? po : sto,
+      po: po ? po : dn,
       status: 'pending for grn',
       createdBy: user._id,
       grnData: grnList
@@ -484,10 +477,7 @@ const OutletPoStoDetails = ({ navigation, route }) => {
     return (
       <View className="w-full h-screen justify-center px-3">
         <ActivityIndicator size="large" color="#EB4B50" />
-        <Text className="mt-4 text-gray-400 text-base text-center">Loading {po ? 'po' : 'sto'} articles. Please wait......</Text>
-        {/* <View className="w-full h-1 bg-gray-400 relative rounded mt-4">
-          <View className="h-0.5 rounded bg-green-600 absolute top-[1px]" style={{ width: percentage.toFixed(2) + '%' }}></View>
-        </View> */}
+        <Text className="mt-4 text-gray-400 text-base text-center">Loading {po ? 'po' : 'dn'} articles. Please wait......</Text>
       </View>
     )
   }
@@ -499,12 +489,12 @@ const OutletPoStoDetails = ({ navigation, route }) => {
           {pressMode === 'true' ? (
             <TouchableHighlight onPress={() => null}>
               <Text className="text-lg text-sh font-semibold uppercase">
-                {po ? `po ${po}` : `sto ${sto}`}
+                {po ? `po ${po}` : `dn ${dn}`}
               </Text>
             </TouchableHighlight>
           ) : (
             <Text className="text-lg text-sh font-semibold uppercase">
-              {po ? `po ${po}` : `sto ${sto}`}
+              {po ? `po ${po}` : `dn ${dn}`}
             </Text>
           )}
         </View>
@@ -571,7 +561,7 @@ const OutletPoStoDetails = ({ navigation, route }) => {
               </ScrollView>
             ) : (
               <View className="outlet">
-                <Text>No outlet selected</Text>
+                <Text>No preview</Text>
               </View>
             )}
           </View>

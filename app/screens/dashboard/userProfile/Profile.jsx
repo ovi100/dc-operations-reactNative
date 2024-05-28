@@ -39,7 +39,7 @@ const Profile = ({ navigation }) => {
       setIsLoading(false);
     }
     getUserInfo();
-  }, []);
+  }, [selectedSite]);
 
   useEffect(() => {
     const getPressMode = async () => {

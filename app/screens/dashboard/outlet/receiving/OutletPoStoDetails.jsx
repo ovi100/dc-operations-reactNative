@@ -394,7 +394,7 @@ const OutletPoStoDetails = ({ navigation, route }) => {
   }
 
   if (grnItems) {
-    remainingGrnItems = grnItems.filter(grnItem => grnItem.po !== (po || dn));
+    remainingGrnItems = grnItems.filter(grnItem => grnItem.po === po || grnItem.dn === dn);
     GrnByPo = grnItems.filter(grnItem => grnItem.po === po || grnItem.dn === dn);
   }
 

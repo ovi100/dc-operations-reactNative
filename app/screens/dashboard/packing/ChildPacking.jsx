@@ -314,10 +314,10 @@ const ChildPacking = ({ navigation }) => {
           </Text>
         </View>
 
-        <View className="content flex-1 justify-around my-5">
+        <View className="content flex-1 justify-between pb-2">
           {/* Table data */}
-          <View className="table h-full pb-2">
-            <View className="flex-row items-center bg-gray-400 text-center mb-2 px-2 py-2">
+          <View className="table">
+            <View className="table-header flex-row items-center bg-gray-400 text-center mb-2 px-2 py-2">
               {tableHeader.map((th) => (
                 <>
                   {th === 'Code' ? (

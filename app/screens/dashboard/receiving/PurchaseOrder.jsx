@@ -9,6 +9,7 @@ import {
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
 import Dialog from '../../../../components/Dialog';
+import Modal from '../../../../components/Modal';
 import { ButtonLg, ButtonLoading } from '../../../../components/buttons';
 import useActivity from '../../../../hooks/useActivity';
 import useAppContext from '../../../../hooks/useAppContext';
@@ -24,6 +25,7 @@ const PurchaseOrder = ({ navigation, route }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [isButtonLoading, setIsButtonLoading] = useState(false);
+  const [grnModal, setGrnModal] = useState(false);
   const [dialogVisible, setDialogVisible] = useState(false);
   const [pressMode, setPressMode] = useState(false);
   const [barcode, setBarcode] = useState('');
@@ -150,8 +152,6 @@ const PurchaseOrder = ({ navigation, route }) => {
     toast(`Refreshing time: ${time.toFixed(2)} Seconds`);
   };
 
-  console.log(articles);
-
   const renderItem = ({ item, index }) => (
     <>
       {pressMode === 'true' ? (
@@ -258,6 +258,7 @@ const PurchaseOrder = ({ navigation, route }) => {
 
   const generateGRN = async (grnList) => {
     setDialogVisible(false);
+    setGrnModal(false);
     setIsButtonLoading(true);
 
     let postData = {
@@ -343,52 +344,84 @@ const PurchaseOrder = ({ navigation, route }) => {
             </Text>
           )}
         </View>
-        <View className="content">
-          <>
-            <View className={`table ${GrnByPo.length > 0 ? 'h-[80vh]' : 'h-[92vh]'}`}>
-              <View className="flex-row justify-between bg-th text-center mb-2 p-2">
-                {tableHeader.map(th => (
-                  <Text className="text-white text-center font-bold" key={th}>
-                    {th}
-                  </Text>
-                ))}
-              </View>
-              {!isLoading && articles.length === 0 ? (
-                <Text className="text-black text-lg text-center font-bold mt-5">
-                  No articles left to receive
+        <View className="content flex-1 justify-between pb-2">
+          <View className="table">
+            <View className="table-header flex-row justify-between bg-th text-center mb-2 p-2">
+              {tableHeader.map(th => (
+                <Text className="text-white text-center font-bold" key={th}>
+                  {th}
                 </Text>
-              ) : (
-                <FlatList
-                  data={articles}
-                  renderItem={renderItem}
-                  keyExtractor={item => item.material}
-                  initialNumToRender={10}
-                  refreshControl={
-                    <RefreshControl
-                      colors={["#fff"]}
-                      onRefresh={onRefresh}
-                      progressBackgroundColor="#000"
-                      refreshing={refreshing}
-                    />
-                  }
-                />
-              )}
-
+              ))}
             </View>
-            {Boolean(GrnByPo.length) && (
-              <View className="button mt-5">
-                {isButtonLoading ? <ButtonLoading styles='bg-theme rounded-md p-5' /> :
-                  <ButtonLg
-                    title="Generate GRN"
-                    onPress={() => setDialogVisible(true)}
+            {!isLoading && articles.length === 0 ? (
+              <Text className="text-black text-lg text-center font-bold mt-5">
+                No articles left to receive
+              </Text>
+            ) : (
+              <FlatList
+                data={articles}
+                renderItem={renderItem}
+                keyExtractor={item => item.material}
+                initialNumToRender={10}
+                refreshControl={
+                  <RefreshControl
+                    colors={["#fff"]}
+                    onRefresh={onRefresh}
+                    progressBackgroundColor="#000"
+                    refreshing={refreshing}
                   />
                 }
-              </View>
+              />
             )}
-          </>
+
+          </View>
+          {Boolean(GrnByPo.length) && (
+            <View className="button">
+              {isButtonLoading ? <ButtonLoading styles='bg-theme rounded-md p-5' /> :
+                <ButtonLg
+                  title="Generate GRN"
+                  onPress={() => setGrnModal(true)}
+                />
+              }
+            </View>
+          )}
         </View>
       </View>
-      <CustomToast />
+      <Modal
+        isOpen={grnModal}
+        modalHeader="Review GRN"
+        onPress={() => setGrnModal(false)}
+      >
+        <View className="content">
+          <View className="grn-list mt-3 pb-3">
+            {GrnByPo.length > 0 ? (
+              <>
+                <View className="bg-th flex-row items-center justify-between p-2">
+                  <Text className="text-white">Code</Text>
+                  <Text className="text-white">Quantity</Text>
+                </View>
+                <ScrollView>
+                  {GrnByPo.map((item) => (
+                    <View className="bg-gray-100 flex-row items-center justify-between p-2.5" key={item.material}>
+                      <Text className="text-sh">{item.material}</Text>
+                      <Text className="text-sh">{item.quantity}</Text>
+                    </View>
+                  ))}
+                </ScrollView>
+              </>
+            ) : (
+              <View className="outlet">
+                <Text className="text-black text-center">No items ready for GRN</Text>
+              </View>
+            )}
+          </View>
+          <View className="button w-1/3 mx-auto">
+            <TouchableWithoutFeedback onPress={() => setDialogVisible(true)}>
+              <Text className="bg-blue-600 text-white text-lg text-center rounded p-2 capitalize">confirm</Text>
+            </TouchableWithoutFeedback>
+          </View>
+        </View>
+      </Modal>
       <Dialog
         isOpen={dialogVisible}
         modalHeader="Are you sure?"
@@ -398,6 +431,7 @@ const PurchaseOrder = ({ navigation, route }) => {
         leftButtonText="cancel"
         rightButtonText="proceed"
       />
+      <CustomToast />
     </SafeAreaView >
   );
 };

@@ -8,7 +8,6 @@ import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
 import ServerError from '../../../../components/animations/ServerError';
 import { getStorage } from '../../../../hooks/useStorage';
-import useBackHandler from '../../../../hooks/useBackHandler';
 
 const TaskAssign = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -135,9 +134,9 @@ const TaskAssign = ({ navigation }) => {
             task assign
           </Text>
         </View>
-        <View className="content flex-1 justify-between py-5">
+        <View className="content flex-1 py-5">
           <View className="table h-full pb-2">
-            <View className="flex-row bg-th text-center mb-2 py-2">
+            <View className="table-header flex-row bg-th text-center mb-2 py-2">
               {tableHeader.map(th => (
                 <Text className="flex-1 text-white text-center font-bold" key={th}>
                   {th}

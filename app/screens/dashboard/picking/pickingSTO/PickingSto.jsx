@@ -409,7 +409,7 @@ const PickingSto = ({ navigation, route }) => {
         </View>
         <View className="content flex-1 justify-around mt-5 mb-6">
           <View className="table h-full pb-2">
-            <View className="flex-row justify-around bg-th mb-2 py-2 px-3">
+            <View className="table-header flex-row justify-around bg-th mb-2 py-2 px-3">
               <Text className="text-white text-center font-bold">
                 Article Info
               </Text>

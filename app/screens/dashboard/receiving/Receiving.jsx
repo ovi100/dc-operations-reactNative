@@ -167,7 +167,6 @@ const Receiving = ({ navigation }) => {
 
   return (
     <KeyboardAvoidingView className="flex-1 bg-white pt-8 px-4" behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-      {/* <View className="flex-1 px-4"> */}
       <View className="screen-header flex-row items-center justify-center mb-4">
         {pressMode === 'true' ? (
           <TouchableHighlight onPress={() => null}>
@@ -183,7 +182,7 @@ const Receiving = ({ navigation }) => {
       </View>
 
       {/* Search Box */}
-      <View className="search flex-row">
+      <View className="search relative z-50 flex-row">
         <View className="input-box w-4/5">
           <TextInput
             className="bg-[#F5F6FA] text-black rounded-bl-lg rounded-tl-lg px-4"

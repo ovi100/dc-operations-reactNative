@@ -1,6 +1,6 @@
 {
   "name": "dcoperations",
-  "version": "0.0.10",
+  "version": "0.1.6",
   "private": true,
   "scripts": {
     "android": "react-native run-android",

@@ -93,9 +93,9 @@ const OutletArticleDetails = ({ navigation, route }) => {
             await createActivity(
               user._id,
               'shelving_ready',
-              `${user.name} ready material ${material} with quantity of ${newQuantity} of PO ${po} for shelving`,
+              `${user.name} ready material ${material} with quantity of ${newQuantity} of ${po ? 'po' : 'dn'} ${po ? po : dn} for shelving`,
             );
-            navigation.replace('OutletPoStoDetails', { po, dn });
+            navigation.replace('OutletPoStoDetails', { po, dn, sto });
           } else {
             Toast.show({
               type: 'customError',
@@ -142,6 +142,7 @@ const OutletArticleDetails = ({ navigation, route }) => {
     } else {
       let grnItem = {};
       if (po) {
+        // for po -> grn
         grnItem = {
           movementType: '101',
           movementIndicator: 'B',
@@ -155,13 +156,14 @@ const OutletArticleDetails = ({ navigation, route }) => {
           uomIso: unit,
         };
       } else {
+        // for sto/dn -> GRN
         grnItem = {
           movementType: '101',
-          movementIndicator: '',
-          storageLocation: '0001',
-          sto,
+          movementIndicator: 'B',
+          storageLocation,
+          po: sto,
+          poItem: Number(dnItem).toString(),
           dn,
-          stoItem: Number(dnItem).toString(),
           dnItem: Number(dnItem).toString(),
           material: material,
           plant: receivingPlant,
@@ -180,9 +182,11 @@ const OutletArticleDetails = ({ navigation, route }) => {
         receivedQuantity: Number(newQuantity),
         receivedBy: user.name,
         bins,
+        batch: batchNo,
+        expiryDate: expiryDate > new Date() ? expiryDate : null
       };
 
-      console.log(shelvingObject)
+      // console.log(shelvingObject)
 
       if (po) {
         shelvingObject.po = po;

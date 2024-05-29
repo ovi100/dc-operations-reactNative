@@ -1,6 +1,6 @@
+import { useEffect, useState } from 'react';
 import { Image, Keyboard, KeyboardAvoidingView, Platform, Modal as RNModal, Text, TouchableWithoutFeedback, View } from 'react-native';
 import { CloseIcon } from '../constant/icons';
-import { useEffect, useState } from 'react';
 
 const Modal = ({ isOpen, withInput = false, withCloseButton = true, children, modalHeader, onPress }) => {
   const [keyboardStatus, setKeyboardStatus] = useState(false);
@@ -26,13 +26,13 @@ const Modal = ({ isOpen, withInput = false, withCloseButton = true, children, mo
     >
       <View className={`bg-white w-full relative ${keyboardStatus ? '-top-14' : ''} rounded-md p-5`}>
         <View className="modal-header flex-row items-center">
-          <Text className="flex-1 text-lg text-center font-semibold capitalize">
+          <Text className="flex-1 text-lg text-center font-semibold">
             {modalHeader}
           </Text>
           {withCloseButton && (
             <TouchableWithoutFeedback
               onPress={onPress}>
-              <Image className="w-5 h-5" source={CloseIcon} />
+              <Image className="w-6 h-6" source={CloseIcon} />
             </TouchableWithoutFeedback>
           )}
         </View>
@@ -45,13 +45,13 @@ const Modal = ({ isOpen, withInput = false, withCloseButton = true, children, mo
     <View className="bg-zinc-900/40 flex-1 items-center justify-center px-3">
       <View className={`bg-white w-full relative ${keyboardStatus ? '-top-14' : ''} rounded-md p-5`}>
         <View className="modal-header flex-row items-center">
-          <Text className="flex-1 text-lg text-black text-center font-semibold capitalize">
+          <Text className="flex-1 text-lg text-black text-center font-semibold">
             {modalHeader}
           </Text>
           {withCloseButton && (
             <TouchableWithoutFeedback
               onPress={onPress}>
-              <Image className="w-5 h-5" source={CloseIcon} />
+              <Image className="w-6 h-6" source={CloseIcon} />
             </TouchableWithoutFeedback>
           )}
         </View>

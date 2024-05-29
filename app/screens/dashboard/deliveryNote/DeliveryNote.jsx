@@ -1,9 +1,9 @@
-import {SafeAreaView, Text, View} from 'react-native';
-import {ButtonBack, ButtonLg} from '../../../../components/buttons';
+import { SafeAreaView, Text, View } from 'react-native';
+import { ButtonBack, ButtonLg } from '../../../../components/buttons';
 import Table from '../../../../components/table';
-import {dnList} from '../../../../constant/data';
+import { dnList } from '../../../../constant/data';
 
-const DeliveryNote = ({navigation}) => {
+const DeliveryNote = ({ navigation }) => {
   const tableHeader = ['DN ID', 'Outlet', 'Packed Qnt', 'Order Qnt'];
   const dataFields = ['id', 'outlet', 'packed_quantity', 'order_quantity'];
 
@@ -20,7 +20,7 @@ const DeliveryNote = ({navigation}) => {
             delivery note
           </Text>
         </View>
-        <View className="content flex-1 justify-between">
+        <View className="content flex-1 justify-between pb-2">
           <Table
             header={tableHeader}
             data={dnList}

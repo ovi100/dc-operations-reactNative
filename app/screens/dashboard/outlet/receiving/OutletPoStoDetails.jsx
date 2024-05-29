@@ -20,7 +20,7 @@ import { getStorage, setStorage } from '../../../../../hooks/useStorage';
 import SunmiScanner from '../../../../../utils/sunmi/scanner';
 
 const OutletPoStoDetails = ({ navigation, route }) => {
-  const { po, dn } = route.params;
+  const { po, dn, sto } = route.params;
   const { startScan, stopScan } = SunmiScanner;
   const [isLoading, setIsLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -41,7 +41,6 @@ const OutletPoStoDetails = ({ navigation, route }) => {
   const { grnItems, setGrnItems, setIsUpdatingGrn } = GRNInfo;
   let GrnByPo = [];
   let remainingGrnItems = [];
-  // const [percentage, setPercentage] = useState(0);
 
   // Custom hook to navigate screen
   useBackHandler('OutletReceiving');
@@ -203,13 +202,21 @@ const OutletPoStoDetails = ({ navigation, route }) => {
     const readyFetch = fetch(API_URL + `api/product-shelving/ready?filterBy=site&value=${user.site}&pageSize=500`, getOptions);
     const partialFetch = fetch(API_URL + `api/product-shelving/partially-in-shelf?filterBy=site&value=${user.site}&pageSize=500`, getOptions);
     const inShelfFetch = fetch(API_URL + `api/product-shelving/in-shelf?filterBy=site&value=${user.site}&pageSize=500`, getOptions);
-    const stoFetch = fetch(API_URL + 'bapi/dn/display', postOptions);
+    const stoFetch = fetch(API_URL + 'bapi/sto/display', {
+      method: 'POST',
+      headers: {
+        authorization: token,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ sto }),
+    });
+    const dnFetch = fetch(API_URL + 'bapi/dn/display', postOptions);
     try {
       // Fetch data from both APIs simultaneously
-      const [readyResponse, partialResponse, inShelfResponse, stoResponse] = await Promise.all([readyFetch, partialFetch, inShelfFetch, stoFetch]);
+      const [readyResponse, partialResponse, inShelfResponse, stoResponse, dnResponse] = await Promise.all([readyFetch, partialFetch, inShelfFetch, stoFetch, dnFetch]);
 
       // Check if both fetch requests were successful
-      if (!readyResponse.ok || !partialResponse.ok || !inShelfResponse.ok || !stoResponse.ok) {
+      if (!readyResponse.ok || !partialResponse.ok || !inShelfResponse.ok || !stoResponse.ok || !dnResponse.ok) {
         Toast.show({
           type: 'customError',
           text1: "Failed to fetch data from APIs",
@@ -221,38 +228,45 @@ const OutletPoStoDetails = ({ navigation, route }) => {
       const partialData = await partialResponse.json();
       const inShelfData = await inShelfResponse.json();
       const stoData = await stoResponse.json();
+      const dnData = await dnResponse.json();
 
-      const readyItems = readyData.items;
-      const partialItems = partialData.items.map(item => {
+      let readyItems = readyData.items;
+      let partialItems = partialData.items;
+      if (partialItems.length > 0) {
+        partialItems = partialItems.map(item => {
+          return {
+            ...item,
+            receivedQuantity: item.receivedQuantity - item.inShelf.reduce((acc, item) => acc + item.quantity, 0)
+          }
+        });
+      }
+      let inShelfItems = inShelfData.items;
+
+      let shelvingItems = [...readyItems, ...partialItems, ...inShelfItems];
+      shelvingItems = shelvingItems.filter(item => item.sto === sto);
+      const storageLocation = stoData.data.items[0].storageLocation;
+      let dnItems = dnData.data.items;
+      dnItems = dnItems.map(item => {
         return {
           ...item,
-          receivedQuantity: item.receivedQuantity - item.inShelf.reduce((acc, item) => acc + item.quantity, 0)
-        }
-      });
-      const inShelfItems = inShelfData.items;
-
-      const shelvingItems = [...readyItems, ...partialItems, ...inShelfItems];
-
-      const stoItems = stoData.data.items.map(item => {
-        return {
-          ...item,
+          storageLocation,
           remainingQuantity: item.quantity
         }
       });
 
-      let adjustedArticles = stoItems.map(stoItem => {
+      let adjustedArticles = dnItems.map(dnItem => {
         const matchedItem = shelvingItems.find(
-          shItem => shItem.code === stoItem.material
+          shItem => shItem.code === dnItem.material
         );
         if (matchedItem) {
           return {
-            ...stoItem,
-            remainingQuantity: stoItem.quantity - matchedItem.receivedQuantity
+            ...dnItem,
+            remainingQuantity: dnItem.quantity - matchedItem.receivedQuantity
           };
         } else {
           return {
-            ...stoItem,
-            remainingQuantity: stoItem.quantity
+            ...dnItem,
+            remainingQuantity: dnItem.quantity
           };
         }
       }).filter(item => item.remainingQuantity !== 0);
@@ -289,7 +303,7 @@ const OutletPoStoDetails = ({ navigation, route }) => {
     if (po) {
       await getPoDetails();
     } else {
-      await getDnInfo();
+      await getDnDetails();
     }
     setRefreshing(false);
   };
@@ -394,8 +408,8 @@ const OutletPoStoDetails = ({ navigation, route }) => {
   }
 
   if (grnItems) {
-    remainingGrnItems = grnItems.filter(grnItem => grnItem.po === po || grnItem.dn === dn);
-    GrnByPo = grnItems.filter(grnItem => grnItem.po === po || grnItem.dn === dn);
+    remainingGrnItems = grnItems.filter(grnItem => grnItem.po !== (po || sto));
+    GrnByPo = grnItems.filter(grnItem => grnItem.po === (po || sto));
   }
 
   const confirmReport = (article) => {
@@ -415,18 +429,27 @@ const OutletPoStoDetails = ({ navigation, route }) => {
     setReportArticle({});
   }
 
-  // console.log(JSON.stringify(articles));
-
   const generateGRN = async (grnList) => {
     setDialogVisible(false);
+    setGrnModal(false);
     setIsButtonLoading(true);
-
-    let postData = {
-      po: po ? po : dn,
-      status: 'pending for grn',
-      createdBy: user._id,
-      grnData: grnList
-    };
+    let postData = {};
+    if (po) {
+      postData = {
+        po,
+        status: 'pending for grn',
+        createdBy: user._id,
+        grnData: grnList
+      };
+    } else {
+      postData = {
+        po: sto,
+        dn,
+        status: 'pending for grn',
+        createdBy: user._id,
+        grnData: grnList
+      };
+    }
 
     try {
       await fetch(API_URL + 'api/grn/pending-for-grn', {
@@ -498,49 +521,47 @@ const OutletPoStoDetails = ({ navigation, route }) => {
             </Text>
           )}
         </View>
-        <View className="content">
-          <>
-            <View className={`table ${GrnByPo.length > 0 ? 'h-[80vh]' : 'h-[92vh]'}`}>
-              <View className="flex-row justify-between bg-th text-center mb-2 p-2">
-                {tableHeader.map(th => (
-                  <Text className="text-white text-center font-bold" key={th}>
-                    {th}
-                  </Text>
-                ))}
-              </View>
-              {!isLoading && articles.length === 0 && GrnByPo.length > 0 ? (
-                <Text className="text-black text-lg text-center font-bold mt-5">
-                  No articles left to receive
+        <View className="content flex-1 justify-between pb-2">
+          <View className="table">
+            <View className="table-header flex-row justify-between bg-th text-center mb-2 p-2">
+              {tableHeader.map(th => (
+                <Text className="text-white text-center font-bold" key={th}>
+                  {th}
                 </Text>
-              ) : (
-                <FlatList
-                  data={articles}
-                  renderItem={renderItem}
-                  keyExtractor={item => item.material}
-                  initialNumToRender={10}
-                  refreshControl={
-                    <RefreshControl
-                      colors={["#fff"]}
-                      onRefresh={onRefresh}
-                      progressBackgroundColor="#000"
-                      refreshing={refreshing}
-                    />
-                  }
-                />
-              )}
-
+              ))}
             </View>
-            {Boolean(GrnByPo.length) && (
-              <View className="button mt-5">
-                {isButtonLoading ? <ButtonLoading styles='bg-theme rounded-md p-5' /> :
-                  <ButtonLg
-                    title="Generate GRN"
-                    onPress={() => setGrnModal(true)}
+            {!isLoading && articles.length === 0 && GrnByPo.length > 0 ? (
+              <Text className="text-black text-lg text-center font-bold mt-5">
+                No articles left to receive
+              </Text>
+            ) : (
+              <FlatList
+                data={articles}
+                renderItem={renderItem}
+                keyExtractor={item => item.material}
+                initialNumToRender={10}
+                refreshControl={
+                  <RefreshControl
+                    colors={["#fff"]}
+                    onRefresh={onRefresh}
+                    progressBackgroundColor="#000"
+                    refreshing={refreshing}
                   />
                 }
-              </View>
+              />
             )}
-          </>
+
+          </View>
+          {Boolean(GrnByPo.length) && (
+            <View className="button">
+              {isButtonLoading ? <ButtonLoading styles='bg-theme rounded-md p-5' /> :
+                <ButtonLg
+                  title="Generate GRN"
+                  onPress={() => setGrnModal(true)}
+                />
+              }
+            </View>
+          )}
         </View>
       </View>
       <Modal
@@ -551,25 +572,33 @@ const OutletPoStoDetails = ({ navigation, route }) => {
         <View className="content">
           <View className="grn-list mt-3 pb-3">
             {GrnByPo.length > 0 ? (
-              <ScrollView>
-                {GrnByPo.map((item) => (
-                  <View className="flex-row items-center justify-between rounded mr-1 px-2 py-1" key={item.material}>
-                    <Text className="text-sh">{item.material}</Text>
-                    <Text className="text-sh">{item.quantity}</Text>
-                  </View>
-                ))}
-              </ScrollView>
+              <>
+                <View className="bg-th flex-row items-center justify-between p-2">
+                  <Text className="text-white">Code</Text>
+                  <Text className="text-white">Quantity</Text>
+                </View>
+                <ScrollView>
+                  {GrnByPo.map((item) => (
+                    <View className="bg-gray-100 flex-row items-center justify-between p-2.5" key={item.material}>
+                      <Text className="text-sh">{item.material}</Text>
+                      <Text className="text-sh">{item.quantity}</Text>
+                    </View>
+                  ))}
+                </ScrollView>
+              </>
             ) : (
               <View className="outlet">
-                <Text>No preview</Text>
+                <Text className="text-black text-lg text-center">No items ready for GRN</Text>
               </View>
             )}
           </View>
-          <View className="button w-1/3 mx-auto">
-            <TouchableWithoutFeedback onPress={() => setDialogVisible(true)}>
-              <Text className="bg-blue-600 text-white text-base text-center rounded p-1.5">confirm</Text>
-            </TouchableWithoutFeedback>
-          </View>
+          {GrnByPo.length > 0 && (
+            <View className="button w-1/3 mx-auto">
+              <TouchableWithoutFeedback onPress={() => setDialogVisible(true)}>
+                <Text className="bg-blue-600 text-white text-lg text-center rounded p-2 capitalize">confirm</Text>
+              </TouchableWithoutFeedback>
+            </View>
+          )}
         </View>
       </Modal>
       <Dialog

@@ -23,7 +23,6 @@ import { ButtonBack, ButtonLg, ButtonLoading } from '../../../../components/butt
 import useActivity from '../../../../hooks/useActivity';
 import { getStorage, setStorage } from '../../../../hooks/useStorage';
 import { dateRange } from '../../../../utils';
-import useBackHandler from '../../../../hooks/useBackHandler';
 
 const DeliveryPlan = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -341,10 +340,10 @@ const DeliveryPlan = ({ navigation }) => {
               />
             </View>
           </View>
-          <View className="content flex-1 mt-3">
+          <View className="content flex-1 justify-between mt-3 pb-2">
             {/* Table data */}
-            <View className={`table ${selectedList.length > 0 ? 'h-[70vh]' : 'h-[78vh]'}`}>
-              <View className="flex-row items-center justify-between bg-gray-400 text-center mb-2 px-3 py-2">
+            <View className="table">
+              <View className="table-header flex-row items-center justify-between bg-gray-400 text-center mb-2 px-3 py-2">
                 {tableHeader.map((th) => (
                   <>
                     {th.split(' ')[1] === 'ID' ? (
@@ -402,7 +401,7 @@ const DeliveryPlan = ({ navigation }) => {
           </View>
         </View>
       ) : (
-        <View className="w-full h-full justify-center px-3">
+        <View className="w-full h-full justify-center px-4">
           <Text className="mt-4 text-gray-400 text-lg text-center font-semibold">
             No outlets selected yet!
           </Text>

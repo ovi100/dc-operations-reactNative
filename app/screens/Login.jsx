@@ -16,6 +16,7 @@ import {
   EyeVisibleIcon
 } from '../../constant/icons';
 import useAppContext from '../../hooks/useAppContext';
+import { version } from '../../package.json';
 import styles from '../../styles/button';
 import { validateInput } from '../../utils';
 
@@ -121,7 +122,7 @@ const Login = ({ navigation }) => {
             shwapno operations app
           </Text>
           <Text className="text-gray-400 text-center font-bold capitalize">
-            v 1.0.1
+            v {version}
           </Text>
         </View>
       </View>

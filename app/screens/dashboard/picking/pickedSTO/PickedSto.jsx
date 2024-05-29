@@ -1,15 +1,19 @@
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
-  ActivityIndicator, FlatList, View, SafeAreaView,
-  TextInput, Text, TouchableOpacity
+  ActivityIndicator, FlatList,
+  SafeAreaView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../../components/CustomToast';
+import Dialog from '../../../../../components/Dialog';
 import { ButtonBack, ButtonLg } from '../../../../../components/buttons';
 import { getStorage } from '../../../../../hooks/useStorage';
 import { updateArticleTracking, updateStoTracking } from '../processStoData';
-import Dialog from '../../../../../components/Dialog';
 
 const PickedSto = ({ navigation, route }) => {
   const { sto } = route.params;
@@ -260,9 +264,9 @@ const PickedSto = ({ navigation, route }) => {
             picked {' ' + sto}
           </Text>
         </View>
-        <View className="content flex-1 justify-around mt-5 mb-6">
-          <View className="table h-full pb-2">
-            <View className="flex-row justify-between bg-th mb-2 py-2 px-3">
+        <View className="content flex-1 justify-between pb-2">
+          <View className="table">
+            <View className="table-header flex-row justify-between bg-th mb-2 py-2 px-3">
               {tableHeader.map(th => (
                 <Text className="text-white text-center font-bold" key={th} numberOfLines={2}>
                   {th}
@@ -283,7 +287,6 @@ const PickedSto = ({ navigation, route }) => {
               />
             )}
           </View>
-
           <View className="button">
             <ButtonLg
               title="Send to Packing Zone"

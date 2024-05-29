@@ -199,9 +199,7 @@ const OutletPoStoDetails = ({ navigation, route }) => {
       },
       body: JSON.stringify({ dn }),
     };
-    const readyFetch = fetch(API_URL + `api/product-shelving/ready?filterBy=site&value=${user.site}&pageSize=500`, getOptions);
-    const partialFetch = fetch(API_URL + `api/product-shelving/partially-in-shelf?filterBy=site&value=${user.site}&pageSize=500`, getOptions);
-    const inShelfFetch = fetch(API_URL + `api/product-shelving/in-shelf?filterBy=site&value=${user.site}&pageSize=500`, getOptions);
+    const shelvingFetch = fetch(API_URL + `api/product-shelving?filterBy=sto&value=${sto}&pageSize=500`, getOptions);
     const stoFetch = fetch(API_URL + 'bapi/sto/display', {
       method: 'POST',
       headers: {
@@ -213,10 +211,10 @@ const OutletPoStoDetails = ({ navigation, route }) => {
     const dnFetch = fetch(API_URL + 'bapi/dn/display', postOptions);
     try {
       // Fetch data from both APIs simultaneously
-      const [readyResponse, partialResponse, inShelfResponse, stoResponse, dnResponse] = await Promise.all([readyFetch, partialFetch, inShelfFetch, stoFetch, dnFetch]);
+      const [shelvingResponse, stoResponse, dnResponse] = await Promise.all([shelvingFetch, stoFetch, dnFetch]);
 
       // Check if both fetch requests were successful
-      if (!readyResponse.ok || !partialResponse.ok || !inShelfResponse.ok || !stoResponse.ok || !dnResponse.ok) {
+      if (!shelvingResponse.ok || !stoResponse.ok || !dnResponse.ok) {
         Toast.show({
           type: 'customError',
           text1: "Failed to fetch data from APIs",
@@ -224,28 +222,31 @@ const OutletPoStoDetails = ({ navigation, route }) => {
       }
 
       // Parse the JSON data from the responses
-      const readyData = await readyResponse.json();
-      const partialData = await partialResponse.json();
-      const inShelfData = await inShelfResponse.json();
+      const shelvingData = await shelvingResponse.json();
       const stoData = await stoResponse.json();
       const dnData = await dnResponse.json();
 
-      let readyItems = readyData.items;
-      let partialItems = partialData.items;
-      if (partialItems.length > 0) {
-        partialItems = partialItems.map(item => {
-          return {
-            ...item,
-            receivedQuantity: item.receivedQuantity - item.inShelf.reduce((acc, item) => acc + item.quantity, 0)
+      let shelvingItems = shelvingData.items;
+      // console.log('shelving items', JSON.stringify(shelvingItems));
+      if (shelvingItems.length > 0) {
+        shelvingItems = shelvingItems.map(item => {
+          if (item.inShelf.length > 0) {
+            return {
+              ...item,
+              receivedQuantity: item.receivedQuantity - item.inShelf.reduce((acc, item) => acc + item.quantity, 0)
+            }
+          } else {
+            return {
+              ...item,
+              receivedQuantity: item.receivedQuantity
+            }
           }
         });
       }
-      let inShelfItems = inShelfData.items;
 
-      let shelvingItems = [...readyItems, ...partialItems, ...inShelfItems];
-      shelvingItems = shelvingItems.filter(item => item.sto === sto);
       const storageLocation = stoData.data.items[0].storageLocation;
       let dnItems = dnData.data.items;
+      // console.log('DN items', JSON.stringify(dnItems));
       dnItems = dnItems.map(item => {
         return {
           ...item,
@@ -531,6 +532,10 @@ const OutletPoStoDetails = ({ navigation, route }) => {
               ))}
             </View>
             {!isLoading && articles.length === 0 && GrnByPo.length > 0 ? (
+              <Text className="text-black text-lg text-center font-bold mt-5">
+                No articles left to receive
+              </Text>
+            ) : !isLoading && articles.length === 0 ? (
               <Text className="text-black text-lg text-center font-bold mt-5">
                 No articles left to receive
               </Text>

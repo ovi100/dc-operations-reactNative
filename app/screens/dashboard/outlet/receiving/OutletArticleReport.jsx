@@ -12,7 +12,7 @@ import { launchCamera } from 'react-native-image-picker';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../../components/CustomToast';
 import { ButtonLg, ButtonLoading } from '../../../../../components/buttons';
-import { BoxIcon, DeleteIcon, ImageIcon, RefreshIcon } from '../../../../../constant/icons';
+import { BoxIcon, CameraIcon, DeleteIcon } from '../../../../../constant/icons';
 import { getStorage } from '../../../../../hooks/useStorage';
 
 
@@ -73,7 +73,6 @@ const OutletArticleReport = ({ navigation, route }) => {
       }
 
       if (result.assets[0].uri) {
-        console.log(result.assets[0]);
         setImage(result.assets[0].uri);
         setIsLoading(false);
         return;
@@ -95,7 +94,6 @@ const OutletArticleReport = ({ navigation, route }) => {
   const uploadImageToFirebase = async uri => {
     let filename = uri.substring(uri.lastIndexOf('/') + 1);
     filename = filename.replace(filename, `${user.site}(${new Date().toLocaleDateString('en-UK').replaceAll('/', '-')})-${po ? po : sto}-${material}-${selectedReason.toLowerCase()}.jpg`);
-    console.log(filename)
     const storageRef = storage().ref(`damage images/${filename}`);
 
     const task = storageRef.putFile(uri);
@@ -117,7 +115,6 @@ const OutletArticleReport = ({ navigation, route }) => {
         type: 'customError',
         text1: error.message,
       });
-      // console.log(error.message);
     }
   };
 
@@ -244,10 +241,10 @@ const OutletArticleReport = ({ navigation, route }) => {
                 )}
                 {image === null && !isLoading && (
                   <TouchableOpacity onPress={pickImage}>
-                    <View className="image-picker h-60 items-center justify-center border border-dashed border-theme">
-                      <Image className="mx-auto mb-2" source={ImageIcon} />
-                      <Text className="text-theme text-base text-center">
-                        Click here to upload image
+                    <View className="image-picker bg-theme flex-row items-center justify-center rounded p-4">
+                      <Image className="w-8 h-8 mr-2" source={CameraIcon} />
+                      <Text className="text-white text-xl text-center font-semibold">
+                        Take a photo
                       </Text>
                     </View>
                   </TouchableOpacity>
@@ -260,7 +257,7 @@ const OutletArticleReport = ({ navigation, route }) => {
                         <Image className="w-12 h-12 bg-white rounded-full" source={DeleteIcon} />
                       </TouchableOpacity>
                       <TouchableOpacity onPress={() => reTake()}>
-                        <Image className="w-12 h-12" source={RefreshIcon} />
+                        <Image className="w-12 h-12" source={CameraIcon} />
                       </TouchableOpacity>
                     </View>
                   </View>
@@ -268,11 +265,20 @@ const OutletArticleReport = ({ navigation, route }) => {
               </View>
             )}
 
+            {/* {image || selectedType === "Missing" && (
+              <View className="button mt-4">
+                {isButtonLoading ? <ButtonLoading styles='bg-theme rounded-md p-5' /> :
+                  <ButtonLg title="Submit" onPress={() => submitReport()} />
+                }
+              </View>
+            )} */}
+
             <View className="button mt-4">
               {isButtonLoading ? <ButtonLoading styles='bg-theme rounded-md p-5' /> :
-                <ButtonLg title="submit" onPress={() => submitReport()} />
+                <ButtonLg title="Submit" onPress={() => submitReport()} />
               }
             </View>
+
             {progress > 0 && (
               <View className="progress relative bg-gray-300 w-full h-1 rounded-full mt-4" >
                 <View className="absolute top-0 bg-green-600 h-1 rounded-full" style={{ width: `${progress}%` }}></View>

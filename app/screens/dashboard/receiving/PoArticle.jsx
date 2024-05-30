@@ -115,6 +115,7 @@ const PoArticle = ({ navigation, route }) => {
         material: material,
         plant: receivingPlant,
         quantity: Number(newQuantity),
+        netPrice,
         uom: unit,
         uomIso: unit,
       };

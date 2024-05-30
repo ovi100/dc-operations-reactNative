@@ -1,11 +1,13 @@
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
-  ActivityIndicator, Button, FlatList, Image, RefreshControl,
+  ActivityIndicator,
+  FlatList, Image, RefreshControl,
   SafeAreaView, Text, TouchableOpacity, View
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
+import ServerError from '../../../../components/animations/ServerError';
 import { StoNotPickedIcon, StoPickedIcon } from '../../../../constant/icons';
 import { getStorage } from '../../../../hooks/useStorage';
 
@@ -159,12 +161,12 @@ const Picking = ({ navigation }) => {
 
   if (assignedData.length === 0 || notPicked.length === 0) {
     return (
-      <View className="w-full h-full justify-center px-3">
-        <Text className="text-black text-xl text-center font-bold">
-          No task assigned yet
-        </Text>
-        <View className="w-1/4 mx-auto mt-5">
-          <Button title='Retry' onPress={() => getAssignedTask()} />
+      <View className="w-full h-screen justify-center px-4">
+        <ServerError message="No picking data found" />
+        <View className="button w-1/3 mx-auto mt-5">
+          <TouchableOpacity onPress={() => getAssignedTask()}>
+            <Text className="bg-blue-600 text-white text-lg text-center rounded p-2 capitalize">retry</Text>
+          </TouchableOpacity>
         </View>
       </View>
     )

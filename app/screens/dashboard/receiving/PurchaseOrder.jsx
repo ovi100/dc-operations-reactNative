@@ -4,7 +4,10 @@ import {
   ActivityIndicator,
   DeviceEventEmitter, FlatList,
   RefreshControl,
-  SafeAreaView, Text, TouchableHighlight, TouchableOpacity, View
+  SafeAreaView, ScrollView, Text, TouchableHighlight,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';

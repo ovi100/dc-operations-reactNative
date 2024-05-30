@@ -36,7 +36,7 @@ const OutletArticleDetails = ({ navigation, route }) => {
   const API_URL = 'https://shwapnooperation.onrender.com/api/';
 
   // Custom hook to navigate screen
-  useBackHandler('OutletPoStoDetails', { po, dn });
+  useBackHandler('OutletPoStoDetails', { po, dn, sto });
 
   useEffect(() => {
     const getAsyncStorage = async () => {
@@ -152,6 +152,7 @@ const OutletArticleDetails = ({ navigation, route }) => {
           material: material,
           plant: receivingPlant,
           quantity: Number(newQuantity),
+          netPrice,
           uom: unit,
           uomIso: unit,
         };

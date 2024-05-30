@@ -251,7 +251,7 @@ const Receiving = ({ navigation }) => {
       </View>
 
       {/* Search Box */}
-      <View className="search relative z-50 flex-row">
+      <View className="search flex-row">
         <View className="input-box w-4/5">
           <TextInput
             className="bg-[#F5F6FA] text-black rounded-bl-lg rounded-tl-lg px-4"

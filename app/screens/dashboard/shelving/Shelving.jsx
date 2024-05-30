@@ -2,7 +2,6 @@ import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
-  Button,
   DeviceEventEmitter,
   FlatList,
   RefreshControl,
@@ -14,6 +13,7 @@ import {
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
+import ServerError from '../../../../components/animations/ServerError';
 import { getStorage } from '../../../../hooks/useStorage';
 import SunmiScanner from '../../../../utils/sunmi/scanner';
 
@@ -249,12 +249,12 @@ const Shelving = ({ navigation }) => {
 
   if (!isLoading && articles.length === 0) {
     return (
-      <View className="h-full justify-center pb-2">
-        <Text className="text-base text-black font-bold text-center">
-          No product is ready for shelving!
-        </Text>
-        <View className="w-1/4 mx-auto mt-5">
-          <Button title='Retry' onPress={() => getShelvingList()} />
+      <View className="w-full h-screen justify-center px-4">
+        <ServerError message="No shelving data found" />
+        <View className="button w-1/3 mx-auto mt-5">
+          <TouchableOpacity onPress={() => getShelvingList()}>
+            <Text className="bg-blue-600 text-white text-lg text-center rounded p-2 capitalize">retry</Text>
+          </TouchableOpacity>
         </View>
       </View>
     )

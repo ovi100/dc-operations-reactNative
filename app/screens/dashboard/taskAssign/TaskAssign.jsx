@@ -1,7 +1,7 @@
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback, useEffect, useState } from 'react';
 import {
-  ActivityIndicator, Button, FlatList, RefreshControl,
+  ActivityIndicator, FlatList, RefreshControl,
   SafeAreaView, Text, TouchableOpacity, View
 } from 'react-native';
 import Toast from 'react-native-toast-message';
@@ -117,10 +117,12 @@ const TaskAssign = ({ navigation }) => {
 
   if (taskList.length === 0) {
     return (
-      <View className="w-full h-screen justify-center px-3">
-        <ServerError message="No data found!" />
-        <View className="w-1/4 mx-auto mt-5">
-          <Button title='Retry' onPress={() => getTaskList()} />
+      <View className="w-full h-screen justify-center px-4">
+        <ServerError message="No task list found" />
+        <View className="button w-1/3 mx-auto mt-5">
+          <TouchableOpacity onPress={() => getTaskList()}>
+            <Text className="bg-blue-600 text-white text-lg text-center rounded p-2 capitalize">retry</Text>
+          </TouchableOpacity>
         </View>
       </View>
     )

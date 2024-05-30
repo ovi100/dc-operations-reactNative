@@ -90,7 +90,7 @@ const Profile = ({ navigation }) => {
       </View>
       <ScrollView>
         <View className="content flex-1 justify-center mt-5">
-          <View className="">
+          <View className="pb-2">
             <View className="profile-image mx-auto mb-4">
               <Image
                 className="w-28 h-28 rounded-full"

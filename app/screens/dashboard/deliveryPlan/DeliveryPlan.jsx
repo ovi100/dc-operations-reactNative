@@ -3,7 +3,6 @@ import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
-  Button,
   FlatList,
   Keyboard,
   RefreshControl,
@@ -301,13 +300,12 @@ const DeliveryPlan = ({ navigation }) => {
 
   if (!isLoading && outlets && dpList.length === 0) {
     return (
-      <View className="w-full h-4/5 justify-center px-3">
-        <ServerError message="No data found!" />
-        <View className="button w-1/2 mx-auto mt-4">
-          <Button
-            title="Retry"
-            onPress={() => getDpList()}
-          />
+      <View className="w-full h-screen justify-center px-4">
+        <ServerError message="No sto found for delivery plan" />
+        <View className="button w-1/3 mx-auto mt-5">
+          <TouchableOpacity onPress={() => getDpList()}>
+            <Text className="bg-blue-600 text-white text-lg text-center rounded p-2 capitalize">retry</Text>
+          </TouchableOpacity>
         </View>
       </View>
     )

@@ -1,7 +1,7 @@
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
-  ActivityIndicator, Button,
+  ActivityIndicator,
   DeviceEventEmitter, FlatList,
   SafeAreaView,
   Text,
@@ -418,10 +418,12 @@ const PickingSto = ({ navigation, route }) => {
               </Text>
             </View>
             {!isLoading && articles.length === 0 ? (
-              <View className="w-full h-[90%] justify-center px-3">
-                <ServerError message="No sku left" />
-                <View className="w-1/4 mx-auto mt-5">
-                  <Button title='Retry' onPress={() => finalStoData()} />
+              <View className="w-full h-[90%] justify-center px-4">
+                <ServerError message="No sku left picking" />
+                <View className="button w-1/3 mx-auto mt-5">
+                  <TouchableOpacity onPress={() => finalStoData()}>
+                    <Text className="bg-blue-600 text-white text-lg text-center rounded p-2 capitalize">retry</Text>
+                  </TouchableOpacity>
                 </View>
               </View>
             ) : (

@@ -14,6 +14,7 @@ import {
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
 import Dialog from '../../../../components/Dialog';
+import ServerError from '../../../../components/animations/ServerError';
 import { ButtonBack, ButtonLg, ButtonLoading } from '../../../../components/buttons';
 import { getStorage } from '../../../../hooks/useStorage';
 import { printChildPackingList } from './printPackInfo';
@@ -300,6 +301,19 @@ const ChildPacking = ({ navigation }) => {
         <Text className="mt-4 text-gray-400 text-base text-center">
           Loading articles. Please wait......
         </Text>
+      </View>
+    )
+  }
+
+  if (!isLoading && childPackingList.length === 0) {
+    return (
+      <View className="w-full h-screen justify-center px-4">
+        <ServerError message="No article ready for packing" />
+        <View className="button w-1/3 mx-auto mt-5">
+          <TouchableOpacity onPress={() => finalStoData()}>
+            <Text className="bg-blue-600 text-white text-lg text-center rounded p-2 capitalize">retry</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     )
   }

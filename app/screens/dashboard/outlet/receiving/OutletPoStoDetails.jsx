@@ -81,16 +81,14 @@ const OutletPoStoDetails = ({ navigation, route }) => {
       },
       body: JSON.stringify({ po }),
     };
-    const readyFetch = fetch(API_URL + `api/product-shelving/ready?filterBy=site&value=${user.site}&pageSize=500`, getOptions);
-    const partialFetch = fetch(API_URL + `api/product-shelving/partially-in-shelf?filterBy=site&value=${user.site}&pageSize=500`, getOptions);
-    const inShelfFetch = fetch(API_URL + `api/product-shelving/in-shelf?filterBy=site&value=${user.site}&pageSize=500`, getOptions);
+    const shelvingFetch = fetch(API_URL + `api/product-shelving?filterBy=sto&value=${sto}&pageSize=500`, getOptions);
     const poFetch = fetch(API_URL + 'bapi/po/display', postOptions);
     try {
       // Fetch data from both APIs simultaneously
-      const [readyResponse, partialResponse, inShelfResponse, poResponse] = await Promise.all([readyFetch, partialFetch, inShelfFetch, poFetch]);
+      const [shelvingResponse, poResponse] = await Promise.all([shelvingFetch, poFetch]);
 
       // Check if both fetch requests were successful
-      if (!readyResponse.ok || !partialResponse.ok || !inShelfResponse.ok || !poResponse.ok) {
+      if (!shelvingResponse.ok || !poResponse.ok) {
         Toast.show({
           type: 'customError',
           text1: "Failed to fetch data from APIs",
@@ -98,12 +96,10 @@ const OutletPoStoDetails = ({ navigation, route }) => {
       }
 
       // Parse the JSON data from the responses
-      const readyData = await readyResponse.json();
-      const partialData = await partialResponse.json();
-      const inShelfData = await inShelfResponse.json();
+      const shelvingData = await shelvingResponse.json();
       const poData = await poResponse.json();
 
-      const poItem = poData.items[0];
+      const poItem = poData.data.items[0];
       if (poItem.receivingPlant !== user.site) {
         Toast.show({
           type: 'customError',
@@ -112,16 +108,23 @@ const OutletPoStoDetails = ({ navigation, route }) => {
         return;
       }
 
-      const readyItems = readyData.items;
-      const partialItems = partialData.items.map(item => {
-        return {
-          ...item,
-          receivedQuantity: item.receivedQuantity - item.inShelf.reduce((acc, item) => acc + item.quantity, 0)
-        }
-      });
-      const inShelfItems = inShelfData.items;
-
-      const shelvingItems = [...readyItems, ...partialItems, ...inShelfItems];
+      let shelvingItems = shelvingData.items;
+      // console.log('shelving items', JSON.stringify(shelvingItems));
+      if (shelvingItems.length > 0) {
+        shelvingItems = shelvingItems.map(item => {
+          if (item.inShelf.length > 0) {
+            return {
+              ...item,
+              receivedQuantity: item.receivedQuantity - item.inShelf.reduce((acc, item) => acc + item.quantity, 0)
+            }
+          } else {
+            return {
+              ...item,
+              receivedQuantity: item.receivedQuantity
+            }
+          }
+        });
+      }
 
       let poItems = poData.data.items;
       const historyItems = poData.data.historyTotal;
@@ -434,8 +437,10 @@ const OutletPoStoDetails = ({ navigation, route }) => {
     setDialogVisible(false);
     setGrnModal(false);
     setIsButtonLoading(true);
+    let url = '';
     let postData = {};
     if (po) {
+      url = API_URL + 'api/grn/pending-for-grn';
       postData = {
         po,
         status: 'pending for grn',
@@ -443,17 +448,18 @@ const OutletPoStoDetails = ({ navigation, route }) => {
         grnData: grnList
       };
     } else {
+      url = API_URL + 'api/tpn';
       postData = {
         po: sto,
         dn,
-        status: 'pending for grn',
+        status: 'pending for tpn',
         createdBy: user._id,
-        grnData: grnList
+        tpnData: grnList
       };
     }
 
     try {
-      await fetch(API_URL + 'api/grn/pending-for-grn', {
+      await fetch(url, {
         method: 'POST',
         headers: {
           authorization: token,

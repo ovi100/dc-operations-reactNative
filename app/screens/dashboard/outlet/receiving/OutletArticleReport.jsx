@@ -14,6 +14,8 @@ import CustomToast from '../../../../../components/CustomToast';
 import { ButtonLg, ButtonLoading } from '../../../../../components/buttons';
 import { BoxIcon, CameraIcon, DeleteIcon } from '../../../../../constant/icons';
 import { getStorage } from '../../../../../hooks/useStorage';
+import useTPN from '../../../../../hooks/useTPN';
+import useAppContext from '../../../../../hooks/useAppContext';
 
 
 const OutletArticleReport = ({ navigation, route }) => {
@@ -43,12 +45,13 @@ const OutletArticleReport = ({ navigation, route }) => {
   const [isButtonLoading, setIsButtonLoading] = useState(false);
   const [newQuantity, setNewQuantity] = useState(remainingQuantity);
   const [image, setImage] = useState(null);
-  const [filePath, setFilePath] = useState('');
   const [progress, setProgress] = useState(0);
   const [user, setUser] = useState({});
   const [token, setToken] = useState('');
   const [selectedType, setSelectedType] = useState(types[0]);
   const [selectedReason, setSelectedReason] = useState(reasons[0]);
+  const { TPNInfo } = useAppContext();
+  const { addToTPN } = TPNInfo;
   const API_URL = 'https://shwapnooperation.onrender.com/api/';
 
   useEffect(() => {
@@ -102,7 +105,7 @@ const OutletArticleReport = ({ navigation, route }) => {
       const progress =
         (taskSnapshot.bytesTransferred / taskSnapshot.totalBytes) * 100;
       setProgress(progress.toFixed(2));
-      console.log(taskSnapshot.bytesTransferred);
+      // console.log(taskSnapshot.bytesTransferred);
     });
 
     try {
@@ -135,6 +138,13 @@ const OutletArticleReport = ({ navigation, route }) => {
     }
     setIsButtonLoading(true);
     const imageLink = await uploadImageToFirebase(image);
+    // for sto/dn -> TPN
+    const tpnItem = {
+      tpnQuantity: Number(newQuantity),
+      reportType: selectedType,
+      damageType: selectedReason,
+      image: imageLink
+    };
     // console.log('Firebase image link', imageLink)
     setIsButtonLoading(false);
   };

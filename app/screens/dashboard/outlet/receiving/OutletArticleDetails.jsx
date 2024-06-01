@@ -141,6 +141,7 @@ const OutletArticleDetails = ({ navigation, route }) => {
       });
     } else {
       let grnItem = {};
+      let tpnItem = {};
       if (po) {
         // for po -> grn
         grnItem = {
@@ -157,8 +158,8 @@ const OutletArticleDetails = ({ navigation, route }) => {
           uomIso: unit,
         };
       } else {
-        // for sto/dn -> GRN
-        grnItem = {
+        // for sto/dn -> TPN
+        tpnItem = {
           movementType: '101',
           movementIndicator: 'B',
           storageLocation,
@@ -168,7 +169,8 @@ const OutletArticleDetails = ({ navigation, route }) => {
           dnItem: Number(dnItem).toString(),
           material: material,
           plant: receivingPlant,
-          quantity: Number(newQuantity),
+          documentQuantity: quantity,
+          netPrice,
           uom: unit,
           uomIso: unit,
         };

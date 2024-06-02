@@ -19,7 +19,7 @@ import { getStorage } from '../../../../../hooks/useStorage';
 const OutletArticleDetails = ({ navigation, route }) => {
   const {
     description, material, po, poItem, sto, dn, dnItem, quantity,
-    remainingQuantity, receivingPlant, storageLocation, unit
+    netPrice, remainingQuantity, receivingPlant, storageLocation, unit
   } = route.params;
   const [isLoading, setIsLoading] = useState(false);
   const [isButtonLoading, setIsButtonLoading] = useState(false);
@@ -30,9 +30,10 @@ const OutletArticleDetails = ({ navigation, route }) => {
   const [expiryDate, setExpiryDate] = useState(new Date());
   const [token, setToken] = useState('');
   const { createActivity } = useActivity();
-  const { GRNInfo, authInfo } = useAppContext();
+  const { GRNInfo, TPNInfo, authInfo } = useAppContext();
   const { user } = authInfo;
   const { addToGRN } = GRNInfo;
+  const { addToTPN } = TPNInfo;
   const API_URL = 'https://shwapnooperation.onrender.com/api/';
 
   // Custom hook to navigate screen
@@ -141,7 +142,6 @@ const OutletArticleDetails = ({ navigation, route }) => {
       });
     } else {
       let grnItem = {};
-      let tpnItem = {};
       if (po) {
         // for po -> grn
         grnItem = {
@@ -159,7 +159,7 @@ const OutletArticleDetails = ({ navigation, route }) => {
         };
       } else {
         // for sto/dn -> TPN
-        tpnItem = {
+        grnItem = {
           movementType: '101',
           movementIndicator: 'B',
           storageLocation,
@@ -169,7 +169,7 @@ const OutletArticleDetails = ({ navigation, route }) => {
           dnItem: Number(dnItem).toString(),
           material: material,
           plant: receivingPlant,
-          documentQuantity: quantity,
+          quantity: Number(newQuantity),
           netPrice,
           uom: unit,
           uomIso: unit,
@@ -189,13 +189,12 @@ const OutletArticleDetails = ({ navigation, route }) => {
         expiryDate: expiryDate > new Date() ? expiryDate : null
       };
 
-      // console.log(shelvingObject)
-
       if (po) {
         shelvingObject.po = po;
       } else {
         shelvingObject.sto = sto;
       }
+
       await postShelvingData(shelvingObject, grnItem);
     }
   };

@@ -13,15 +13,15 @@ import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../../components/CustomToast';
 import { ButtonLg, ButtonLoading } from '../../../../../components/buttons';
 import { BoxIcon, CameraIcon, DeleteIcon } from '../../../../../constant/icons';
-import { getStorage } from '../../../../../hooks/useStorage';
-import useTPN from '../../../../../hooks/useTPN';
 import useAppContext from '../../../../../hooks/useAppContext';
+import useBackHandler from '../../../../../hooks/useBackHandler';
+import { getStorage } from '../../../../../hooks/useStorage';
 
 
 const OutletArticleReport = ({ navigation, route }) => {
   const {
-    description, material, po, poItem, sto, stoItem, quantity,
-    remainingQuantity, receivingPlant, storageLocation, unit
+    description, material, po, sto, dn, dnItem, quantity,
+    netPrice, remainingQuantity, receivingPlant, storageLocation, unit
   } = route.params;
   const types = [
     "Report Types",
@@ -52,7 +52,10 @@ const OutletArticleReport = ({ navigation, route }) => {
   const [selectedReason, setSelectedReason] = useState(reasons[0]);
   const { TPNInfo } = useAppContext();
   const { addToTPN } = TPNInfo;
-  const API_URL = 'https://shwapnooperation.onrender.com/api/';
+  const API_URL = 'https://shwapnooperation.onrender.com/api/tpn';
+
+  // Custom hook to navigate screen
+  useBackHandler('OutletPoStoDetails', { po, dn, sto });
 
   useEffect(() => {
     const getAsyncStorage = async () => {
@@ -122,6 +125,13 @@ const OutletArticleReport = ({ navigation, route }) => {
   };
 
   const submitReport = async () => {
+    if (selectedType === "Report Types") {
+      Toast.show({
+        type: 'customError',
+        text1: 'please select a report type',
+      });
+      return;
+    }
     if (selectedType === "Damage" && selectedReason === "Damage Types") {
       Toast.show({
         type: 'customError',
@@ -137,15 +147,82 @@ const OutletArticleReport = ({ navigation, route }) => {
       return;
     }
     setIsButtonLoading(true);
-    const imageLink = await uploadImageToFirebase(image);
     // for sto/dn -> TPN
-    const tpnItem = {
+    let tpnItem = {
+      movementType: '101',
+      movementIndicator: 'B',
+      storageLocation,
+      po: sto,
+      poItem: Number(dnItem).toString(),
+      dn,
+      dnItem: Number(dnItem).toString(),
+      material: material,
+      plant: receivingPlant,
+      quantity: Number(newQuantity),
+      netPrice,
+      uom: unit,
+      uomIso: unit,
+      documentQuantity: quantity,
       tpnQuantity: Number(newQuantity),
-      reportType: selectedType,
-      damageType: selectedReason,
-      image: imageLink
     };
-    // console.log('Firebase image link', imageLink)
+
+    let postData = {
+      po: sto,
+      dn,
+      createdBy: user._id,
+      reportType: selectedType.toLowerCase(),
+      tpnData: tpnItem
+    };
+
+    if (image) {
+      const imageLink = await uploadImageToFirebase(image);
+      postData.damageType = selectedReason;
+      postData.image = imageLink;
+    }
+
+    // console.log('Post data', postData);
+
+    try {
+      await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          authorization: token,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(postData),
+      })
+        .then(response => response.json())
+        .then(result => {
+          // console.log('TPN response', result);
+          if (result.status) {
+            Toast.show({
+              type: 'customSuccess',
+              text1: result.message,
+            });
+            setTimeout(() => {
+              navigation.replace('OutletPoStoDetails', { po, dn, sto });
+            }, 1500);
+          } else {
+            Toast.show({
+              type: 'customError',
+              text1: result.message,
+            });
+          }
+        })
+        .catch(error => {
+          Toast.show({
+            type: 'customError',
+            text1: error.message,
+          });
+        });
+    } catch (error) {
+      Toast.show({
+        type: 'customError',
+        text1: error.message,
+      });
+    } finally {
+      setIsButtonLoading(false);
+    }
     setIsButtonLoading(false);
   };
 
@@ -157,6 +234,8 @@ const OutletArticleReport = ({ navigation, route }) => {
       </View>
     )
   }
+
+  // console.log(image !== null || selectedType === "Missing")
 
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">
@@ -219,6 +298,7 @@ const OutletArticleReport = ({ navigation, route }) => {
                     label={item}
                     value={item}
                     key={item}
+                    color={item === 'Report Types' ? 'blue' : 'black'}
                   />
                 ))}
               </Picker>
@@ -235,6 +315,7 @@ const OutletArticleReport = ({ navigation, route }) => {
                       label={item}
                       value={item}
                       key={item}
+                      color={item === 'Damage Types' ? 'blue' : 'black'}
                     />
                   ))}
                 </Picker>
@@ -266,8 +347,8 @@ const OutletArticleReport = ({ navigation, route }) => {
                       <TouchableOpacity onPress={() => removeImage()}>
                         <Image className="w-12 h-12 bg-white rounded-full" source={DeleteIcon} />
                       </TouchableOpacity>
-                      <TouchableOpacity onPress={() => reTake()}>
-                        <Image className="w-12 h-12" source={CameraIcon} />
+                      <TouchableOpacity className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center" onPress={() => reTake()}>
+                        <Image className="w-8 h-8" source={CameraIcon} />
                       </TouchableOpacity>
                     </View>
                   </View>
@@ -275,19 +356,19 @@ const OutletArticleReport = ({ navigation, route }) => {
               </View>
             )}
 
-            {/* {image || selectedType === "Missing" && (
+            {(image !== null || selectedType === "Missing") && (
               <View className="button mt-4">
                 {isButtonLoading ? <ButtonLoading styles='bg-theme rounded-md p-5' /> :
                   <ButtonLg title="Submit" onPress={() => submitReport()} />
                 }
               </View>
-            )} */}
+            )}
 
-            <View className="button mt-4">
+            {/* <View className="button mt-4">
               {isButtonLoading ? <ButtonLoading styles='bg-theme rounded-md p-5' /> :
                 <ButtonLg title="Submit" onPress={() => submitReport()} />
               }
-            </View>
+            </View> */}
 
             {progress > 0 && (
               <View className="progress relative bg-gray-300 w-full h-1 rounded-full mt-4" >

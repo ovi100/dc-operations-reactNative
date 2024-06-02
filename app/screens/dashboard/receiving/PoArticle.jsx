@@ -16,7 +16,7 @@ import { getStorage } from '../../../../hooks/useStorage';
 
 const PoArticle = ({ navigation, route }) => {
   const {
-    description, material, po, poItem, quantity,
+    description, material, po, poItem, quantity, netPrice,
     remainingQuantity, receivingPlant, storageLocation, unit
   } = route.params;
   const [isLoading, setIsLoading] = useState(false);

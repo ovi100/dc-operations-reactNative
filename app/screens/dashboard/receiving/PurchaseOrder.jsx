@@ -39,8 +39,7 @@ const PurchaseOrder = ({ navigation, route }) => {
   const API_URL = 'https://shwapnooperation.onrender.com/';
   const { GRNInfo } = useAppContext();
   const { grnItems, setGrnItems, setIsUpdatingGrn } = GRNInfo;
-  let GrnByPo = [];
-  let remainingGrnItems = [];
+  let grnPostItems = [], remainingGrnItems = [], grnSummery = {};
 
   // Custom hook to navigate screen
   useBackHandler('Receiving');
@@ -67,64 +66,118 @@ const PurchaseOrder = ({ navigation, route }) => {
   }, []);
 
   const getPoDetails = async () => {
-    await fetch(API_URL + 'bapi/po/display', {
+    const getOptions = {
+      method: 'GET',
+      headers: {
+        authorization: token,
+      }
+    };
+    const postOptions = {
       method: 'POST',
       headers: {
         authorization: token,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ po: po }),
-    })
-      .then(response => response.json())
-      .then(async result => {
-        if (result.status) {
-          const poItems = result.data.items;
-          const historyItems = result.data.historyTotal;
-          let finalPoItems = [];
-          if (historyItems.length > 0) {
-            finalPoItems = poItems.map(poItem => {
-              const matchedItem = historyItems.find(
-                historyItem => historyItem.material === poItem.material
-              );
-              if (matchedItem) {
-                return {
-                  ...poItem,
-                  remainingQuantity: poItem.quantity - matchedItem.grnQuantity
-                };
-              } else {
-                return {
-                  ...poItem,
-                  remainingQuantity: poItem.quantity
-                };
-              }
-            }).filter(item => item.remainingQuantity !== 0);
-          }
-          else {
-            finalPoItems = result.data.items.map(item => {
-              return {
-                ...item,
-                remainingQuantity: item.quantity
-              };
-            });
-          }
-          setArticles(finalPoItems);
-        } else {
-          Toast.show({
-            type: 'customError',
-            text1: result.message,
-          });
-          if (result.message.trim() === 'MIS Logged Off the PC where BAPI is Hosted') {
-            //log user activity
-            await createActivity(user._id, 'error', result.message.trim());
-          }
-        }
-      })
-      .catch(error => {
+      body: JSON.stringify({ po }),
+    };
+    const shelvingFetch = fetch(API_URL + `api/product-shelving?filterBy=po&value=${po}&pageSize=500`, getOptions);
+    const poFetch = fetch(API_URL + 'bapi/po/display', postOptions);
+    try {
+      // Fetch data from both APIs simultaneously
+      const [shelvingResponse, poResponse] = await Promise.all([shelvingFetch, poFetch]);
+
+      // Check if both fetch requests were successful
+      if (!shelvingResponse.ok || !poResponse.ok) {
         Toast.show({
           type: 'customError',
-          text1: error.message,
+          text1: "Failed to fetch data from APIs",
         });
+      }
+
+      // Parse the JSON data from the responses
+      const shelvingData = await shelvingResponse.json();
+      const poData = await poResponse.json();
+
+      const poItem = poData.data.items[0];
+      if (poItem.receivingPlant !== user.site) {
+        Toast.show({
+          type: 'customError',
+          text1: 'Not authorized to receive PO',
+        });
+        return;
+      }
+
+      let shelvingItems = shelvingData.items;
+      // console.log('shelving items', JSON.stringify(shelvingItems));
+      if (shelvingItems.length > 0) {
+        shelvingItems = shelvingItems.map(item => {
+          if (item.inShelf.length > 0) {
+            return {
+              ...item,
+              receivedQuantity: item.receivedQuantity - item.inShelf.reduce((acc, item) => acc + item.quantity, 0)
+            }
+          } else {
+            return {
+              ...item,
+              receivedQuantity: item.receivedQuantity
+            }
+          }
+        });
+      }
+
+      let poItems = poData.data.items;
+      const historyItems = poData.data.historyTotal;
+
+      if (historyItems.length > 0) {
+        poItems = poItems.map(poItem => {
+          const matchedItem = historyItems.find(
+            historyItem => historyItem.material === poItem.material
+          );
+          if (matchedItem) {
+            return {
+              ...poItem,
+              remainingQuantity: poItem.quantity - matchedItem.grnQuantity
+            };
+          } else {
+            return {
+              ...poItem,
+              remainingQuantity: poItem.quantity
+            };
+          }
+        }).filter(item => item.remainingQuantity !== 0);
+      }
+      else {
+        poItems = poItems.map(item => {
+          return {
+            ...item,
+            remainingQuantity: item.quantity
+          };
+        });
+      }
+
+      let adjustedArticles = poItems.map(poItem => {
+        const matchedItem = shelvingItems.find(
+          shItem => shItem.code === poItem.material
+        );
+        if (matchedItem) {
+          return {
+            ...poItem,
+            remainingQuantity: poItem.quantity - matchedItem.receivedQuantity
+          };
+        } else {
+          return {
+            ...poItem,
+            remainingQuantity: poItem.quantity
+          };
+        }
+      }).filter(item => item.remainingQuantity !== 0);
+      setArticles(adjustedArticles);
+    } catch (error) {
+      Toast.show({
+        type: 'customError',
+        text1: error.message,
       });
+    }
   };
 
   const getPoInfo = async () => {
@@ -256,8 +309,35 @@ const PurchaseOrder = ({ navigation, route }) => {
 
   if (grnItems) {
     remainingGrnItems = grnItems.filter(grnItem => grnItem.po !== po);
-    GrnByPo = grnItems.filter(grnItem => grnItem.po === po);
+    grnPostItems = grnItems.filter(grnItem => grnItem.po === po);
   }
+
+  // console.log('grnPostItems', grnPostItems);
+
+  // const demoGrnItems = [
+  //   { material: 1, netPrice: 22.5, quantity: 10 },
+  //   { material: 2, netPrice: 15, quantity: 12 },
+  //   { material: 3, netPrice: 54, quantity: 15 },
+  //   { material: 4, netPrice: 22.5, quantity: 10 },
+  //   { material: 5, netPrice: 15, quantity: 12 },
+  //   { material: 6, netPrice: 54, quantity: 15 },
+  //   { material: 7, netPrice: 22.5, quantity: 10 },
+  //   { material: 8, netPrice: 15, quantity: 12 },
+  //   { material: 9, netPrice: 54, quantity: 15 },
+  //   { material: 10, netPrice: 22.5, quantity: 10 },
+  //   { material: 11, netPrice: 15, quantity: 12 },
+  //   { material: 12, netPrice: 54, quantity: 15 },
+  // ];
+
+  grnSummery = grnPostItems.reduce(
+    (acc, curr, i) => {
+      acc.totalItems = i + 1;
+      acc.totalPrice += curr.quantity * curr.netPrice;
+      return acc;
+    },
+    { totalItems: 0, totalPrice: 0 }
+  );
+
 
   const generateGRN = async (grnList) => {
     setDialogVisible(false);
@@ -378,7 +458,7 @@ const PurchaseOrder = ({ navigation, route }) => {
             )}
 
           </View>
-          {Boolean(GrnByPo.length) && (
+          {Boolean(grnPostItems.length) && (
             <View className="button">
               {isButtonLoading ? <ButtonLoading styles='bg-theme rounded-md p-5' /> :
                 <ButtonLg
@@ -395,33 +475,47 @@ const PurchaseOrder = ({ navigation, route }) => {
         modalHeader="Review GRN"
         onPress={() => setGrnModal(false)}
       >
-        <View className="content">
+        <View className="content h-auto max-h-[85%]">
           <View className="grn-list mt-3 pb-3">
-            {GrnByPo.length > 0 ? (
+            {grnPostItems.length > 0 ? (
               <>
                 <View className="bg-th flex-row items-center justify-between p-2">
-                  <Text className="text-white">Code</Text>
+                  <Text className="text-white">Article Code</Text>
+                  <Text className="text-white">Unit Price(৳)</Text>
                   <Text className="text-white">Quantity</Text>
+                  <Text className="text-white">Total Price(৳)</Text>
                 </View>
-                <ScrollView>
-                  {GrnByPo.map((item) => (
-                    <View className="bg-gray-100 flex-row items-center justify-between p-2.5" key={item.material}>
+                <ScrollView className="max-h-full">
+                  {grnPostItems.map((item) => (
+                    <View className="bg-gray-100 flex-row items-center justify-between mt-1 p-2.5" key={item.material}>
                       <Text className="text-sh">{item.material}</Text>
+                      <Text className="text-sh">{item.netPrice}</Text>
                       <Text className="text-sh">{item.quantity}</Text>
+                      <Text className="text-sh">{item.netPrice * item.quantity}</Text>
                     </View>
                   ))}
                 </ScrollView>
+                <View className="flex-row items-center justify-between mt-2 px-2">
+                  <View className="flex-row items-center justify-between mt-2">
+                    <Text className="text-black font-bold">Total Items:</Text>
+                    <Text className="text-black ml-1">{grnSummery.totalItems}</Text>
+                  </View>
+                  <View className="flex-row items-center justify-between mt-2">
+                    <Text className="text-black font-bold">Total Price:</Text>
+                    <Text className="text-black ml-1">{grnSummery.totalPrice}</Text>
+                  </View>
+                </View>
+                <View className="button w-1/3 mx-auto mt-5">
+                  <TouchableWithoutFeedback onPress={() => setDialogVisible(true)}>
+                    <Text className="bg-blue-600 text-white text-lg text-center rounded p-2 capitalize">confirm</Text>
+                  </TouchableWithoutFeedback>
+                </View>
               </>
             ) : (
               <View className="outlet">
                 <Text className="text-black text-center">No items ready for GRN</Text>
               </View>
             )}
-          </View>
-          <View className="button w-1/3 mx-auto">
-            <TouchableWithoutFeedback onPress={() => setDialogVisible(true)}>
-              <Text className="bg-blue-600 text-white text-lg text-center rounded p-2 capitalize">confirm</Text>
-            </TouchableWithoutFeedback>
           </View>
         </View>
       </Modal>
@@ -430,7 +524,7 @@ const PurchaseOrder = ({ navigation, route }) => {
         modalHeader="Are you sure?"
         modalSubHeader="GRN will be generated"
         onClose={() => setDialogVisible(false)}
-        onSubmit={() => generateGRN(GrnByPo)}
+        onSubmit={() => generateGRN(grnPostItems)}
         leftButtonText="cancel"
         rightButtonText="proceed"
       />

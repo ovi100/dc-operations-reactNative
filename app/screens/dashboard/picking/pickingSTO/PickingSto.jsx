@@ -20,7 +20,6 @@ import { adjustStoQuantity, mergeInventory, updateStoItems, updateStoTracking } 
 const PickingSto = ({ navigation, route }) => {
   const { sto, picker, pickerId, packer, packerId } = route.params;
   const [isLoading, setIsLoading] = useState(false);
-  // const [serverMessage, setServerMessage] = useState("");
   const [pressMode, setPressMode] = useState(false);
   const [barcode, setBarcode] = useState('');
   const [user, setUser] = useState({});
@@ -29,7 +28,7 @@ const PickingSto = ({ navigation, route }) => {
   const API_URL = 'https://shwapnooperation.onrender.com/';
   const { startScan, stopScan } = SunmiScanner;
   const { StoInfo } = useAppContext();
-  const { addToStoInfo, stoInfo, setStoInfo, stoItems, setStoItems, setIsUpdatingSto } = StoInfo;
+  const { stoInfo, stoItems } = StoInfo;
   let remainingStoInfo = [], remainingStoItems = [], pickedSto = [], stoTrackInfo = {};
 
   useEffect(() => {
@@ -54,99 +53,73 @@ const PickingSto = ({ navigation, route }) => {
   }, [navigation.isFocused()]);
 
   const getStoDetails = async () => {
+    const getOptions = {
+      method: 'GET',
+      headers: {
+        authorization: token,
+      }
+    };
+    const postOptions = {
+      method: 'POST',
+      headers: {
+        authorization: token,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ sto }),
+    };
+    const fetchInventory = fetch(API_URL + `api/inventory?filterBy=site&value=${user.site}&pageSize=500`, getOptions);
+    const fetchArticleTracking = fetch(API_URL + `api/article-tracking?filterBy=sto&value=${sto}&pageSize=500`, getOptions);
+    const fetchSto = fetch(API_URL + 'bapi/sto/display', postOptions);
+
     try {
-      await fetch(API_URL + 'bapi/sto/display', {
-        method: 'POST',
-        headers: {
-          authorization: token,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ sto }),
-      })
-        .then(response => response.json())
-        .then(async stoDetails => {
-          if (stoDetails.status) {
-            try {
-              await fetch(API_URL + `api/inventory?filterBy=site&value=${user.site}&pageSize=500`, {
-                method: 'GET',
-                headers: {
-                  authorization: token,
-                  'Content-Type': 'application/json',
-                }
-              })
-                .then(response => response.json())
-                .then(async inventoryData => {
-                  if (inventoryData.status) {
-                    try {
-                      await fetch(API_URL + `api/article-tracking?filterBy=sto&value=${sto}&pageSize=500`, {
-                        method: 'GET',
-                        headers: {
-                          authorization: token,
-                          'Content-Type': 'application/json',
-                        }
-                      })
-                        .then(response => response.json())
-                        .then(articleTrackingData => {
-                          if (articleTrackingData.status) {
-                            const inventoryItems = mergeInventory(inventoryData.items);
-                            const stoItems = stoDetails.data.items;
-                            const stoMergedData = updateStoItems(stoItems, inventoryItems);
-                            const articleTrackingItems = articleTrackingData.items;
-                            const adjustStoItemsQuantity = adjustStoQuantity(stoMergedData, articleTrackingItems);
-                            setArticles(adjustStoItemsQuantity);
-                          } else {
-                            const inventoryItems = mergeInventory(inventoryData.items);
-                            const stoItems = stoDetails.data.items;
-                            const updateStdData = updateStoItems(stoItems, inventoryItems);
-                            const stoMergedData = updateStdData.map(updateStoItem => {
-                              return { ...updateStoItem, remainingQuantity: updateStoItem.quantity }
-                            }).filter(item => item.remainingQuantity !== 0);
-                            setArticles(stoMergedData);
-                          }
-                        })
-                        .catch(error => {
-                          Toast.show({
-                            type: 'customError',
-                            text1: error.message,
-                          });
-                        });
-                    } catch (error) {
-                      Toast.show({
-                        type: 'customError',
-                        text1: error.message,
-                      });
-                    }
-                  } else {
-                    const stoItems = stoDetails.data.items;
-                    setArticles(stoItems);
-                  }
-                })
-                .catch(error => {
-                  Toast.show({
-                    type: 'customError',
-                    text1: error.message,
-                  });
-                });
-            } catch (error) {
-              Toast.show({
-                type: 'customError',
-                text1: error.message,
-              });
-            }
-            addToStoInfo({ sto, sku: stoDetails.data.items.length });
-          } else {
-            Toast.show({
-              type: 'customError',
-              text1: stoDetails.message,
-            });
-          }
-        })
-        .catch(error => {
-          Toast.show({
-            type: 'customError',
-            text1: error.message,
-          });
+      const [inventoryResponse, articleTrackingResponse, stoResponse] = await Promise.all([fetchInventory, fetchArticleTracking, fetchSto]);
+
+      if (!inventoryResponse.ok) {
+        Toast.show({
+          type: 'customError',
+          text1: "Failed to fetch inventory data",
         });
+      } else if (!articleTrackingResponse.ok) {
+        Toast.show({
+          type: 'customError',
+          text1: "Failed to fetch article tracking data",
+        });
+      } else {
+        Toast.show({
+          type: 'customError',
+          text1: "Failed to fetch sto data",
+        });
+      }
+
+      // Parse the JSON data from the responses
+      const inventoryData = await inventoryResponse.json();
+      const articleTrackingData = await articleTrackingResponse.json();
+      const stoData = await stoResponse.json();
+
+      let inventoryItems = inventoryData.items;
+      let articleTrackingItems = articleTrackingData.items;
+      let stoItems = stoData.data.items;
+      let finalStoItems = [];
+
+      if (inventoryItems.length > 0 && articleTrackingItems.length > 0 && stoItems.length > 0) {
+        inventoryItems = mergeInventory(inventoryItems);
+        const stoMergedData = updateStoItems(stoItems, inventoryItems);
+        finalStoItems = adjustStoQuantity(stoMergedData, articleTrackingItems);
+      } else if (inventoryItems.length > 0 && stoItems.length > 0) {
+        inventoryItems = mergeInventory(inventoryItems);
+        const stoMergedData = updateStoItems(stoItems, inventoryItems);
+        finalStoItems = stoMergedData.map(stoItem => {
+          return { ...stoItem, remainingQuantity: stoItem.quantity }
+        }).filter(item => item.remainingQuantity !== 0);
+      } else {
+        finalStoItems = stoItems.map(stoItem => {
+          return {
+            ...stoItem,
+            remainingQuantity: stoItem.quantity
+          };
+        });
+      }
+      setArticles(finalStoItems);
     } catch (error) {
       Toast.show({
         type: 'customError',

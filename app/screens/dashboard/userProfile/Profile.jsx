@@ -146,7 +146,7 @@ const Profile = ({ navigation }) => {
                   selectedValue={selectedSite}
                   onValueChange={site => updateUser(site)}
                   style={{ color: 'black' }}>
-                  <Picker.Item label='Change site' value='' />
+                  <Picker.Item label={user.site} value='' />
                   {sites?.map((item, i) => (
                     <Picker.Item
                       label={item.code}
@@ -161,7 +161,7 @@ const Profile = ({ navigation }) => {
               <View className="site border-b border-gray-200 flex-row items-center py-4">
                 <Image className="w-5 h-5 mr-3" source={StoreIcon} />
                 <Text className="text-base text-gray-400 font-medium uppercase">
-                  {sites[0]?.code}
+                  {user.site}
                 </Text>
               </View>
             )}

@@ -366,7 +366,6 @@ const DeliveryPlan = ({ navigation }) => {
                         {th}
                       </Text>
                     )}
-
                   </>
                 ))}
               </View>
@@ -420,8 +419,8 @@ const DeliveryPlan = ({ navigation }) => {
           <View className="outlet-list flex-row border-b border-gray-300 mt-3 pb-3">
             {modalText.length > 0 ? (
               <>
-                {chosenList.map((outlet, i) => (
-                  <View className="outlet bg-gray-300 rounded mr-1 px-2 py-1" key={i}>
+                {chosenList.map((outlet) => (
+                  <View className="outlet bg-gray-300 rounded mr-1 px-2 py-1" key={outlet}>
                     <Text className="text-sh">{outlet}</Text>
                   </View>
                 ))}

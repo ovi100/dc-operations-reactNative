@@ -15,6 +15,7 @@ import Dialog from '../../../../../components/Dialog';
 import Modal from '../../../../../components/Modal';
 import { ButtonLg, ButtonLoading } from '../../../../../components/buttons';
 import useAppContext from '../../../../../hooks/useAppContext';
+import useBackHandler from '../../../../../hooks/useBackHandler';
 import { getStorage, setStorage } from '../../../../../hooks/useStorage';
 import SunmiScanner from '../../../../../utils/sunmi/scanner';
 
@@ -34,14 +35,14 @@ const OutletPoStoDetails = ({ navigation, route }) => {
   const [articles, setArticles] = useState([]);
   const [reportArticle, setReportArticle] = useState({});
   const [reportText, setReportText] = useState('');
-  const tableHeader = ['Article Code', 'Quantity', 'Action'];
+  const tableHeader = po ? ['Article Code', 'Article Name', 'Quantity'] : ['Article Code', 'Quantity', 'Action'];
   const API_URL = 'https://shwapnooperation.onrender.com/';
   const { GRNInfo } = useAppContext();
   const { grnItems, setGrnItems, setIsUpdatingGrn } = GRNInfo;
   let grnPostItems = [], remainingGrnItems = [], grnSummery = {};
 
   // Custom hook to navigate screen
-  // useBackHandler('OutletReceiving');
+  useBackHandler('OutletReceiving');
 
   useEffect(() => {
     const getAsyncStorage = async () => {
@@ -79,7 +80,7 @@ const OutletPoStoDetails = ({ navigation, route }) => {
       },
       body: JSON.stringify({ po }),
     };
-    const shelvingFetch = fetch(API_URL + `api/product-shelving?filterBy=sto&value=${sto}&pageSize=500`, getOptions);
+    const shelvingFetch = fetch(API_URL + `api/product-shelving?filterBy=po&value=${po}&pageSize=500`, getOptions);
     const poFetch = fetch(API_URL + 'bapi/po/display', postOptions);
     try {
       // Fetch data from both APIs simultaneously
@@ -289,7 +290,12 @@ const OutletPoStoDetails = ({ navigation, route }) => {
           tpnItem => tpnItem.material === dnItem.material
         );
 
-        if (matchedShItem) {
+        if (matchedShItem && matchedTpnItem) {
+          return {
+            ...dnItem,
+            remainingQuantity: dnItem.quantity - (matchedShItem.receivedQuantity + matchedTpnItem.tpnQuantity)
+          };
+        } else if (matchedShItem) {
           return {
             ...dnItem,
             remainingQuantity: dnItem.quantity - matchedShItem.receivedQuantity
@@ -344,7 +350,57 @@ const OutletPoStoDetails = ({ navigation, route }) => {
     setRefreshing(false);
   };
 
-  const renderItem = ({ item, index }) => (
+  const renderPoItem = ({ item, index }) => (
+    <>
+      {pressMode === 'true' ? (
+        <TouchableOpacity onPress={() => navigation.replace('OutletArticleDetails', item)}>
+          <View
+            key={index}
+            className="flex-row items-center border border-tb rounded-lg mt-2.5 p-4"
+          >
+            <Text
+              className="w-1/5 text-black"
+              numberOfLines={1}>
+              {item.material}
+            </Text>
+            <Text
+              className="w-3/5 h-9 leading-9 text-black text-center"
+              numberOfLines={2}>
+              {item.description}
+            </Text>
+            <Text
+              className="w-1/5 text-black text-center"
+              numberOfLines={1}>
+              {item.remainingQuantity}
+            </Text>
+          </View>
+        </TouchableOpacity>
+      ) : (
+        <View
+          key={index}
+          className="flex-row items-center border border-tb rounded-lg mt-2.5 p-4"
+        >
+          <Text
+            className="w-1/5 text-black text-left"
+            numberOfLines={1}>
+            {item.material}
+          </Text>
+          <Text
+            className="w-3/5 h-9 leading-9 text-black text-center"
+            numberOfLines={2}>
+            {item.description}
+          </Text>
+          <Text
+            className="w-1/5 text-black text-right"
+            numberOfLines={1}>
+            {item.remainingQuantity}
+          </Text>
+        </View>
+      )}
+    </>
+  );
+
+  const renderDnItem = ({ item, index }) => (
     <>
       {pressMode === 'true' ? (
         <View key={index} className="flex-row items-center border border-tb rounded-lg mt-2.5 p-4">
@@ -577,7 +633,7 @@ const OutletPoStoDetails = ({ navigation, route }) => {
             ) : (
               <FlatList
                 data={articles}
-                renderItem={renderItem}
+                renderItem={po ? renderPoItem : renderDnItem}
                 keyExtractor={item => item.material}
                 initialNumToRender={10}
                 refreshControl={
@@ -602,6 +658,16 @@ const OutletPoStoDetails = ({ navigation, route }) => {
               }
             </View>
           )}
+          {po && grnPostItems.length > 0 && (
+            <View className="button">
+              {isButtonLoading ? <ButtonLoading styles='bg-theme rounded-md p-5' /> :
+                <ButtonLg
+                  title="Generate GRN"
+                  onPress={() => setGrnModal(true)}
+                />
+              }
+            </View>
+          )}
         </View>
       </View>
       <Modal
@@ -614,18 +680,18 @@ const OutletPoStoDetails = ({ navigation, route }) => {
             {grnPostItems.length > 0 ? (
               <>
                 <View className="bg-th flex-row items-center justify-between p-2">
-                  <Text className="text-white">Article Code</Text>
-                  <Text className="text-white">Unit Price(৳)</Text>
-                  <Text className="text-white">Quantity</Text>
-                  <Text className="text-white">Total Price(৳)</Text>
+                  <Text className="text-white text-xs">Article Code</Text>
+                  <Text className="text-white text-xs">Unit Price(৳)</Text>
+                  <Text className="text-white text-xs">Quantity</Text>
+                  <Text className="text-white text-xs">Total Price(৳)</Text>
                 </View>
                 <ScrollView className="max-h-full">
                   {grnPostItems.map((item) => (
                     <View className="bg-gray-100 flex-row items-center justify-between mt-1 p-2.5" key={item.material}>
-                      <Text className="text-sh">{item.material}</Text>
-                      <Text className="text-sh">{item.netPrice}</Text>
-                      <Text className="text-sh">{item.quantity}</Text>
-                      <Text className="text-sh">{item.netPrice * item.quantity}</Text>
+                      <Text className="text-sh text-xs">{item.material}</Text>
+                      <Text className="text-sh text-xs">{item.netPrice}</Text>
+                      <Text className="text-sh text-xs">{item.quantity}</Text>
+                      <Text className="text-sh text-xs">{item.netPrice * item.quantity}</Text>
                     </View>
                   ))}
                 </ScrollView>
@@ -636,7 +702,7 @@ const OutletPoStoDetails = ({ navigation, route }) => {
                   </View>
                   <View className="flex-row items-center justify-between mt-2">
                     <Text className="text-black font-bold">Total Price:</Text>
-                    <Text className="text-black ml-1">{grnSummery.totalPrice}</Text>
+                    <Text className="text-black ml-1">{grnSummery.totalPrice.toLocaleString()}</Text>
                   </View>
                 </View>
                 <View className="button w-1/3 mx-auto mt-5">

@@ -38,7 +38,7 @@ const BinDetails = ({ navigation, route }) => {
     </View>
   );
 
-  const sortedBins = bins.sort((a, b) => b.quantity - a.quantity);
+  const sortedBins = bins?.sort((a, b) => b.quantity - a.quantity);
 
   if (barcode !== '') {
     const binItem = bins.find(item => item.bin === barcode);
@@ -73,7 +73,7 @@ const BinDetails = ({ navigation, route }) => {
         </View>
 
         <View className="content flex-1 justify-between py-5">
-          {bins.length > 0 ? (
+          {bins?.length > 0 ? (
             <View className="table h-full pb-2">
               <View className="flex-row justify-between bg-th text-center mb-2 py-2 px-4">
                 {tableHeader.map(th => (

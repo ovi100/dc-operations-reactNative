@@ -215,10 +215,15 @@ const Receiving = ({ navigation }) => {
       await getDnDetails(searchTerms);
       setSearch('');
       Keyboard.dismiss();
-    } else {
+    } else if (isPo) {
       await getPoDetails(searchTerms);
       setBarcode('');
       Keyboard.dismiss();
+    } else {
+      Toast.show({
+        type: 'customError',
+        text1: 'Enter PO or DN number',
+      });
     }
   };
 
@@ -286,7 +291,7 @@ const Receiving = ({ navigation }) => {
             <Text className="mt-4 text-gray-400 text-base text-center">Checking number</Text>
           </View>
         ) : (
-          <View>
+          <View className="relative -z-10">
             <Scan />
             <Text className="text-lg text-gray-400 text-center font-semibold">
               Scan a PO or DN barcode
@@ -294,7 +299,7 @@ const Receiving = ({ navigation }) => {
             <Text className="text-xl text-gray-400 text-center font-semibold my-3">
               OR
             </Text>
-            <Text className="text-lg text-gray-400 text-center font-semibold mb-5">
+            <Text className="text-lg text-gray-400 text-center font-semibold">
               Search by a PO or DN number
             </Text>
           </View>

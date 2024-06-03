@@ -13,15 +13,14 @@ import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../../components/CustomToast';
 import { ButtonLg, ButtonLoading } from '../../../../../components/buttons';
 import { BoxIcon, CameraIcon, DeleteIcon } from '../../../../../constant/icons';
-import useAppContext from '../../../../../hooks/useAppContext';
 import useBackHandler from '../../../../../hooks/useBackHandler';
 import { getStorage } from '../../../../../hooks/useStorage';
 
 
 const OutletArticleReport = ({ navigation, route }) => {
   const {
-    description, material, po, sto, dn, dnItem, quantity,
-    netPrice, remainingQuantity, receivingPlant, storageLocation, unit
+    description, material, po, sto, dn, dnItem, quantity, netPrice,
+    remainingQuantity, receivingPlant, storageLocation, unit
   } = route.params;
   const types = [
     "Report Types",
@@ -50,8 +49,6 @@ const OutletArticleReport = ({ navigation, route }) => {
   const [token, setToken] = useState('');
   const [selectedType, setSelectedType] = useState(types[0]);
   const [selectedReason, setSelectedReason] = useState(reasons[0]);
-  const { TPNInfo } = useAppContext();
-  const { addToTPN } = TPNInfo;
   const API_URL = 'https://shwapnooperation.onrender.com/api/tpn';
 
   // Custom hook to navigate screen
@@ -99,7 +96,7 @@ const OutletArticleReport = ({ navigation, route }) => {
 
   const uploadImageToFirebase = async uri => {
     let filename = uri.substring(uri.lastIndexOf('/') + 1);
-    filename = filename.replace(filename, `${user.site}(${new Date().toLocaleDateString('en-UK').replaceAll('/', '-')})-${po ? po : sto}-${material}-${selectedReason.toLowerCase()}.jpg`);
+    filename = filename.replace(filename, `${user.site}(${new Date().toLocaleDateString('en-UK').replaceAll('/', '-')})-${po ? po : sto}-${material}-${selectedReason.toLowerCase()}-${Date.now()}.jpg`);
     const storageRef = storage().ref(`damage images/${filename}`);
 
     const task = storageRef.putFile(uri);
@@ -125,105 +122,117 @@ const OutletArticleReport = ({ navigation, route }) => {
   };
 
   const submitReport = async () => {
-    if (selectedType === "Report Types") {
+    if (!newQuantity) {
+      Toast.show({
+        type: 'customError',
+        text1: 'Enter Quantity',
+      });
+    } else if (newQuantity <= 0) {
+      Toast.show({
+        type: 'customWarn',
+        text1: 'Quantity must be greater than zero',
+      });
+    } else if (newQuantity > remainingQuantity) {
+      Toast.show({
+        type: 'customWarn',
+        text1: 'Quantity exceed',
+      });
+    } else if (selectedType === "Report Types") {
       Toast.show({
         type: 'customError',
         text1: 'please select a report type',
       });
-      return;
-    }
-    if (selectedType === "Damage" && selectedReason === "Damage Types") {
+    } else if (selectedType === "Damage" && selectedReason === "Damage Types") {
       Toast.show({
         type: 'customError',
         text1: 'please select a damage type',
       });
-      return;
-    }
-    if (selectedType === "Damage" && !image) {
+    } else if (selectedType === "Damage" && !image) {
       Toast.show({
         type: 'customError',
         text1: 'please upload an image',
       });
-      return;
-    }
-    setIsButtonLoading(true);
-    // for sto/dn -> TPN
-    let tpnItem = {
-      movementType: '101',
-      movementIndicator: 'B',
-      storageLocation,
-      po: sto,
-      poItem: Number(dnItem).toString(),
-      dn,
-      dnItem: Number(dnItem).toString(),
-      material: material,
-      plant: receivingPlant,
-      quantity: Number(newQuantity),
-      netPrice,
-      uom: unit,
-      uomIso: unit,
-      documentQuantity: quantity,
-      tpnQuantity: Number(newQuantity),
-    };
+    } else {
 
-    let postData = {
-      po: sto,
-      dn,
-      createdBy: user._id,
-      reportType: selectedType.toLowerCase(),
-      tpnData: tpnItem
-    };
+      setIsButtonLoading(true);
+      // for sto/dn -> TPN
+      let tpnItem = {
+        movementType: '101',
+        movementIndicator: 'B',
+        storageLocation,
+        po: sto,
+        poItem: Number(dnItem).toString(),
+        dn,
+        dnItem: Number(dnItem).toString(),
+        material: material,
+        plant: receivingPlant,
+        quantity: Number(newQuantity),
+        netPrice,
+        uom: unit,
+        uomIso: unit,
+        documentQuantity: quantity,
+        tpnQuantity: Number(newQuantity),
+      };
 
-    if (image) {
-      const imageLink = await uploadImageToFirebase(image);
-      postData.damageType = selectedReason;
-      postData.image = imageLink;
-    }
+      let postData = {
+        po: sto,
+        dn,
+        createdBy: user._id,
+        reportType: selectedType.toLowerCase(),
+        tpnData: tpnItem
+      };
 
-    // console.log('Post data', postData);
+      if (image) {
+        const imageLink = await uploadImageToFirebase(image);
+        postData.damageType = selectedReason.toLowerCase();
+        postData.image = imageLink;
+      }
 
-    try {
-      await fetch(API_URL, {
-        method: 'POST',
-        headers: {
-          authorization: token,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(postData),
-      })
-        .then(response => response.json())
-        .then(result => {
-          // console.log('TPN response', result);
-          if (result.status) {
-            Toast.show({
-              type: 'customSuccess',
-              text1: result.message,
-            });
-            setTimeout(() => {
-              navigation.replace('OutletPoStoDetails', { po, dn, sto });
-            }, 1500);
-          } else {
+      // console.log('Post data', postData);
+
+      try {
+        await fetch(API_URL, {
+          method: 'POST',
+          headers: {
+            authorization: token,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(postData),
+        })
+          .then(response => response.json())
+          .then(result => {
+            // console.log('TPN response', result);
+            if (result.status) {
+              Toast.show({
+                type: 'customSuccess',
+                text1: result.message,
+              });
+              setTimeout(() => {
+                navigation.replace('OutletPoStoDetails', { po, dn, sto });
+              }, 1500);
+            } else {
+              Toast.show({
+                type: 'customError',
+                text1: result.message,
+              });
+            }
+          })
+          .catch(error => {
             Toast.show({
               type: 'customError',
-              text1: result.message,
+              text1: error.message,
             });
-          }
-        })
-        .catch(error => {
-          Toast.show({
-            type: 'customError',
-            text1: error.message,
           });
+      } catch (error) {
+        Toast.show({
+          type: 'customError',
+          text1: error.message,
         });
-    } catch (error) {
-      Toast.show({
-        type: 'customError',
-        text1: error.message,
-      });
-    } finally {
+      } finally {
+        setIsButtonLoading(false);
+      }
       setIsButtonLoading(false);
     }
-    setIsButtonLoading(false);
   };
 
   if (isLoading) {
@@ -291,7 +300,10 @@ const OutletArticleReport = ({ navigation, route }) => {
             <View className="types bg-white border border-solid border-gray-300 rounded mt-4">
               <Picker
                 selectedValue={selectedType}
-                onValueChange={type => setSelectedType(type)}
+                onValueChange={type => {
+                  setSelectedType(type);
+                  setSelectedReason(reasons[0]);
+                }}
                 style={{ color: 'black' }}>
                 {types?.map((item) => (
                   <Picker.Item
@@ -308,7 +320,10 @@ const OutletArticleReport = ({ navigation, route }) => {
               <View className="reasons bg-white border border-solid border-gray-300 rounded mt-4">
                 <Picker
                   selectedValue={selectedReason}
-                  onValueChange={reason => setSelectedReason(reason)}
+                  onValueChange={reason => {
+                    setSelectedReason(reason);
+                    removeImage();
+                  }}
                   style={{ color: 'black' }}>
                   {reasons?.map((item) => (
                     <Picker.Item

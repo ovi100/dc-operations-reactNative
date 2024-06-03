@@ -171,12 +171,12 @@ const Receiving = ({ navigation }) => {
         {pressMode === 'true' ? (
           <TouchableHighlight onPress={() => null}>
             <Text className="text-lg text-sh font-semibold capitalize">
-              receiving screen
+              receiving
             </Text>
           </TouchableHighlight>
         ) : (
           <Text className="text-lg text-sh font-semibold capitalize">
-            receiving screen
+            receiving
           </Text>
         )}
       </View>
@@ -217,7 +217,7 @@ const Receiving = ({ navigation }) => {
             <Text className="mt-4 text-gray-400 text-base text-center">Checking po number</Text>
           </View>
         ) : (
-          <View>
+          <View className="relative -z-10">
             <Scan />
             <Text className="text-lg text-gray-400 text-center font-semibold">
               Scan a PO barcode

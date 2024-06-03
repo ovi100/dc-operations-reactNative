@@ -312,23 +312,6 @@ const PurchaseOrder = ({ navigation, route }) => {
     grnPostItems = grnItems.filter(grnItem => grnItem.po === po);
   }
 
-  // console.log('grnPostItems', grnPostItems);
-
-  // const demoGrnItems = [
-  //   { material: 1, netPrice: 22.5, quantity: 10 },
-  //   { material: 2, netPrice: 15, quantity: 12 },
-  //   { material: 3, netPrice: 54, quantity: 15 },
-  //   { material: 4, netPrice: 22.5, quantity: 10 },
-  //   { material: 5, netPrice: 15, quantity: 12 },
-  //   { material: 6, netPrice: 54, quantity: 15 },
-  //   { material: 7, netPrice: 22.5, quantity: 10 },
-  //   { material: 8, netPrice: 15, quantity: 12 },
-  //   { material: 9, netPrice: 54, quantity: 15 },
-  //   { material: 10, netPrice: 22.5, quantity: 10 },
-  //   { material: 11, netPrice: 15, quantity: 12 },
-  //   { material: 12, netPrice: 54, quantity: 15 },
-  // ];
-
   grnSummery = grnPostItems.reduce(
     (acc, curr, i) => {
       acc.totalItems = i + 1;
@@ -480,29 +463,29 @@ const PurchaseOrder = ({ navigation, route }) => {
             {grnPostItems.length > 0 ? (
               <>
                 <View className="bg-th flex-row items-center justify-between p-2">
-                  <Text className="text-white">Article Code</Text>
-                  <Text className="text-white">Unit Price(৳)</Text>
-                  <Text className="text-white">Quantity</Text>
-                  <Text className="text-white">Total Price(৳)</Text>
+                  <Text className="text-white text-xs">Article Code</Text>
+                  <Text className="text-white text-xs">Unit Price(৳)</Text>
+                  <Text className="text-white text-xs">Quantity</Text>
+                  <Text className="text-white text-xs">Total Price(৳)</Text>
                 </View>
                 <ScrollView className="max-h-full">
                   {grnPostItems.map((item) => (
                     <View className="bg-gray-100 flex-row items-center justify-between mt-1 p-2.5" key={item.material}>
-                      <Text className="text-sh">{item.material}</Text>
-                      <Text className="text-sh">{item.netPrice}</Text>
-                      <Text className="text-sh">{item.quantity}</Text>
-                      <Text className="text-sh">{item.netPrice * item.quantity}</Text>
+                      <Text className="text-sh text-xs">{item.material}</Text>
+                      <Text className="text-sh text-xs">{item.netPrice}</Text>
+                      <Text className="text-sh text-xs">{item.quantity}</Text>
+                      <Text className="text-sh text-xs">{item.netPrice * item.quantity}</Text>
                     </View>
                   ))}
                 </ScrollView>
                 <View className="flex-row items-center justify-between mt-2 px-2">
                   <View className="flex-row items-center justify-between mt-2">
-                    <Text className="text-black font-bold">Total Items:</Text>
-                    <Text className="text-black ml-1">{grnSummery.totalItems}</Text>
+                    <Text className="text-black font-bold text-sm">Total Items:</Text>
+                    <Text className="text-black ml-1 text-sm">{grnSummery.totalItems}</Text>
                   </View>
                   <View className="flex-row items-center justify-between mt-2">
-                    <Text className="text-black font-bold">Total Price:</Text>
-                    <Text className="text-black ml-1">{grnSummery.totalPrice}</Text>
+                    <Text className="text-black font-bold text-sm">Total Price:</Text>
+                    <Text className="text-black ml-1 text-sm">{grnSummery.totalPrice.toLocaleString()}</Text>
                   </View>
                 </View>
                 <View className="button w-1/3 mx-auto mt-5">

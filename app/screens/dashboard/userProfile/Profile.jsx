@@ -19,6 +19,7 @@ import {
 } from '../../../../constant/icons';
 import useAppContext from '../../../../hooks/useAppContext';
 import { getStorage, setStorage } from '../../../../hooks/useStorage';
+import { version } from '../../../../package.json';
 import styles from '../../../../styles/button';
 
 const Profile = ({ navigation }) => {
@@ -174,6 +175,14 @@ const Profile = ({ navigation }) => {
                 textStyles={styles.lgText}
               />
             </View>
+          </View>
+          <View className="version-info w-full mt-5">
+            <Text className="text-gray-400 text-center font-bold capitalize">
+              shwapno operations app
+            </Text>
+            <Text className="text-gray-400 text-center font-bold capitalize">
+              v {version}
+            </Text>
           </View>
         </View>
       </ScrollView>

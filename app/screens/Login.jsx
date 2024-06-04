@@ -9,6 +9,7 @@ import {
   TouchableWithoutFeedback,
   View
 } from 'react-native';
+import { TouchableOpacity } from 'react-native-gesture-handler';
 import CustomToast from '../../components/CustomToast';
 import { ButtonLogin } from '../../components/buttons';
 import {
@@ -23,21 +24,31 @@ import { validateInput } from '../../utils';
 const Login = ({ navigation }) => {
   const { authInfo } = useAppContext();
   const { login } = authInfo;
-  const [inputType, setInputType] = useState(false);
-  const [email, setEmail] = useState('');
-  const [emailError, setEmailError] = useState(null);
+  const [toggleInput, setToggleInput] = useState(false);
+  const [userId, setUserId] = useState('');
+  const [userIdError, setUserIdError] = useState(null);
   const [password, setPassword] = useState('');
   const [passwordError, setPasswordError] = useState(null);
 
   const toggleType = () => {
-    setInputType(current => !current);
+    setToggleInput(current => !current);
   };
 
   const handleLogin = () => {
-    setEmailError(validateInput('email', email));
-    setPasswordError(validateInput('password', password));
-    if (email && password) {
-      login(email, password);
+    if (!userId) {
+      Toast.show({
+        type: 'customError',
+        text1: 'please enter an email or a staff id',
+      });
+      return;
+    } else if (!password) {
+      Toast.show({
+        type: 'customError',
+        text1: 'please enter a password',
+      });
+      return;
+    } else {
+      login(userId, password);
     }
   };
 
@@ -54,22 +65,21 @@ const Login = ({ navigation }) => {
         </View>
 
         <View className="login-form px-5">
-          <View className="email relative mb-4">
+          <View className="email-user-id relative mb-4">
             <TextInput
-              className={`border ${emailError ? 'border-red-500' : 'border-[#bcbcbc]'
+              className={`border ${userIdError ? 'border-red-500' : 'border-[#bcbcbc]'
                 } h-[60px] text-[#a9a9a9] rounded-md px-4`}
-              placeholder="Email"
+              placeholder="Enter email or user id"
               placeholderTextColor='#bcbcbc'
               selectionColor="#bcbcbc"
-              keyboardType="email-address"
               onChangeText={value => {
-                setEmail(value);
-                setEmailError(validateInput('email', value));
+                setUserId(value);
+                setUserIdError(validateInput(/@/.test(value) ? 'email' : 'staff id', value));
               }}
             />
-            {emailError && (
+            {userIdError && (
               <Text className="absolute right-2 top-3 text-red-500 mt-1">
-                {emailError}
+                {userIdError}
               </Text>
             )}
           </View>
@@ -81,7 +91,7 @@ const Login = ({ navigation }) => {
               placeholder="Password"
               placeholderTextColor='#bcbcbc'
               selectionColor="#bcbcbc"
-              secureTextEntry={!inputType}
+              secureTextEntry={!toggleInput}
               onChangeText={value => {
                 setPassword(value);
                 setPasswordError(validateInput('password', value));
@@ -91,7 +101,7 @@ const Login = ({ navigation }) => {
               <TouchableWithoutFeedback onPress={toggleType}>
                 <Image
                   className="w-6 h-6 absolute right-3 top-4"
-                  source={inputType ? EyeInvisibleIcon : EyeVisibleIcon}
+                  source={toggleInput ? EyeInvisibleIcon : EyeVisibleIcon}
                 />
               </TouchableWithoutFeedback>
             )}
@@ -108,12 +118,12 @@ const Login = ({ navigation }) => {
               title="Login"
               buttonStyles={styles.buttonLogin}
               textStyles={styles.lgText}
-              onPress={emailError || passwordError ? null : handleLogin}
+              onPress={userIdError || passwordError ? null : handleLogin}
             />
             <View className="mt-5">
-              <TouchableWithoutFeedback onPress={() => navigation.push('Register')}>
+              <TouchableOpacity onPress={() => navigation.push('Register')}>
                 <Text className="text-center text-blue-600 text-lg">Don't have account?</Text>
-              </TouchableWithoutFeedback>
+              </TouchableOpacity>
             </View>
           </View>
         </View>

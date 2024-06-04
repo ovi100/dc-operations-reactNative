@@ -87,7 +87,7 @@ const PurchaseOrder = ({ navigation, route }) => {
       const [shelvingResponse, poResponse] = await Promise.all([shelvingFetch, poFetch]);
 
       // Check if both fetch requests were successful
-      if (!shelvingResponse.ok || !poResponse.ok) {
+      if (!shelvingResponse.ok && !poResponse.ok) {
         Toast.show({
           type: 'customError',
           text1: "Failed to fetch data from APIs",
@@ -95,7 +95,7 @@ const PurchaseOrder = ({ navigation, route }) => {
       }
 
       // Parse the JSON data from the responses
-      const shelvingData = await shelvingResponse.json();
+      // const shelvingData = await shelvingResponse.json();
       const poData = await poResponse.json();
 
       const poItem = poData.data.items[0];
@@ -107,26 +107,27 @@ const PurchaseOrder = ({ navigation, route }) => {
         return;
       }
 
-      let shelvingItems = shelvingData.items;
+      // let shelvingItems = shelvingData.items;
       // console.log('shelving items', JSON.stringify(shelvingItems));
-      if (shelvingItems.length > 0) {
-        shelvingItems = shelvingItems.map(item => {
-          if (item.inShelf.length > 0) {
-            return {
-              ...item,
-              receivedQuantity: item.receivedQuantity - item.inShelf.reduce((acc, item) => acc + item.quantity, 0)
-            }
-          } else {
-            return {
-              ...item,
-              receivedQuantity: item.receivedQuantity
-            }
-          }
-        });
-      }
+      // if (shelvingItems.length > 0) {
+      //   shelvingItems = shelvingItems.map(item => {
+      //     if (item.inShelf.length > 0) {
+      //       return {
+      //         ...item,
+      //         receivedQuantity: item.receivedQuantity - item.inShelf.reduce((acc, item) => acc + item.quantity, 0)
+      //       }
+      //     } else {
+      //       return {
+      //         ...item,
+      //         receivedQuantity: item.receivedQuantity
+      //       }
+      //     }
+      //   });
+      // }
 
       let poItems = poData.data.items;
       const historyItems = poData.data.historyTotal;
+      // console.log(historyItems);
 
       if (historyItems.length > 0) {
         poItems = poItems.map(poItem => {
@@ -144,7 +145,7 @@ const PurchaseOrder = ({ navigation, route }) => {
               remainingQuantity: poItem.quantity
             };
           }
-        }).filter(item => item.remainingQuantity !== 0);
+        });
       }
       else {
         poItems = poItems.map(item => {
@@ -155,23 +156,25 @@ const PurchaseOrder = ({ navigation, route }) => {
         });
       }
 
-      let adjustedArticles = poItems.map(poItem => {
-        const matchedItem = shelvingItems.find(
-          shItem => shItem.code === poItem.material
-        );
-        if (matchedItem) {
-          return {
-            ...poItem,
-            remainingQuantity: poItem.quantity - matchedItem.receivedQuantity
-          };
-        } else {
-          return {
-            ...poItem,
-            remainingQuantity: poItem.quantity
-          };
-        }
-      }).filter(item => item.remainingQuantity !== 0);
-      setArticles(adjustedArticles);
+      poItems = poItems.filter(item => item.remainingQuantity !== 0);
+
+      // let adjustedArticles = poItems.map(poItem => {
+      //   const matchedItem = shelvingItems.find(
+      //     shItem => shItem.code === poItem.material
+      //   );
+      //   if (matchedItem) {
+      //     return {
+      //       ...poItem,
+      //       remainingQuantity: poItem.quantity - matchedItem.receivedQuantity
+      //     };
+      //   } else {
+      //     return {
+      //       ...poItem,
+      //       remainingQuantity: poItem.quantity
+      //     };
+      //   }
+      // }).filter(item => item.remainingQuantity !== 0);
+      setArticles(poItems);
     } catch (error) {
       Toast.show({
         type: 'customError',
@@ -411,7 +414,7 @@ const PurchaseOrder = ({ navigation, route }) => {
           )}
         </View>
         <View className="content flex-1 justify-between pb-2">
-          <View className="table">
+          <View className="table h-[90%]">
             <View className="table-header flex-row justify-between bg-th text-center mb-2 p-2">
               {tableHeader.map(th => (
                 <Text className="text-white text-center font-bold" key={th}>

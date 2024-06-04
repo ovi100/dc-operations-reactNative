@@ -25,7 +25,15 @@ import useAppContext from '../../../hooks/useAppContext';
 const Home = ({navigation}) => {
   const {authInfo} = useAppContext();
   const {user, logout} = authInfo;
+  // const [user, setUser] = useState({});
   let filteredLinks;
+
+  // useEffect(() => {
+  //   const getAsyncStorage = async () => {
+  //     await getStorage('user', setUser, 'object');
+  //   };
+  //   getAsyncStorage();
+  // }, []);
 
   const navLinks = [
     {
@@ -36,7 +44,7 @@ const Home = ({navigation}) => {
       access: 'receiving-access',
     },
     {
-      name: 'Outlet Receiving',
+      name: 'Receiving',
       icon: ReceivingIcon,
       screen: 'OutletReceiving',
       role: 'receiver',
@@ -99,6 +107,8 @@ const Home = ({navigation}) => {
     //   access: 'return-access',
     // },
   ];
+
+  // console.log(user);
 
   if (user?.hasPermission.includes('*')) {
     filteredLinks = navLinks;

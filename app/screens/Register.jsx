@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import {
   ActivityIndicator, Image, KeyboardAvoidingView,
-  Text, TextInput, TouchableWithoutFeedback, View
+  Platform,
+  Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../components/CustomToast';
@@ -18,6 +19,8 @@ const Register = ({ navigation }) => {
   const [nameError, setNameError] = useState(null);
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState(null);
+  const [staffId, setStaffId] = useState('');
+  const [staffIdError, setStaffIdError] = useState(null);
   const [password, setPassword] = useState('');
   const [passwordError, setPasswordError] = useState(null);
   const API_URL = 'https://shwapnooperation.onrender.com/api/user';
@@ -27,7 +30,7 @@ const Register = ({ navigation }) => {
     setInputType(current => !current);
   };
 
-  const register = async (name, email, password) => {
+  const register = async (name, email, staffId, password) => {
     try {
       setIsLoading(true);
       const response = await fetch(API_URL, {
@@ -35,7 +38,7 @@ const Register = ({ navigation }) => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({ name, email, staffId, password }),
       });
 
       if (!response.ok) {
@@ -58,7 +61,7 @@ const Register = ({ navigation }) => {
         await createActivity(
           user._id,
           'register',
-          `${user.name} register with email ${user.email}`,
+          `${name} register with ${staffId ? `staff id ${staffId}` : `email ${email}`}`,
         );
 
         setTimeout(() => {
@@ -82,11 +85,43 @@ const Register = ({ navigation }) => {
   };
 
   const handleRegister = () => {
-    setNameError(validateInput('name', name));
-    setEmailError(validateInput('email', email));
-    setPasswordError(validateInput('password', password));
-    if (name && email && password) {
-      register(name, email, password);
+    // setNameError(validateInput('name', name));
+    // setEmailError(validateInput('email', email));
+    // setStaffIdError(validateInput('staff id', staffId));
+    // setPasswordError(validateInput('password', password));
+
+    if (!name) {
+      Toast.show({
+        type: 'customError',
+        text1: 'please enter a name',
+      });
+      return;
+    } else if (!email && !staffId) {
+      Toast.show({
+        type: 'customError',
+        text1: 'please enter an email or a staff id',
+      });
+      return;
+    } else if (!password) {
+      Toast.show({
+        type: 'customError',
+        text1: 'please enter a password',
+      });
+      return;
+    } else if (emailError) {
+      Toast.show({
+        type: 'customError',
+        text1: emailError,
+      });
+      return;
+    } else if (staffIdError) {
+      Toast.show({
+        type: 'customError',
+        text1: staffIdError,
+      });
+      return;
+    } else {
+      register(name, email, staffId, password);
     }
   };
 
@@ -113,8 +148,7 @@ const Register = ({ navigation }) => {
         </View>
         <View className="email relative mb-4">
           <TextInput
-            className={`border ${emailError ? 'border-red-500' : 'border-[#bcbcbc]'
-              } h-[60px] text-[#a9a9a9] rounded-md px-4`}
+            className="h-[60px] border border-[#bcbcbc] text-[#a9a9a9] rounded-md px-4"
             placeholder="Enter email"
             placeholderTextColor='#bcbcbc'
             selectionColor="#bcbcbc"
@@ -124,11 +158,19 @@ const Register = ({ navigation }) => {
               setEmailError(validateInput('email', value));
             }}
           />
-          {emailError && (
-            <Text className="absolute right-2 top-3 text-red-500 mt-1">
-              {emailError}
-            </Text>
-          )}
+        </View>
+        <View className="staff-id relative mb-4">
+          <TextInput
+            className="h-[60px] border border-[#bcbcbc] text-[#a9a9a9] rounded-md px-4"
+            placeholder="Enter staff id"
+            placeholderTextColor='#bcbcbc'
+            selectionColor="#bcbcbc"
+            keyboardType="number-pad"
+            onChangeText={value => {
+              setStaffId(value);
+              setStaffIdError(validateInput('staff id', value));
+            }}
+          />
         </View>
         <View className="password relative mb-4">
           <TextInput
@@ -171,12 +213,12 @@ const Register = ({ navigation }) => {
                 title="Register"
                 buttonStyles={styles.buttonLogin}
                 textStyles={styles.lgText}
-                onPress={nameError || emailError || passwordError ? null : handleRegister}
+                onPress={() => handleRegister()}
               />
               <View className="text-center mt-5">
-                <TouchableWithoutFeedback onPress={() => navigation.push('Login')}>
+                <TouchableOpacity onPress={() => navigation.push('Login')}>
                   <Text className="text-center text-blue-600 text-lg">Have an account?</Text>
-                </TouchableWithoutFeedback>
+                </TouchableOpacity>
               </View>
             </>
           )}

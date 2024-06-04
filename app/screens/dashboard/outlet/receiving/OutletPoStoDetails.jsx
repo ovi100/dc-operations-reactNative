@@ -87,10 +87,10 @@ const OutletPoStoDetails = ({ navigation, route }) => {
       const [shelvingResponse, poResponse] = await Promise.all([shelvingFetch, poFetch]);
 
       // Check if both fetch requests were successful
-      if (!shelvingResponse.ok || !poResponse.ok) {
+      if (!shelvingResponse.ok && !poResponse.ok) {
         Toast.show({
           type: 'customError',
-          text1: "Failed to fetch data from APIs",
+          text1: "Failed to fetch data from API",
         });
       }
 
@@ -126,34 +126,34 @@ const OutletPoStoDetails = ({ navigation, route }) => {
       }
 
       let poItems = poData.data.items;
-      const historyItems = poData.data.historyTotal;
+      // const historyItems = poData.data.historyTotal;
 
-      if (historyItems.length > 0) {
-        poItems = poItems.map(poItem => {
-          const matchedItem = historyItems.find(
-            historyItem => historyItem.material === poItem.material
-          );
-          if (matchedItem) {
-            return {
-              ...poItem,
-              remainingQuantity: poItem.quantity - matchedItem.grnQuantity
-            };
-          } else {
-            return {
-              ...poItem,
-              remainingQuantity: poItem.quantity
-            };
-          }
-        }).filter(item => item.remainingQuantity !== 0);
-      }
-      else {
-        poItems = poItems.map(item => {
-          return {
-            ...item,
-            remainingQuantity: item.quantity
-          };
-        });
-      }
+      // if (historyItems.length > 0) {
+      //   poItems = poItems.map(poItem => {
+      //     const matchedItem = historyItems.find(
+      //       historyItem => historyItem.material === poItem.material
+      //     );
+      //     if (matchedItem) {
+      //       return {
+      //         ...poItem,
+      //         remainingQuantity: poItem.quantity - matchedItem.grnQuantity
+      //       };
+      //     } else {
+      //       return {
+      //         ...poItem,
+      //         remainingQuantity: poItem.quantity
+      //       };
+      //     }
+      //   }).filter(item => item.remainingQuantity !== 0);
+      // }
+      // else {
+      //   poItems = poItems.map(item => {
+      //     return {
+      //       ...item,
+      //       remainingQuantity: item.quantity
+      //     };
+      //   });
+      // }
 
       let adjustedArticles = poItems.map(poItem => {
         const matchedItem = shelvingItems.find(
@@ -217,7 +217,7 @@ const OutletPoStoDetails = ({ navigation, route }) => {
       const [shelvingResponse, tpnResponse, stoResponse, dnResponse] = await Promise.all([shelvingFetch, tpnFetch, stoFetch, dnFetch]);
 
       // Check if both fetch requests were successful
-      if (!shelvingResponse.ok || !tpnResponse.ok || !stoResponse.ok || !dnResponse.ok) {
+      if (!shelvingResponse.ok && !tpnResponse.ok && !stoResponse.ok && !dnResponse.ok) {
         Toast.show({
           type: 'customError',
           text1: "Failed to fetch data from APIs",
@@ -506,12 +506,11 @@ const OutletPoStoDetails = ({ navigation, route }) => {
     grnPostItems = grnItems.filter(grnItem => grnItem.po === (po || sto));
   }
 
-  grnSummery = grnPostItems.reduce(
-    (acc, curr, i) => {
-      acc.totalItems = i + 1;
-      acc.totalPrice += curr.quantity * curr.netPrice;
-      return acc;
-    },
+  grnSummery = grnPostItems.reduce((acc, curr, i) => {
+    acc.totalItems = i + 1;
+    acc.totalPrice += curr.quantity * curr.netPrice;
+    return acc;
+  },
     { totalItems: 0, totalPrice: 0 }
   );
 
@@ -614,7 +613,7 @@ const OutletPoStoDetails = ({ navigation, route }) => {
           </TouchableHighlight>
         </View>
         <View className="content flex-1 justify-between pb-2">
-          <View className="table">
+          <View className="table h-[90%]">
             <View className="table-header flex-row justify-between bg-th text-center mb-2 p-2">
               {tableHeader.map(th => (
                 <Text className="text-white text-center font-bold" key={th}>

@@ -7,6 +7,8 @@ const validateInput = (type, value) => {
     let regex;
     if (type === 'email') {
       regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    } else if (type === 'staff id') {
+      regex = /^\d+$/;
     } else if (type === 'name') {
       regex = /^[a-zA-Z ]+$/;
     } else {

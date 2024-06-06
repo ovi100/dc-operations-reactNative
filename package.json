@@ -1,6 +1,6 @@
 {
   "name": "dcoperations",
-  "version": "0.1.21",
+  "version": "0.12.2",
   "private": true,
   "scripts": {
     "android": "react-native run-android",
@@ -8,6 +8,7 @@
     "lint": "eslint .",
     "start": "react-native start",
     "clear": "react-native start - reset-cache",
+    "codepush": "appcenter codepush release-react -a shwapno/operations-app -d Production",
     "test": "jest"
   },
   "dependencies": {
@@ -22,6 +23,7 @@
     "nativewind": "^2.0.11",
     "react": "18.2.0",
     "react-native": "0.73.6",
+    "react-native-code-push": "^8.2.2",
     "react-native-date-picker": "^5.0.2",
     "react-native-gesture-handler": "^2.14.1",
     "react-native-image-picker": "^5.3.1",

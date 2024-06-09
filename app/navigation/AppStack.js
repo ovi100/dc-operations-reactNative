@@ -41,7 +41,6 @@ const AppStack = () => {
   const screens = [
     {id: 'home', name: 'Home', component: Home},
     {id: 'audit', name: 'Audit', component: Audit},
-    {id: 'site-choose', name: 'SiteChoose', component: SiteChoose},
     {id: 'profile', name: 'Profile', component: Profile},
     {id: 'change-password', name: 'ChangePassword', component: ChangePassword},
     {id: 'receiving', name: 'Receiving', component: Receiving},
@@ -100,11 +99,11 @@ const AppStack = () => {
 
   return (
     <Stack.Navigator initialRouteName="SiteChoose">
-      {/* {user && typeof user.site !== 'string' && (
+      {user && typeof user.site !== 'string' && (
         <Stack.Group screenOptions={{headerShown: false}}>
           <Stack.Screen name="SiteChoose" component={SiteChoose} />
         </Stack.Group>
-      )} */}
+      )}
       <Stack.Group screenOptions={{headerShown: false}}>
         {screens.map(screen => (
           <Stack.Screen

@@ -7,7 +7,6 @@ import { getStorage, removeAll, setStorage } from './useStorage';
 const useAuth = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState(null);
-  const [activeSite, setActiveSite] = useState(null);
   const [userSites, setUserSites] = useState([]);
   const [token, setToken] = useState(null);
   const {createActivity} = useActivity();
@@ -103,8 +102,6 @@ const useAuth = () => {
     setUser,
     userSites,
     setUserSites,
-    activeSite,
-    setActiveSite,
     token,
   };
 

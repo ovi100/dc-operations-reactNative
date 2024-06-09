@@ -129,8 +129,6 @@ const PoArticle = ({ navigation, route }) => {
     setExpiryDate(input);
   };
 
-  console.log('Date', expiryDate);
-
   const readyForShelve = async () => {
     if (!newQuantity) {
       Toast.show({
@@ -178,7 +176,7 @@ const PoArticle = ({ navigation, route }) => {
         receivedBy: user.name,
         bins,
         batch: batchNo,
-        expiryDate: expiryDate > new Date() ? expiryDate : null
+        expiryDate: new Date(Number(expiryDate.split('/')[2]), Number(expiryDate.split('/')[1] - 1), Number(expiryDate.split('/')[0]))
       };
 
       // console.log('shelving object', shelvingObject);
@@ -302,7 +300,7 @@ const PoArticle = ({ navigation, route }) => {
                     expiry date
                   </Text>
                   <Text className="text-base text-[#2E2C3B] font-medium capitalize">
-                    {new Date(Number(expiryDate.split('/')[2]), Number(expiryDate.split('/')[1] - 1), Number(expiryDate.split('/')[0])) > new Date() && new Date(Number(expiryDate.split('/')[2]), Number(expiryDate.split('/')[1] - 1), Number(expiryDate.split('/')[0])).toLocaleDateString('en-Uk', { dateStyle: 'medium' })}
+                    {new Date(Number(expiryDate?.split('/')[2]), Number(expiryDate?.split('/')[1] - 1), Number(expiryDate?.split('/')[0])) > new Date() && new Date(Number(expiryDate?.split('/')[2]), Number(expiryDate?.split('/')[1] - 1), Number(expiryDate?.split('/')[0])).toLocaleDateString('en-Uk', { dateStyle: 'medium' })}
                   </Text>
                 </View>
               </View>

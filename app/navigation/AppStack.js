@@ -1,4 +1,4 @@
-import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React from 'react';
 import useAppContext from '../../hooks/useAppContext';
 // screens components
@@ -7,6 +7,7 @@ import Audit from '../screens/dashboard/audit/Audit';
 import DeliveryNote from '../screens/dashboard/deliveryNote/DeliveryNote';
 import DeliveryPlan from '../screens/dashboard/deliveryPlan/DeliveryPlan';
 import OutletArticleDetails from '../screens/dashboard/outlet/receiving/OutletArticleDetails';
+import OutletArticleReport from '../screens/dashboard/outlet/receiving/OutletArticleReport';
 import OutletPoStoDetails from '../screens/dashboard/outlet/receiving/OutletPoStoDetails';
 import OutletReceiving from '../screens/dashboard/outlet/receiving/OutletReceiving';
 import ChildPacking from '../screens/dashboard/packing/ChildPacking';
@@ -30,7 +31,6 @@ import PickerPackerTaskAssign from '../screens/dashboard/taskAssign/PickerPacker
 import TaskAssign from '../screens/dashboard/taskAssign/TaskAssign';
 import ChangePassword from '../screens/dashboard/userProfile/ChangePassword';
 import Profile from '../screens/dashboard/userProfile/Profile';
-import OutletArticleReport from '../screens/dashboard/outlet/receiving/OutletArticleReport';
 
 const Stack = createNativeStackNavigator();
 
@@ -41,6 +41,7 @@ const AppStack = () => {
   const screens = [
     {id: 'home', name: 'Home', component: Home},
     {id: 'audit', name: 'Audit', component: Audit},
+    {id: 'site-choose', name: 'SiteChoose', component: SiteChoose},
     {id: 'profile', name: 'Profile', component: Profile},
     {id: 'change-password', name: 'ChangePassword', component: ChangePassword},
     {id: 'receiving', name: 'Receiving', component: Receiving},
@@ -99,11 +100,11 @@ const AppStack = () => {
 
   return (
     <Stack.Navigator initialRouteName="SiteChoose">
-      {user && typeof user.site !== 'string' && (
+      {/* {user && typeof user.site !== 'string' && (
         <Stack.Group screenOptions={{headerShown: false}}>
           <Stack.Screen name="SiteChoose" component={SiteChoose} />
         </Stack.Group>
-      )}
+      )} */}
       <Stack.Group screenOptions={{headerShown: false}}>
         {screens.map(screen => (
           <Stack.Screen

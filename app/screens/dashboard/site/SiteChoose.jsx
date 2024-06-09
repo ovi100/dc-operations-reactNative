@@ -11,7 +11,7 @@ const API_URL = 'https://api.shwapno.net/shelvesu/api/sites';
 
 const SiteChoose = ({ navigation }) => {
   const { authInfo } = useAppContext();
-  const { user, setUser, setUserSites, token, logout } = authInfo;
+  const { user, setUser, setUserSites, setActiveSite, token, logout } = authInfo;
   const [isLoading, setIsLoading] = useState(false);
   let [sites, setSites] = useState([]);
   let singleSite = '';
@@ -71,7 +71,9 @@ const SiteChoose = ({ navigation }) => {
   const updateUser = async (newSite) => {
     let newUser = { ...user, site: newSite };
     setUser(newUser);
+    setActiveSite(newSite);
     await setStorage("user", newUser);
+    await setStorage("activeSite", newSite);
     navigation.navigate('Home');
   };
 

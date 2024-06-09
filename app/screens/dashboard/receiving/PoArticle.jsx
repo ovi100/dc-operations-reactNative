@@ -2,13 +2,13 @@ import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator, Image, KeyboardAvoidingView,
   Platform, SafeAreaView, ScrollView, Text, TextInput,
-  TouchableOpacity, TouchableWithoutFeedback, View
+  TouchableWithoutFeedback, View
 } from 'react-native';
-import DatePicker from 'react-native-date-picker';
+// import DatePicker from 'react-native-date-picker';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
 import { ButtonLg, ButtonLoading } from '../../../../components/buttons';
-import { BoxIcon, CalendarIcon } from '../../../../constant/icons';
+import { BoxIcon } from '../../../../constant/icons';
 import useActivity from '../../../../hooks/useActivity';
 import useAppContext from '../../../../hooks/useAppContext';
 import useBackHandler from '../../../../hooks/useBackHandler';
@@ -21,11 +21,12 @@ const PoArticle = ({ navigation, route }) => {
   } = route.params;
   const [isLoading, setIsLoading] = useState(false);
   const [isButtonLoading, setIsButtonLoading] = useState(false);
-  const [openDatePicker, setOpenDatePicker] = useState(false);
+  // const [openDatePicker, setOpenDatePicker] = useState(false);
   const [bins, setBins] = useState([]);
   const [newQuantity, setNewQuantity] = useState(remainingQuantity);
   const [batchNo, setBatchNo] = useState(null);
-  const [expiryDate, setExpiryDate] = useState(new Date());
+  // const [expiryDate, setExpiryDate] = useState(new Date());
+  const [expiryDate, setExpiryDate] = useState(null);
   const [token, setToken] = useState('');
   const { GRNInfo, authInfo } = useAppContext();
   const { user } = authInfo;
@@ -83,6 +84,52 @@ const PoArticle = ({ navigation, route }) => {
     }
 
   }, [material, user.site]);
+
+  const handleDateChange = (text) => {
+    let input = text.replace(/\D/g, '');
+    let day = '', month = '', year = '';
+
+    if (input.length >= 2) {
+      day = input.slice(0, 2);
+    }
+    if (input.length >= 4) {
+      month = input.slice(2, 4);
+    }
+    if (input.length > 4) {
+      year = input.slice(4);
+    }
+
+    if (day > 31) {
+      Toast.show({
+        type: 'customError',
+        text1: 'Day must be between 1 and 31',
+      });
+      return;
+    } else if (month > 12) {
+      Toast.show({
+        type: 'customError',
+        text1: 'Month must be between 1 and 12',
+      });
+      return;
+    } else if (year && year > 2099) {
+      Toast.show({
+        type: 'customError',
+        text1: 'Year must be up to 2099',
+      });
+      return;
+    }
+
+    if (input.length > 2) {
+      input = input.slice(0, 2) + '/' + input.slice(2);
+    }
+    if (input.length > 5) {
+      input = input.slice(0, 5) + '/' + input.slice(5);
+    }
+
+    setExpiryDate(input);
+  };
+
+  console.log('Date', expiryDate);
 
   const readyForShelve = async () => {
     if (!newQuantity) {
@@ -255,30 +302,18 @@ const PoArticle = ({ navigation, route }) => {
                     expiry date
                   </Text>
                   <Text className="text-base text-[#2E2C3B] font-medium capitalize">
-                    {expiryDate > new Date() && new Date(expiryDate).toLocaleDateString('en-Uk', { dateStyle: 'medium' })}
+                    {new Date(Number(expiryDate.split('/')[2]), Number(expiryDate.split('/')[1] - 1), Number(expiryDate.split('/')[0])) > new Date() && new Date(Number(expiryDate.split('/')[2]), Number(expiryDate.split('/')[1] - 1), Number(expiryDate.split('/')[0])).toLocaleDateString('en-Uk', { dateStyle: 'medium' })}
                   </Text>
                 </View>
               </View>
               <View className="date-picker mt-6">
-                <TouchableOpacity onPress={() => setOpenDatePicker(true)}>
-                  <View className="flex-row items-center justify-center bg-green-600 rounded-md p-2.5">
-                    <Image className="w-6 h-6 mr-3" source={CalendarIcon} />
-                    <Text className="text-base font-bold text-white capitalize">select expiry date</Text>
-                  </View>
-                </TouchableOpacity>
-                <DatePicker
-                  theme='auto'
-                  modal
-                  title="Expiry Date"
-                  minimumDate={new Date()}
-                  open={openDatePicker}
-                  mode='date'
-                  date={expiryDate}
-                  onConfirm={(date) => {
-                    setOpenDatePicker(false)
-                    setExpiryDate(date)
-                  }}
-                  onCancel={() => setOpenDatePicker(false)}
+                <TextInput
+                  className="bg-[#F5F6FA] border border-t-0 border-black/25 h-[50px] text-[#5D80C5] rounded-2xl mb-3 px-4"
+                  placeholder="DD/MM/YYYY"
+                  value={expiryDate}
+                  onChangeText={handleDateChange}
+                  keyboardType="numeric"
+                  maxLength={10}
                 />
               </View>
             </View>

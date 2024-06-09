@@ -16,6 +16,7 @@ const App = () => {
       {
         updateDialog: true,
         installMode: CodePush.InstallMode.IMMEDIATE,
+        mandatoryInstallMode: CodePush.InstallMode.IMMEDIATE,
       },
       statusChangedCallback,
       downloadProgressCallback,

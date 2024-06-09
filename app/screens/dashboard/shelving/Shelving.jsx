@@ -27,12 +27,12 @@ const Shelving = ({ navigation }) => {
   const [barcode, setBarcode] = useState('');
   let [articles, setArticles] = useState([]);
   const tableHeader = ['Article Info', 'BIN ID', 'Quantity'];
-  const API_URL = 'https://shwapnooperation.onrender.com/api/product-shelving/';
+  const API_URL = 'https://shwapnooperation.onrender.com/api/product-shelving/?filterBy=site&';
   const { startScan, stopScan } = SunmiScanner;
 
   useEffect(() => {
     const getAsyncStorage = async () => {
-      await getStorage('token', setToken, 'string');
+      await getStorage('token', setToken);
       await getStorage('pressMode', setPressMode);
       await getStorage('user', setUser, 'object');
     }
@@ -99,6 +99,42 @@ const Shelving = ({ navigation }) => {
       const mergedData = [...partialItems, ...readyItems];
 
       setArticles(mergedData);
+
+      // await fetch(API_URL + `value=${user.site}&pageSize=500`, {
+      //   method: 'GET',
+      //   headers: {
+      //     authorization: token,
+      //   }
+      // }).then(response => response.json())
+      //   .then(result => {
+      //     if (result.status) {
+      //       let shelvingItems = result.items;
+      //       shelvingItems = shelvingItems.map(item => {
+      //         if (item.inShelf.length > 0) {
+      //           return {
+      //             ...item,
+      //             receivedQuantity: item.receivedQuantity - item.inShelf.reduce((acc, item) => acc + item.quantity, 0)
+      //           }
+      //         } else {
+      //           return {
+      //             ...item,
+      //             receivedQuantity: item.receivedQuantity
+      //           }
+      //         }
+      //       });
+      //     } else {
+      //       Toast.show({
+      //         type: 'customError',
+      //         text1: result.message,
+      //       });
+      //     }
+      //   })
+      //   .catch(error => {
+      //     Toast.show({
+      //       type: 'customError',
+      //       text1: error.message,
+      //     });
+      //   });
 
     } catch (error) {
       Toast.show({

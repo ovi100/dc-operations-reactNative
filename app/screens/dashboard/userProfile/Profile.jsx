@@ -125,15 +125,15 @@ const Profile = ({ navigation }) => {
                     <View className="flex-row items-center">
                       <TouchableWithoutFeedback onPress={() => toggleSwitch()}>
                         <Switch
-                          trackColor={{ false: 'black', true: 'green' }}
-                          thumbColor={'#dddddd'}
+                          trackColor={{ false: '#1b4332', true: '#386641' }}
+                          thumbColor={isEnabled ? '#3a5a40' : '#081c15'}
                           ios_backgroundColor="#3e3e3e"
                           value={isEnabled}
                           onPress={() => toggleSwitch()}
                         />
                       </TouchableWithoutFeedback>
                       <TouchableWithoutFeedback onPress={() => toggleSwitch()}>
-                        <Text className={`text-base ${isEnabled ? 'text-green-600' : 'text-red-600'} font-medium ml-2`}>
+                        <Text className={`text-base ${isEnabled ? 'text-[#386641]' : 'text-[#bc4749]'} font-medium ml-2`}>
                           {isEnabled ? 'Press mode is enabled' : 'Press mode is disabled'}
                         </Text>
                       </TouchableWithoutFeedback>
@@ -153,16 +153,9 @@ const Profile = ({ navigation }) => {
                 </View>
 
                 {sites !== null && sites.length > 1 && (
-                  // <View className="choose-site bg-white rounded mt-4">
-                  //   <TouchableOpacity onPress={() => navigation.replace('ChooseSite')}>
-                  //     <Text className="w-full bg-blue-600 text-white text-lg text-center font-semibold rounded mx-auto mt-4 p-3.5 capitalize">
-                  //       choose site
-                  //     </Text>
-                  //   </TouchableOpacity>
-                  // </View>
                   <View className="password-change border-b border-gray-200 flex-row items-center py-4">
                     <Image className="w-5 h-5 mr-3" source={SwapIcon} />
-                    <TouchableWithoutFeedback onPress={() => navigation.replace('ChooseSite')}>
+                    <TouchableWithoutFeedback onPress={() => navigation.replace('ChooseSite', user)}>
                       <Text className="text-center text-blue-600 text-base font-semibold capitalize">change site</Text>
                     </TouchableWithoutFeedback>
                   </View>

@@ -1,4 +1,63 @@
 import { Alert, Dimensions, ToastAndroid } from 'react-native';
+import Toast from 'react-native-toast-message';
+
+const handleDate = text => {
+  let input = text.replace(/\D/g, '');
+  let day = '',
+    month = '',
+    year = '';
+  day = input.slice(0, 2);
+  month = input.slice(2, 4);
+  year = input.slice(4);
+
+  if (day.length === 2 && day > 31) {
+    Toast.show({
+      type: 'customError',
+      text1: 'Day must be between 1 and 31',
+    });
+    return;
+  }
+  if (month.length === 2 && month > 12) {
+    Toast.show({
+      type: 'customError',
+      text1: 'Month must be between 1 and 12',
+    });
+    return;
+  }
+  if (year.length === 4 && year < 2024) {
+    Toast.show({
+      type: 'customError',
+      text1: `Minimum year must be ${new Date().getFullYear()}`,
+    });
+    return;
+  }
+  if (year.length === 4 && year > 2099) {
+    Toast.show({
+      type: 'customError',
+      text1: 'Year must be up to 2099',
+    });
+    return;
+  }
+  if (input.length > 2) {
+    input = input.slice(0, 2) + '/' + input.slice(2);
+  }
+  if (input.length > 5) {
+    input = input.slice(0, 5) + '/' + input.slice(5);
+  }
+
+  const formattedDate = new Date(Number(year), Number(month - 1), Number(day));
+
+  if (input.length === 10 && formattedDate < new Date()) {
+    Toast.show({
+      type: 'customError',
+      text1: 'Date must be greater than today',
+    });
+    input = null;
+    return;
+  }
+
+  return {date: formattedDate, text: input};
+};
 
 const validateInput = (type, value) => {
   if (!value) {
@@ -92,10 +151,8 @@ const {width: WINDOW_WIDTH, height: WINDOW_HEIGHT} = Dimensions.get('window');
 export {
   WINDOW_HEIGHT,
   WINDOW_WIDTH,
-  dateRange,
-  formatDateYYYYMMDD,
-  groupBy,
-  toast,
+  dateRange, formatDateYYYYMMDD,
+  groupBy, handleDate, toast,
   uniqueArray,
   uniqueArrayOfObjects,
   validateFile,

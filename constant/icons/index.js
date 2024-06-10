@@ -30,7 +30,9 @@ import SitesIcon from './site-icon.png';
 import StoNotPickedIcon from './sto-not-picked-icon.png';
 import StoPickedIcon from './sto-picked-icon.png';
 import StoreIcon from './store-icon.png';
-import SwitchIcon from './switch-icon.png';
+import SwapIcon from './swap-icon.png';
+import SwitchOff from './switch-off.png';
+import SwitchOn from './switch-on.png';
 import TaskAssignIcon from './task-assign-icon.png';
 import UserIcon from './user-icon.png';
 import WarehouseIcon from './warehouse-icon.png';
@@ -68,8 +70,11 @@ export {
   StoNotPickedIcon,
   StoPickedIcon,
   StoreIcon,
-  SwitchIcon,
+  SwapIcon,
+  SwitchOff,
+  SwitchOn,
   TaskAssignIcon,
   UserIcon,
-  WarehouseIcon,
+  WarehouseIcon
 };
+

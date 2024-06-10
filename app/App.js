@@ -1,103 +1,69 @@
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Modal, Text, View } from 'react-native';
 import CodePush from 'react-native-code-push';
 import 'react-native-gesture-handler';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import CodePushModal from '../components/CodePushModal';
 import AppProvider from '../contexts/AppContext';
 import AppNavigation from './navigation/AppNavigation';
 
-let codePushOptions = {checkFrequency: CodePush.CheckFrequency.MANUAL};
+const codePushOptions = {
+  checkFrequency: CodePush.CheckFrequency.MANUAL,
+};
 
 const App = () => {
-  const [progress, setProgress] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [message, setMessage] = useState(null);
+  const [progress, setProgress] = useState(null);
 
   useEffect(() => {
     CodePush.sync(
       {
-        updateDialog: true,
         installMode: CodePush.InstallMode.IMMEDIATE,
-        mandatoryInstallMode: CodePush.InstallMode.IMMEDIATE,
+        updateDialog: false,
       },
-      statusChangedCallback,
-      downloadProgressCallback,
+      codePushStatusChange,
+      codePushDownloadProgress,
     );
   }, []);
 
-  const statusChangedCallback = status => {
+  const codePushStatusChange = status => {
     switch (status) {
-      case CodePush.SyncStatus.CHECKING_FOR_UPDATE:
-        break;
       case CodePush.SyncStatus.DOWNLOADING_PACKAGE:
-        break;
-      case CodePush.SyncStatus.AWAITING_USER_ACTION:
+        setModalVisible(true);
+        setMessage('Downloading update');
         break;
       case CodePush.SyncStatus.INSTALLING_UPDATE:
-        setProgress(false);
-        break;
-      case CodePush.SyncStatus.UP_TO_DATE:
-        setProgress(false);
-        break;
-      case CodePush.SyncStatus.UPDATE_IGNORED:
-        setProgress(false);
+        setModalVisible(true);
+        setMessage('Installing update');
         break;
       case CodePush.SyncStatus.UPDATE_INSTALLED:
-        setProgress(false);
+        setMessage('Restarting application ');
         break;
       case CodePush.SyncStatus.UNKNOWN_ERROR:
-        setProgress(false);
+        setMessage('An error occurred during the update');
+        break;
+      default:
+        setMessage(null);
         break;
     }
   };
 
-  const downloadProgressCallback = progress => {
-    setPercent(progress);
-  };
-
-  const showProgressView = () => {
-    return (
-      <Modal visible={true} transparent>
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: 'rgba(0,0,0,0.8)',
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}>
-          <View
-            style={{
-              backgroundColor: 'white',
-              borderRadius: 8,
-              padding: 16,
-            }}>
-            <Text>In Progress.......</Text>
-
-            <View style={{alignItems: 'center'}}>
-              <Text style={{marginTop: 16}}>{`${(
-                Number(progress?.receivedBytes) / 1048576
-              ).toFixed(2)}MB/${(
-                Number(progress?.totalBytes) / 1048576
-              ).toFixed(2)}`}</Text>
-              <ActivityIndicator style={{marginVertical: 8}} color={'blue'} />
-              <Text>
-                {(
-                  (Number(progress?.receivedBytes) /
-                    Number(progress?.totalBytes)) *
-                  100
-                ).toFixed(0)}
-                %
-              </Text>
-            </View>
-          </View>
-        </View>
-      </Modal>
-    );
-  };
+  const codePushDownloadProgress = downloadProgress =>
+    setProgress(downloadProgress);
 
   return (
     <AppProvider>
       <GestureHandlerRootView style={{flex: 1}}>
         <AppNavigation />
-        {progress ? showProgressView() : null}
+        {progress ? (
+          <CodePushModal
+            visible={modalVisible}
+            header="Live update in progress"
+            subHeader="Applying the live update ensures you will get the latest version of the application."
+            progress={progress}
+            message={message}
+          />
+        ) : null}
       </GestureHandlerRootView>
     </AppProvider>
   );

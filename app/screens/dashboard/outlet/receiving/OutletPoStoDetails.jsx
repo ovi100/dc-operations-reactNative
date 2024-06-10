@@ -680,17 +680,25 @@ const OutletPoStoDetails = ({ navigation, route }) => {
               <>
                 <View className="bg-th flex-row items-center justify-between p-2">
                   <Text className="text-white text-xs">Article Code</Text>
-                  <Text className="text-white text-xs">Unit Price(৳)</Text>
+                  {po && (
+                    <Text className="text-white text-xs">Unit Price(৳)</Text>
+                  )}
                   <Text className="text-white text-xs">Quantity</Text>
-                  <Text className="text-white text-xs">Total Price(৳)</Text>
+                  {po && (
+                    <Text className="text-white text-xs">Total Price(৳)</Text>
+                  )}
                 </View>
                 <ScrollView className="max-h-full">
                   {grnPostItems.map((item) => (
                     <View className="bg-gray-100 flex-row items-center justify-between mt-1 p-2.5" key={item.material}>
                       <Text className="text-sh text-xs">{item.material}</Text>
-                      <Text className="text-sh text-xs">{item.netPrice}</Text>
+                      {po && (
+                        <Text className="text-sh text-xs">{item.netPrice}</Text>
+                      )}
                       <Text className="text-sh text-xs">{item.quantity}</Text>
-                      <Text className="text-sh text-xs">{item.netPrice * item.quantity}</Text>
+                      {po && (
+                        <Text className="text-sh text-xs">{item.netPrice * item.quantity}</Text>
+                      )}
                     </View>
                   ))}
                 </ScrollView>

@@ -30,6 +30,7 @@ import SiteChoose from '../screens/dashboard/site/SiteChoose';
 import PickerPackerTaskAssign from '../screens/dashboard/taskAssign/PickerPackerTaskAssign/PickerPackerTaskAssign';
 import TaskAssign from '../screens/dashboard/taskAssign/TaskAssign';
 import ChangePassword from '../screens/dashboard/userProfile/ChangePassword';
+import ChooseSite from '../screens/dashboard/userProfile/ChooseSite';
 import Profile from '../screens/dashboard/userProfile/Profile';
 
 const Stack = createNativeStackNavigator();
@@ -42,6 +43,7 @@ const AppStack = () => {
     {id: 'home', name: 'Home', component: Home},
     {id: 'audit', name: 'Audit', component: Audit},
     {id: 'profile', name: 'Profile', component: Profile},
+    {id: 'choose-site', name: 'ChooseSite', component: ChooseSite},
     {id: 'change-password', name: 'ChangePassword', component: ChangePassword},
     {id: 'receiving', name: 'Receiving', component: Receiving},
     {id: 'purchase-order', name: 'PurchaseOrder', component: PurchaseOrder},

@@ -27,7 +27,7 @@ const Shelving = ({ navigation }) => {
   const [barcode, setBarcode] = useState('');
   let [articles, setArticles] = useState([]);
   const tableHeader = ['Article Info', 'BIN ID', 'Quantity'];
-  const API_URL = 'https://shwapnooperation.onrender.com/api/product-shelving/?filterBy=site&';
+  const API_URL = 'https://shwapnooperation.onrender.com/';
   const { startScan, stopScan } = SunmiScanner;
 
   useEffect(() => {
@@ -53,88 +53,49 @@ const Shelving = ({ navigation }) => {
 
   const getShelvingData = async () => {
     try {
-      const fetchOptions = {
+      await fetch(API_URL + `api/product-shelving/?filterBy=site&value=${user.site}&pageSize=1000`, {
         method: 'GET',
         headers: {
           authorization: token,
         }
-      };
-      // Fetch data from both APIs simultaneously
-      const [readyResponse, partialResponse] = await Promise.all([
-        fetch(API_URL + `ready?filterBy=site&value=${user.site}&pageSize=500`, fetchOptions),
-        fetch(API_URL + `partially-in-shelf?filterBy=site&value=${user.site}&pageSize=500`, fetchOptions)
-      ]);
-
-      // Check if both fetch requests were successful
-      if (!readyResponse.ok || !partialResponse.ok) {
-        // throw new Error('Failed to fetch data from APIs');
-        Toast.show({
-          type: 'customError',
-          text1: "Failed to fetch data from APIs",
-        });
-      }
-
-      // Parse the JSON data from the responses
-      const readyData = await readyResponse.json();
-      const partialData = await partialResponse.json();
-
-      const readyItems = readyData.items;
-      const partialItems = partialData.items.map(item => {
-        if (item.bins.length === 0) {
-          const bins = item.inShelf.map(item => {
-            return { bin_id: item.bin, gondola_id: item.gondola };
-          });
-          return {
-            ...item,
-            bins,
-            receivedQuantity: item.receivedQuantity - item.inShelf.reduce((acc, item) => acc + item.quantity, 0)
+      }).then(response => response.json())
+        .then(result => {
+          if (result.status) {
+            let shelvingItems = result.items;
+            if (shelvingItems.length > 0) {
+              shelvingItems = shelvingItems.map(item => {
+                if (item.inShelf.length > 0) {
+                  const bins = item.inShelf.map(item => {
+                    return { bin_id: item.bin, gondola_id: item.gondola };
+                  });
+                  return {
+                    ...item,
+                    bins,
+                    receivedQuantity: item.receivedQuantity - item.inShelf.reduce((acc, item) => acc + item.quantity, 0)
+                  }
+                } else {
+                  return {
+                    ...item,
+                    receivedQuantity: item.receivedQuantity
+                  }
+                }
+              });
+            }
+            shelvingItems = shelvingItems.filter((item) => item.receivedQuantity !== 0);
+            setArticles(shelvingItems);
+          } else {
+            Toast.show({
+              type: 'customError',
+              text1: result.message,
+            });
           }
-        }
-        return {
-          ...item,
-          receivedQuantity: item.receivedQuantity - item.inShelf.reduce((acc, item) => acc + item.quantity, 0)
-        }
-      });
-
-      const mergedData = [...partialItems, ...readyItems];
-
-      setArticles(mergedData);
-
-      // await fetch(API_URL + `value=${user.site}&pageSize=500`, {
-      //   method: 'GET',
-      //   headers: {
-      //     authorization: token,
-      //   }
-      // }).then(response => response.json())
-      //   .then(result => {
-      //     if (result.status) {
-      //       let shelvingItems = result.items;
-      //       shelvingItems = shelvingItems.map(item => {
-      //         if (item.inShelf.length > 0) {
-      //           return {
-      //             ...item,
-      //             receivedQuantity: item.receivedQuantity - item.inShelf.reduce((acc, item) => acc + item.quantity, 0)
-      //           }
-      //         } else {
-      //           return {
-      //             ...item,
-      //             receivedQuantity: item.receivedQuantity
-      //           }
-      //         }
-      //       });
-      //     } else {
-      //       Toast.show({
-      //         type: 'customError',
-      //         text1: result.message,
-      //       });
-      //     }
-      //   })
-      //   .catch(error => {
-      //     Toast.show({
-      //       type: 'customError',
-      //       text1: error.message,
-      //     });
-      //   });
+        })
+        .catch(error => {
+          Toast.show({
+            type: 'customError',
+            text1: error.message,
+          });
+        });
 
     } catch (error) {
       Toast.show({
@@ -163,6 +124,8 @@ const Shelving = ({ navigation }) => {
     await getShelvingData();
     setRefreshing(false);
   };
+
+  // console.log(articles.findIndex(article => article.code === '2304461'));
 
   if (barcode !== '' && (pressMode === 'false' || pressMode === null)) {
     const getArticleBarcode = async (barcode) => {
@@ -219,25 +182,25 @@ const Shelving = ({ navigation }) => {
         <TouchableOpacity onPress={() => navigation.replace('BinDetails', item)}>
           <View
             key={index}
-            className="flex-row items-center border border-tb rounded-lg mt-2.5 p-3">
-            <View className="w-[50%]">
+            className="flex-row items-center justify-between border border-tb rounded-lg mt-2.5 p-3">
+            <View className="w-[42%]">
               <Text className="text-xs text-black" numberOfLines={1}>
                 {item.code}
               </Text>
-              <Text className="w-32 text-black text-base mt-1" numberOfLines={2}>
+              <Text className="w-4/5 text-black" numberOfLines={2}>
                 {item.description}
               </Text>
             </View>
-            <View className="w-2/5">
+            <View className="flex-1 justify-center">
               {item.bins.length > 0 ? (
-                <Text
-                  className="text-black text-center mb-1 last:mb-0"
-                  numberOfLines={2}>
+                <Text className="w-4/5 text-black text-center" numberOfLines={2}>
                   {item.bins[0].bin_id}
                 </Text>
-              ) : (<Text className="text-black text-center">No bin has been assigned</Text>)}
+              ) :
+                (<Text className="w-4/5 text-black">No bin has been assigned</Text>)
+              }
             </View>
-            <Text className="w-[10%] text-black text-right" numberOfLines={1}>
+            <Text className="text-black text-center" numberOfLines={1}>
               {item.receivedQuantity}
             </Text>
           </View>
@@ -245,25 +208,25 @@ const Shelving = ({ navigation }) => {
       ) : (
         <View
           key={index}
-          className="flex-row items-center border border-tb rounded-lg mt-2.5 p-3">
-          <View className="w-[50%]">
+          className="flex-row items-center justify-between border border-tb rounded-lg mt-2.5 p-3">
+          <View className="w-[42%]">
             <Text className="text-xs text-black" numberOfLines={1}>
               {item.code}
             </Text>
-            <Text className="w-32 text-black text-base mt-1" numberOfLines={2}>
+            <Text className="w-4/5 text-black" numberOfLines={2}>
               {item.description}
             </Text>
           </View>
-          <View className="w-2/5">
+          <View className="flex-1 justify-center">
             {item.bins.length > 0 ? (
-              <Text
-                className="text-black text-center mb-1 last:mb-0"
-                numberOfLines={1}>
+              <Text className="w-4/5 text-black" numberOfLines={2}>
                 {item.bins[0].bin_id}
               </Text>
-            ) : (<Text className="text-black text-center">No bin has been assigned</Text>)}
+            ) :
+              (<Text className="w-4/5 text-black">No bin has been assigned</Text>)
+            }
           </View>
-          <Text className="w-[10%] text-black text-right" numberOfLines={1}>
+          <Text className="text-black text-center" numberOfLines={1}>
             {item.receivedQuantity}
           </Text>
         </View>

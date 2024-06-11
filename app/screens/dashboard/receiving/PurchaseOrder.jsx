@@ -35,7 +35,7 @@ const PurchaseOrder = ({ navigation, route }) => {
   const [user, setUser] = useState({});
   const [token, setToken] = useState('');
   const [articles, setArticles] = useState([]);
-  const tableHeader = ['Article Code', 'Article Name', 'Quantity'];
+  const tableHeader = ['Article Code', 'Receive Qnt', 'GRN Qnt'];
   const API_URL = 'https://shwapnooperation.onrender.com/';
   const { GRNInfo } = useAppContext();
   const { grnItems, setGrnItems, setIsUpdatingGrn } = GRNInfo;
@@ -95,7 +95,7 @@ const PurchaseOrder = ({ navigation, route }) => {
       }
 
       // Parse the JSON data from the responses
-      // const shelvingData = await shelvingResponse.json();
+      const shelvingData = await shelvingResponse.json();
       const poData = await poResponse.json();
 
       const poItem = poData.data.items[0];
@@ -107,73 +107,63 @@ const PurchaseOrder = ({ navigation, route }) => {
         return;
       }
 
-      // let shelvingItems = shelvingData.items;
+      let shelvingItems = shelvingData.items;
       // console.log('shelving items', JSON.stringify(shelvingItems));
-      // if (shelvingItems.length > 0) {
-      //   shelvingItems = shelvingItems.map(item => {
-      //     if (item.inShelf.length > 0) {
-      //       return {
-      //         ...item,
-      //         receivedQuantity: item.receivedQuantity - item.inShelf.reduce((acc, item) => acc + item.quantity, 0)
-      //       }
-      //     } else {
-      //       return {
-      //         ...item,
-      //         receivedQuantity: item.receivedQuantity
-      //       }
-      //     }
-      //   });
-      // }
-
-      let poItems = poData.data.items;
-      const historyItems = poData.data.historyTotal;
-      // console.log(historyItems);
-
-      if (historyItems.length > 0) {
-        poItems = poItems.map(poItem => {
-          const matchedItem = historyItems.find(
-            historyItem => historyItem.material === poItem.material
-          );
-          if (matchedItem) {
+      if (shelvingItems.length > 0) {
+        shelvingItems = shelvingItems.map(item => {
+          if (item.inShelf.length > 0) {
             return {
-              ...poItem,
-              remainingQuantity: poItem.quantity - matchedItem.grnQuantity
-            };
+              ...item,
+              receivedQuantity: item.receivedQuantity - item.inShelf.reduce((acc, item) => acc + item.quantity, 0)
+            }
           } else {
             return {
-              ...poItem,
-              remainingQuantity: poItem.quantity
-            };
+              ...item,
+              receivedQuantity: item.receivedQuantity
+            }
           }
         });
       }
-      else {
-        poItems = poItems.map(item => {
+
+      let poItems = poData.data.items;
+      const historyItems = poData.data.historyTotal;
+
+      poItems = poItems.map(poItem => {
+        const matchedPhItem = historyItems.find(
+          historyItem => historyItem.material === poItem.material
+        );
+        const matchedShItem = shelvingItems.find(
+          shItem => shItem.code === poItem.material
+        );
+        if (matchedPhItem && matchedShItem) {
           return {
-            ...item,
-            remainingQuantity: item.quantity
+            ...poItem,
+            remainingQuantity: poItem.quantity - matchedShItem.receivedQuantity,
+            grnQuantity: matchedPhItem.grnQuantity
           };
-        });
-      }
+        } else if (matchedPhItem) {
+          return {
+            ...poItem,
+            remainingQuantity: poItem.quantity,
+            grnQuantity: matchedPhItem.grnQuantity
+          };
+        } else if (matchedShItem) {
+          return {
+            ...poItem,
+            remainingQuantity: poItem.quantity - matchedShItem.receivedQuantity,
+            grnQuantity: 0
+          };
+        } else {
+          return {
+            ...poItem,
+            remainingQuantity: poItem.quantity,
+            grnQuantity: 0
+          };
+        }
+      });
 
       poItems = poItems.filter(item => item.remainingQuantity !== 0);
 
-      // let adjustedArticles = poItems.map(poItem => {
-      //   const matchedItem = shelvingItems.find(
-      //     shItem => shItem.code === poItem.material
-      //   );
-      //   if (matchedItem) {
-      //     return {
-      //       ...poItem,
-      //       remainingQuantity: poItem.quantity - matchedItem.receivedQuantity
-      //     };
-      //   } else {
-      //     return {
-      //       ...poItem,
-      //       remainingQuantity: poItem.quantity
-      //     };
-      //   }
-      // }).filter(item => item.remainingQuantity !== 0);
       setArticles(poItems);
     } catch (error) {
       Toast.show({
@@ -217,44 +207,42 @@ const PurchaseOrder = ({ navigation, route }) => {
         <TouchableOpacity onPress={() => navigation.replace('PoArticle', item)}>
           <View
             key={index}
-            className="flex-row items-center border border-tb rounded-lg mt-2.5 p-4"
+            className="flex-row items-center justify-between border border-tb rounded-lg mt-2.5 p-4"
           >
-            <Text
-              className="w-1/5 text-black"
-              numberOfLines={1}>
-              {item.material}
-            </Text>
-            <Text
-              className="w-3/5 h-9 leading-9 text-black text-center"
-              numberOfLines={2}>
-              {item.description}
-            </Text>
-            <Text
-              className="w-1/5 text-black text-center"
-              numberOfLines={1}>
+            <View className="w-1/2">
+              <Text className="text-black" numberOfLines={1}>
+                {item.material}
+              </Text>
+              <Text className="w-4/5 text-black" numberOfLines={2}>
+                {item.description}
+              </Text>
+            </View>
+            <Text className="text-black flex-1 justify-center" numberOfLines={1}>
               {item.remainingQuantity}
+            </Text>
+            <Text className="text-black text-center" numberOfLines={1}>
+              {item.grnQuantity}
             </Text>
           </View>
         </TouchableOpacity>
       ) : (
         <View
           key={index}
-          className="flex-row items-center border border-tb rounded-lg mt-2.5 p-4"
+          className="flex-row items-center justify-between border border-tb rounded-lg mt-2.5 p-4"
         >
-          <Text
-            className="w-1/5 text-black text-left"
-            numberOfLines={1}>
-            {item.material}
-          </Text>
-          <Text
-            className="w-3/5 h-9 leading-9 text-black text-center"
-            numberOfLines={2}>
-            {item.description}
-          </Text>
-          <Text
-            className="w-1/5 text-black text-right"
-            numberOfLines={1}>
+          <View className="w-1/2">
+            <Text className="text-black" numberOfLines={1}>
+              {item.material}
+            </Text>
+            <Text className="w-4/5 text-black" numberOfLines={2}>
+              {item.description}
+            </Text>
+          </View>
+          <Text className="text-black flex-1 justify-center" numberOfLines={1}>
             {item.remainingQuantity}
+          </Text>
+          <Text className="text-black text-center" numberOfLines={1}>
+            {item.grnQuantity}
           </Text>
         </View>
       )}

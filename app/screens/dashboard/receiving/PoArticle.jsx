@@ -133,7 +133,7 @@ const PoArticle = ({ navigation, route }) => {
         receivedBy: user.name,
         bins,
         batch: batchNo,
-        expiryDate: expDate,
+        expiryDate: expDate?.date,
         // mrp
       };
 

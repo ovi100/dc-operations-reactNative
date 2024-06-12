@@ -14,6 +14,7 @@ import Dialog from '../../../../../components/Dialog';
 import { ButtonBack, ButtonLg } from '../../../../../components/buttons';
 import { getStorage } from '../../../../../hooks/useStorage';
 import { updateArticleTracking, updateStoTracking } from '../processStoData';
+import {API_URL} from '@env';
 
 const PickedSto = ({ navigation, route }) => {
   const { sto } = route.params;
@@ -24,7 +25,6 @@ const PickedSto = ({ navigation, route }) => {
   const [token, setToken] = useState('');
   let tableHeader = ['Article Code', 'Article Name', 'Picked Qnt', 'Packed Qnt'];
   let [articles, setArticles] = useState([]);
-  const API_URL = 'https://shwapnooperation.onrender.com/';
 
   useEffect(() => {
     const getAsyncStorage = async () => {

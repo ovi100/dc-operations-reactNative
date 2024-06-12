@@ -8,6 +8,7 @@ import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
 import ServerError from '../../../../components/animations/ServerError';
 import { getStorage } from '../../../../hooks/useStorage';
+import {API_URL} from '@env';
 
 const TaskAssign = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -16,7 +17,6 @@ const TaskAssign = ({ navigation }) => {
   const [token, setToken] = useState('');
   let [taskList, setTaskList] = useState([]);
   const tableHeader = ['STO ID', 'SKU', 'Outlet Code', 'Status'];
-  const API_URL = 'https://shwapnooperation.onrender.com/api/sto-tracking?pageSize=500&sortBy=sto&&sortOrder=asc&filterBy=supplyingPlant&';
 
   useEffect(() => {
     const getAsyncStorage = async () => {
@@ -28,7 +28,7 @@ const TaskAssign = ({ navigation }) => {
 
   const getInDnList = async () => {
     try {
-      await fetch(API_URL + `value=${user.site}`, {
+      await fetch(API_URL + `api/sto-tracking?pageSize=500&sortBy=sto&&sortOrder=asc&filterBy=supplyingPlant&value=${user.site}`, {
         method: 'GET',
         headers: {
           authorization: token,

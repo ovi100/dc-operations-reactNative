@@ -16,6 +16,7 @@ import useAppContext from '../../../../../hooks/useAppContext';
 import { getStorage } from '../../../../../hooks/useStorage';
 import SunmiScanner from '../../../../../utils/sunmi/scanner';
 import { adjustStoQuantity, mergeInventory, updateStoItems, updateStoTracking } from '../processStoData';
+import {API_URL} from '@env';
 
 const PickingSto = ({ navigation, route }) => {
   const { sto, picker, pickerId, packer, packerId } = route.params;
@@ -25,11 +26,10 @@ const PickingSto = ({ navigation, route }) => {
   const [user, setUser] = useState({});
   const [token, setToken] = useState('');
   let [articles, setArticles] = useState([]);
-  const API_URL = 'https://shwapnooperation.onrender.com/';
   const { startScan, stopScan } = SunmiScanner;
   const { StoInfo } = useAppContext();
   const { stoInfo, stoItems } = StoInfo;
-  let remainingStoInfo = [], remainingStoItems = [], pickedSto = [], stoTrackInfo = {};
+  let pickedSto = [], stoTrackInfo = {};
 
   useEffect(() => {
     const getAsyncStorage = async () => {

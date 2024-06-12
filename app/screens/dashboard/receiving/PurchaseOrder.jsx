@@ -20,6 +20,7 @@ import useBackHandler from '../../../../hooks/useBackHandler';
 import { getStorage, setStorage } from '../../../../hooks/useStorage';
 import { toast } from '../../../../utils';
 import SunmiScanner from '../../../../utils/sunmi/scanner';
+import { API_URL } from '@env';
 
 const PurchaseOrder = ({ navigation, route }) => {
   const { po } = route.params;
@@ -37,7 +38,6 @@ const PurchaseOrder = ({ navigation, route }) => {
   const [token, setToken] = useState('');
   const [articles, setArticles] = useState([]);
   const tableHeader = ['Article Code', 'PO Qty', 'GRN Qty', 'RCV Qty'];
-  const API_URL = 'https://shwapnooperation.onrender.com/';
   const { GRNInfo } = useAppContext();
   const { grnItems, setGrnItems, setIsUpdatingGrn } = GRNInfo;
   let grnPostItems = [], remainingGrnItems = [], grnSummery = {};
@@ -244,23 +244,23 @@ const PurchaseOrder = ({ navigation, route }) => {
       ) : (
         <View
           key={index}
-          className="flex-row items-center justify-between border border-tb rounded-lg mt-2.5 p-4"
+          className="flex-row items-center border border-tb rounded-lg mt-2.5 p-4"
         >
-          <View className="w-1/2">
+          <View className="w-2/5">
             <Text className="text-black" numberOfLines={1}>
               {item.material}
             </Text>
-            <Text className="w-4/5 text-black" numberOfLines={2}>
+            <Text className="w-full text-black" numberOfLines={2}>
               {item.description}
             </Text>
           </View>
-          <Text className="text-black flex-1 justify-center" numberOfLines={1}>
+          <Text className="w-1/5 text-black text-center" numberOfLines={1}>
             {item.quantity}
           </Text>
-          <Text className="text-black text-center" numberOfLines={1}>
+          <Text className="w-1/5 text-black text-center" numberOfLines={1}>
             {item.grnQuantity}
           </Text>
-          <Text className="text-black text-center" numberOfLines={1}>
+          <Text className="w-1/5 text-blue-600 text-base text-right" numberOfLines={1}>
             {item.remainingQuantity}
           </Text>
         </View>

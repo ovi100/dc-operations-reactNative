@@ -14,6 +14,7 @@ import useAppContext from '../../../../hooks/useAppContext';
 import useBackHandler from '../../../../hooks/useBackHandler';
 import { getStorage } from '../../../../hooks/useStorage';
 import { handleDate } from '../../../../utils';
+import {API_URL} from '@env';
 
 const PoArticle = ({ navigation, route }) => {
   const {
@@ -32,7 +33,6 @@ const PoArticle = ({ navigation, route }) => {
   const { GRNInfo, authInfo } = useAppContext();
   const { user } = authInfo;
   const { addToGRN } = GRNInfo;
-  const API_URL = 'https://shwapnooperation.onrender.com/api/';
   const { createActivity } = useActivity();
 
   // Custom hook to navigate screen
@@ -132,17 +132,17 @@ const PoArticle = ({ navigation, route }) => {
         receivedQuantity: Number(newQuantity),
         receivedBy: user.name,
         bins,
-        mfgDate,
+        mfgDate: mfgDate?.date,
         expiryDate: expDate?.date,
         batch: batchNo,
-        mrp
+        mrp: Number(mrp)
       };
 
       // console.log('shelving object', shelvingObject);
 
       try {
         setIsButtonLoading(true);
-        await fetch(API_URL + 'product-shelving/ready', {
+        await fetch(API_URL + 'api/product-shelving/ready', {
           method: 'POST',
           headers: {
             authorization: token,
@@ -207,10 +207,10 @@ const PoArticle = ({ navigation, route }) => {
   }
 
   // Calculate the total lifespan of the product in days
-  const totalLifespan = dateDiffInDays(mfgDate.date, expDate.date);
+  const totalLifespan = dateDiffInDays(mfgDate?.date, expDate?.date);
 
   // Calculate the number of days from the manufacturing date to the current date
-  const daysPassed = dateDiffInDays(mfgDate.date, new Date());
+  const daysPassed = dateDiffInDays(mfgDate?.date, new Date());
 
   // Calculate the percentage of the product's life that has passed
   const percentageOfLifePassed = 100 - ((daysPassed / totalLifespan) * 100);
@@ -317,13 +317,15 @@ const PoArticle = ({ navigation, route }) => {
                   {/* Product Manufacturing Date */}
                   <View className="w-1/2 mfg-date bg-[#FEFBFB] border border-[#F2EFEF] rounded px-3 py-2 mr-0.5">
                     <View className="box-header">
-                      <View className="flex-row items-center justify-between">
+                      <View className="">
                         <Text className="text-base text-[#2E2C3B] font-medium">
                           MFG Date
                         </Text>
-                        <Text className="text-base text-[#2E2C3B] font-medium capitalize">
-                          {mfgDate?.date > new Date() && mfgDate?.date.toLocaleDateString('en-Uk', { dateStyle: 'medium' })}
-                        </Text>
+                        {mfgDate?.date && (
+                          <Text className="text-base text-[#2E2C3B] font-medium capitalize">
+                            {mfgDate?.date.toLocaleDateString('en-Uk', { dateStyle: 'medium' })}
+                          </Text>
+                        )}
                       </View>
                     </View>
                     <View className="date-picker mt-2">
@@ -331,7 +333,7 @@ const PoArticle = ({ navigation, route }) => {
                         className="bg-[#F5F6FA] border border-t-0 border-black/25 h-[50px] text-[#5D80C5] rounded-2xl px-4"
                         placeholder="DD/MM/YY"
                         value={mfgDate?.text}
-                        onChangeText={text => setMfgDate(handleDate(text))}
+                        onChangeText={text => setMfgDate(handleDate(text, 'mfg'))}
                         keyboardType="numeric"
                         maxLength={10}
                       />
@@ -341,13 +343,15 @@ const PoArticle = ({ navigation, route }) => {
                   {/* Product Expiry Date */}
                   <View className="w-1/2 exp-date bg-[#FEFBFB] border border-[#F2EFEF] rounded px-3 py-2 ml-0.5">
                     <View className="box-header">
-                      <View className="flex-row items-center justify-between">
+                      <View className="">
                         <Text className="text-base text-[#2E2C3B] font-medium capitalize">
                           exp date
                         </Text>
-                        <Text className="text-base text-[#2E2C3B] font-medium capitalize">
-                          {expDate?.date > new Date() && expDate?.date.toLocaleDateString('en-Uk', { dateStyle: 'medium' })}
-                        </Text>
+                        {expDate?.date && (
+                          <Text className="text-base text-[#2E2C3B] font-medium capitalize">
+                            {expDate?.date.toLocaleDateString('en-Uk', { dateStyle: 'medium' })}
+                          </Text>
+                        )}
                       </View>
                     </View>
                     <View className="date-picker mt-2">
@@ -355,7 +359,7 @@ const PoArticle = ({ navigation, route }) => {
                         className="bg-[#F5F6FA] border border-t-0 border-black/25 h-[50px] text-[#5D80C5] rounded-2xl px-4"
                         placeholder="DD/MM/YY"
                         value={expDate?.text}
-                        onChangeText={text => setExpDate(handleDate(text))}
+                        onChangeText={text => setExpDate(handleDate(text, 'exp'))}
                         keyboardType="numeric"
                         maxLength={10}
                       />

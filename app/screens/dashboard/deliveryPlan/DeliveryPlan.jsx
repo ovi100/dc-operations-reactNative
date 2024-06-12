@@ -22,6 +22,7 @@ import { ButtonBack, ButtonLg, ButtonLoading } from '../../../../components/butt
 import useActivity from '../../../../hooks/useActivity';
 import { getStorage, setStorage } from '../../../../hooks/useStorage';
 import { dateRange } from '../../../../utils';
+import {API_URL} from '@env';
 
 const DeliveryPlan = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -39,7 +40,6 @@ const DeliveryPlan = ({ navigation }) => {
   const [isAllChecked, setIsAllChecked] = useState(false);
   const [search, setSearch] = useState('');
   const tableHeader = ['STO ID', 'SKU', 'Outlet Code'];
-  const API_URL = 'https://shwapnooperation.onrender.com/';
   const dateObject = dateRange(1);
   const { from, to } = dateObject;
   const { createActivity } = useActivity();

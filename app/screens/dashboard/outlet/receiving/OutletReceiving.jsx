@@ -15,6 +15,7 @@ import Scan from '../../../../../components/animations/Scan';
 import useActivity from '../../../../../hooks/useActivity';
 import { getStorage } from '../../../../../hooks/useStorage';
 import SunmiScanner from '../../../../../utils/sunmi/scanner';
+import {API_URL} from '@env';
 
 const Receiving = ({ navigation }) => {
   const [isChecking, setIsChecking] = useState(false);
@@ -23,7 +24,6 @@ const Receiving = ({ navigation }) => {
   const [token, setToken] = useState('');
   const [barcode, setBarcode] = useState('');
   const [search, setSearch] = useState('');
-  const API_URL = 'https://shwapnooperation.onrender.com/';
   const { startScan, stopScan } = SunmiScanner;
   const { createActivity } = useActivity();
   let isDn;
@@ -53,83 +53,132 @@ const Receiving = ({ navigation }) => {
     || (search.startsWith('4') || barcode.startsWith('4')) || (search.startsWith('6') || barcode.startsWith('6')) || (search.startsWith('7') || barcode.startsWith('7'));
 
   const checkPo = async (po) => {
-    try {
-      await fetch(API_URL + 'bapi/po/released', {
-        method: 'POST',
-        headers: {
-          authorization: token,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ po }),
-      })
-        .then(response => response.json())
-        .then(async result => {
-          if (result.status) {
-            const data = result.data;
-            if (data.poReleasedStatus) {
-              await fetch(API_URL + 'bapi/po/display', {
-                method: 'POST',
-                headers: {
-                  authorization: token,
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ po }),
-              })
-                .then(response => response.json())
-                .then(async poDetails => {
-                  if (poDetails.status) {
-                    const poData = poDetails.data;
-                    // const companyCode = poData.companyCode;
-                    const poItem = poData.items[0];
-                    if (poItem.receivingPlant === user.site) {
-                      navigation.replace('OutletPoStoDetails', { po });
+    if (user.site.startsWith('DS')) {
+      try {
+        await fetch(API_URL + 'bapi/po/released', {
+          method: 'POST',
+          headers: {
+            authorization: token,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ po }),
+        })
+          .then(response => response.json())
+          .then(async result => {
+            if (result.status) {
+              const data = result.data;
+              if (data.poReleasedStatus) {
+                await fetch(API_URL + 'bapi/po/display', {
+                  method: 'POST',
+                  headers: {
+                    authorization: token,
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({ po }),
+                })
+                  .then(response => response.json())
+                  .then(async poDetails => {
+                    if (poDetails.status) {
+                      const poData = poDetails.data;
+                      // const companyCode = poData.companyCode;
+                      const poItem = poData.items[0];
+                      if (poItem.receivingPlant === user.site) {
+                        navigation.replace('OutletPoStoDetails', { po });
+                      } else {
+                        Toast.show({
+                          type: 'customError',
+                          text1: 'Not authorized to receive PO',
+                        });
+                      }
                     } else {
                       Toast.show({
                         type: 'customError',
-                        text1: 'Not authorized to receive PO',
+                        text1: poDetails.message.trim(),
                       });
+                      if (poDetails.message.trim() === 'MIS Logged Off the PC where BAPI is Hosted') {
+                        //log user activity
+                        await createActivity(user._id, 'error', result.message.trim());
+                      }
                     }
-                  } else {
+                  })
+                  .catch(error => {
                     Toast.show({
                       type: 'customError',
-                      text1: poDetails.message.trim(),
+                      text1: error.message,
                     });
-                    if (poDetails.message.trim() === 'MIS Logged Off the PC where BAPI is Hosted') {
-                      //log user activity
-                      await createActivity(user._id, 'error', result.message.trim());
-                    }
-                  }
-                })
-                .catch(error => {
-                  Toast.show({
-                    type: 'customError',
-                    text1: error.message,
                   });
+              } else {
+                Toast.show({
+                  type: 'customError',
+                  text1: "PO not released",
                 });
+              }
             } else {
               Toast.show({
                 type: 'customError',
-                text1: "PO not released",
+                text1: result.message.trim(),
               });
             }
-          } else {
+          })
+          .catch(error => {
             Toast.show({
               type: 'customError',
-              text1: result.message.trim(),
+              text1: error.message,
             });
-          }
-        })
-        .catch(error => {
-          Toast.show({
-            type: 'customError',
-            text1: error.message,
           });
+      } catch (error) {
+        Toast.show({
+          type: 'customError',
+          text1: error.message,
         });
-    } catch (error) {
-      Toast.show({
-        type: 'customError',
-        text1: error.message,
-      });
+      }
+    } else {
+      try {
+        await fetch(API_URL + 'bapi/po/display', {
+          method: 'POST',
+          headers: {
+            authorization: token,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ po }),
+        })
+          .then(response => response.json())
+          .then(async poDetails => {
+            if (poDetails.status) {
+              const poData = poDetails.data;
+              // const companyCode = poData.companyCode;
+              const poItem = poData.items[0];
+              if (poItem.receivingPlant === user.site) {
+                navigation.replace('OutletPoStoDetails', { po });
+              } else {
+                Toast.show({
+                  type: 'customError',
+                  text1: 'Not authorized to receive PO',
+                });
+              }
+            } else {
+              Toast.show({
+                type: 'customError',
+                text1: poDetails.message.trim(),
+              });
+              if (poDetails.message.trim() === 'MIS Logged Off the PC where BAPI is Hosted') {
+                //log user activity
+                await createActivity(user._id, 'error', result.message.trim());
+              }
+            }
+          })
+          .catch(error => {
+            Toast.show({
+              type: 'customError',
+              text1: error.message,
+            });
+          });
+      } catch (error) {
+        Toast.show({
+          type: 'customError',
+          text1: error.message,
+        });
+      }
     }
   };
 

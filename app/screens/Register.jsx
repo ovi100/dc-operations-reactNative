@@ -11,6 +11,7 @@ import { EyeInvisibleIcon, EyeVisibleIcon } from '../../constant/icons';
 import useActivity from '../../hooks/useActivity';
 import styles from '../../styles/button';
 import { validateInput } from '../../utils';
+import { API_URL } from '@env';
 
 const Register = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -23,7 +24,6 @@ const Register = ({ navigation }) => {
   const [staffIdError, setStaffIdError] = useState(null);
   const [password, setPassword] = useState('');
   const [passwordError, setPasswordError] = useState(null);
-  const API_URL = 'https://shwapnooperation.onrender.com/api/user';
   const { createActivity } = useActivity();
 
   const toggleType = () => {
@@ -33,7 +33,7 @@ const Register = ({ navigation }) => {
   const register = async (name, email, staffId, password) => {
     try {
       setIsLoading(true);
-      const response = await fetch(API_URL, {
+      const response = await fetch(API_URL + 'api/user', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -85,11 +85,6 @@ const Register = ({ navigation }) => {
   };
 
   const handleRegister = () => {
-    // setNameError(validateInput('name', name));
-    // setEmailError(validateInput('email', email));
-    // setStaffIdError(validateInput('staff id', staffId));
-    // setPasswordError(validateInput('password', password));
-
     if (!name) {
       Toast.show({
         type: 'customError',

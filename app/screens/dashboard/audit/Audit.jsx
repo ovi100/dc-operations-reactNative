@@ -15,6 +15,7 @@ import CustomToast from '../../../../components/CustomToast';
 import { ButtonBack } from '../../../../components/buttons';
 import { BoxIcon, ClosedBoxIcon, EmptyBoxIcon } from '../../../../constant/icons';
 import { getStorage } from '../../../../hooks/useStorage';
+import {API_URL} from '@env';
 
 const Audit = ({ navigation }) => {
   const [user, setUser] = useState({});
@@ -22,7 +23,6 @@ const Audit = ({ navigation }) => {
   const [shelveData, setShelveData] = useState([]);
   const [searchResult, setSearchResult] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const API_URL = 'https://shwapnooperation.onrender.com/api/inventory?filterBy=material&';
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
@@ -67,7 +67,7 @@ const Audit = ({ navigation }) => {
     setIsLoading(true);
 
     try {
-      const response = await fetch(API_URL + `value=${searchQuery}`, {
+      const response = await fetch(API_URL + `api/inventory?filterBy=material&value=${searchQuery}`, {
         method: 'GET',
         headers: {
           authorization: token,

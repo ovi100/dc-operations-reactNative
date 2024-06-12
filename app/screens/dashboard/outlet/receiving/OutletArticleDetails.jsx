@@ -14,7 +14,7 @@ import useAppContext from '../../../../../hooks/useAppContext';
 import useBackHandler from '../../../../../hooks/useBackHandler';
 import { getStorage } from '../../../../../hooks/useStorage';
 import { handleDate } from '../../../../../utils';
-
+import {API_URL} from '@env';
 
 const OutletArticleDetails = ({ navigation, route }) => {
   const {
@@ -25,16 +25,15 @@ const OutletArticleDetails = ({ navigation, route }) => {
   const [isButtonLoading, setIsButtonLoading] = useState(false);
   const [bins, setBins] = useState([]);
   const [newQuantity, setNewQuantity] = useState(remainingQuantity);
-  // const [mfgDate, setMfgDate] = useState(new Date());
+  const [mfgDate, setMfgDate] = useState(new Date());
   const [expDate, setExpDate] = useState(new Date());
   const [batchNo, setBatchNo] = useState(null);
-  // const [mrp, setMrp] = useState(null);
+  const [mrp, setMrp] = useState(null);
   const [token, setToken] = useState('');
   const { createActivity } = useActivity();
   const { GRNInfo, authInfo } = useAppContext();
   const { user } = authInfo;
   const { addToGRN } = GRNInfo;
-  const API_URL = 'https://shwapnooperation.onrender.com/api/';
 
   // Custom hook to navigate screen
   useBackHandler('OutletPoStoDetails', { po, dn, sto });
@@ -73,7 +72,7 @@ const OutletArticleDetails = ({ navigation, route }) => {
   const postShelvingData = async (postData, grnItem) => {
     setIsButtonLoading(true);
     try {
-      await fetch(API_URL + 'product-shelving/ready', {
+      await fetch(API_URL + 'api/product-shelving/ready', {
         method: 'POST',
         headers: {
           authorization: token,
@@ -185,10 +184,10 @@ const OutletArticleDetails = ({ navigation, route }) => {
         receivedQuantity: Number(newQuantity),
         receivedBy: user.name,
         bins,
-        mfgDate,
+        mfgDate: mfgDate?.date,
         expiryDate: expDate?.date,
         batch: batchNo,
-        mrp
+        mrp: Number(mrp)
       };
 
       if (po) {
@@ -200,6 +199,21 @@ const OutletArticleDetails = ({ navigation, route }) => {
       await postShelvingData(shelvingObject, grnItem);
     }
   };
+
+  // Function to calculate the difference in days between two dates
+  function dateDiffInDays(date1, date2) {
+    const oneDay = 24 * 60 * 60 * 1000; // hours * minutes * seconds * milliseconds
+    return Math.round(Math.abs((date2 - date1) / oneDay));
+  }
+
+  // Calculate the total lifespan of the product in days
+  const totalLifespan = dateDiffInDays(mfgDate?.date, expDate?.date);
+
+  // Calculate the number of days from the manufacturing date to the current date
+  const daysPassed = dateDiffInDays(mfgDate?.date, new Date());
+
+  // Calculate the percentage of the product's life that has passed
+  const percentageOfLifePassed = 100 - ((daysPassed / totalLifespan) * 100);
 
   if (isLoading) {
     return (
@@ -233,130 +247,144 @@ const OutletArticleDetails = ({ navigation, route }) => {
               </View>
             </View>
 
-            {/* Quantity Box */}
-            <View className="quantity-box bg-[#FEFBFB] border border-[#F2EFEF] rounded px-5 py-2">
-              <View className="box-header flex-row items-center justify-between">
-                <View className="text">
-                  <Text className="text-base text-[#2E2C3B] font-medium capitalize">
-                    received quantity
-                  </Text>
+            <View className="content h-[85vh] flex-1 justify-around">
+              <View className="input-boxes">
+                {/* Quantity Box */}
+                <View className="quantity-box bg-[#FEFBFB] border border-[#F2EFEF] rounded px-5 py-2">
+                  <View className="box-header flex-row items-center justify-between">
+                    <View className="text">
+                      <Text className="text-base text-[#2E2C3B] font-medium capitalize">
+                        received quantity
+                      </Text>
+                    </View>
+                    <View className="quantity flex-row items-center gap-3">
+                      <Image source={BoxIcon} />
+                      <Text className="font-bold bg-blue-600 text-white rounded-full py-1 px-2">{remainingQuantity}</Text>
+                    </View>
+                  </View>
+                  <View className="input-box mt-2">
+                    <TextInput
+                      className="bg-[#F5F6FA] border border-t-0 border-black/25 h-[50px] text-[#5D80C5] rounded-2xl px-4"
+                      placeholder="Type Picked Quantity"
+                      placeholderTextColor="#5D80C5"
+                      selectionColor="#5D80C5"
+                      keyboardType="numeric"
+                      // value={newQuantity.toString()}
+                      onChangeText={value => {
+                        setNewQuantity(value);
+                      }}
+                    />
+                  </View>
                 </View>
-                <View className="quantity flex-row items-center gap-3">
-                  <Image source={BoxIcon} />
-                  <Text className="font-bold text-black">{remainingQuantity}</Text>
-                </View>
-              </View>
-              <View className="input-box mt-2">
-                <TextInput
-                  className="bg-[#F5F6FA] border border-t-0 border-black/25 h-[50px] text-[#5D80C5] rounded-2xl px-4"
-                  placeholder="Type Picked Quantity"
-                  placeholderTextColor="#5D80C5"
-                  selectionColor="#5D80C5"
-                  keyboardType="numeric"
-                  value={newQuantity.toString()}
-                  onChangeText={value => {
-                    setNewQuantity(value);
-                  }}
-                />
-              </View>
-            </View>
 
-            {/* Product Manufacturing Date */}
-            {/* <View className="mfg-date bg-[#FEFBFB] border border-[#F2EFEF] rounded mt-3 px-5 py-2">
-              <View className="box-header">
-                <View className="flex-row items-center justify-between">
-                  <Text className="text-base text-[#2E2C3B] font-medium capitalize">
-                    manufacturing date
-                  </Text>
-                  <Text className="text-base text-[#2E2C3B] font-medium capitalize">
-                    {mfgDate?.date > new Date() && mfgDate?.date.toLocaleDateString('en-Uk', { dateStyle: 'medium' })}
-                  </Text>
+                <View className="w-full flex-row mt-3">
+                  {/* Product Batch */}
+                  <View className="w-1/2 product-batch bg-[#FEFBFB] border border-[#F2EFEF] rounded px-3 py-2 mr-0.5">
+                    <View className="box-header flex-row items-center justify-between">
+                      <View>
+                        <Text className="text-base text-[#2E2C3B] font-medium capitalize">
+                          batch no.
+                        </Text>
+                      </View>
+                    </View>
+                    <View className="input-box mt-2">
+                      <TextInput
+                        className="bg-[#F5F6FA] border border-t-0 border-black/25 h-[50px] text-[#5D80C5] rounded-2xl px-4"
+                        placeholder="Enter batch number"
+                        placeholderTextColor="#5D80C5"
+                        selectionColor="#5D80C5"
+                        keyboardType="numeric"
+                        value={batchNo}
+                        onChangeText={value => setBatchNo(value)}
+                      />
+                    </View>
+                  </View>
+
+                  {/* Product MRP */}
+                  <View className="w-1/2 product-mrp bg-[#FEFBFB] border border-[#F2EFEF] rounded px-3 py-2 ml-0.5">
+                    <View className="box-header flex-row items-center justify-between">
+                      <View>
+                        <Text className="text-base text-[#2E2C3B] font-medium">
+                          MRP Price
+                        </Text>
+                      </View>
+                    </View>
+                    <View className="input-box mt-2">
+                      <TextInput
+                        className="bg-[#F5F6FA] border border-t-0 border-black/25 h-[50px] text-[#5D80C5] rounded-2xl px-4"
+                        placeholder="Enter MRP price"
+                        placeholderTextColor="#5D80C5"
+                        selectionColor="#5D80C5"
+                        keyboardType="numeric"
+                        value={mrp}
+                        onChangeText={value => setMrp(value)}
+                      />
+                    </View>
+                  </View>
+                </View>
+                <View className="w-full flex-row mt-3">
+                  {/* Product Manufacturing Date */}
+                  <View className="w-1/2 mfg-date bg-[#FEFBFB] border border-[#F2EFEF] rounded px-3 py-2 mr-0.5">
+                    <View className="box-header">
+                      <View className="">
+                        <Text className="text-base text-[#2E2C3B] font-medium">
+                          MFG Date
+                        </Text>
+                        {mfgDate?.date && (
+                          <Text className="text-base text-[#2E2C3B] font-medium capitalize">
+                            {mfgDate?.date.toLocaleDateString('en-Uk', { dateStyle: 'medium' })}
+                          </Text>
+                        )}
+                      </View>
+                    </View>
+                    <View className="date-picker mt-2">
+                      <TextInput
+                        className="bg-[#F5F6FA] border border-t-0 border-black/25 h-[50px] text-[#5D80C5] rounded-2xl px-4"
+                        placeholder="DD/MM/YY"
+                        value={mfgDate?.text}
+                        onChangeText={text => setMfgDate(handleDate(text, 'mfg'))}
+                        keyboardType="numeric"
+                        maxLength={10}
+                      />
+                    </View>
+                  </View>
+
+                  {/* Product Expiry Date */}
+                  <View className="w-1/2 exp-date bg-[#FEFBFB] border border-[#F2EFEF] rounded px-3 py-2 ml-0.5">
+                    <View className="box-header">
+                      <View className="">
+                        <Text className="text-base text-[#2E2C3B] font-medium capitalize">
+                          exp date
+                        </Text>
+                        {expDate?.date && (
+                          <Text className="text-base text-[#2E2C3B] font-medium capitalize">
+                            {expDate?.date.toLocaleDateString('en-Uk', { dateStyle: 'medium' })}
+                          </Text>
+                        )}
+                      </View>
+                    </View>
+                    <View className="date-picker mt-2">
+                      <TextInput
+                        className="bg-[#F5F6FA] border border-t-0 border-black/25 h-[50px] text-[#5D80C5] rounded-2xl px-4"
+                        placeholder="DD/MM/YY"
+                        value={expDate?.text}
+                        onChangeText={text => setExpDate(handleDate(text, 'exp'))}
+                        keyboardType="numeric"
+                        maxLength={10}
+                      />
+                    </View>
+                  </View>
+                </View>
+
+                <View className="w-1/2 mx-auto rounded-md mt-5 bg-green-600 py-3">
+                  <Text className="text-lg text-white text-center font-bold capitalize">shelf life: {percentageOfLifePassed ? `${percentageOfLifePassed.toFixed(2)}%` : '0%'}</Text>
                 </View>
               </View>
-              <View className="date-picker mt-2">
-                <TextInput
-                  className="bg-[#F5F6FA] border border-t-0 border-black/25 h-[50px] text-[#5D80C5] rounded-2xl px-4"
-                  placeholder="DD/MM/YYYY"
-                  value={mfgDate?.text}
-                  onChangeText={text => setMfgDate(handleDate(text))}
-                  keyboardType="numeric"
-                  maxLength={10}
-                />
+              <View className="button">
+                {isButtonLoading ? <ButtonLoading styles='bg-theme rounded-md p-5' /> :
+                  <ButtonLg title="Mark as Received" onPress={() => readyForShelve()} />
+                }
               </View>
-            </View> */}
-
-            {/* Product Expiry Date */}
-            <View className="exp-date bg-[#FEFBFB] border border-[#F2EFEF] rounded mt-3 px-5 py-2">
-              <View className="box-header">
-                <View className="flex-row items-center justify-between">
-                  <Text className="text-base text-[#2E2C3B] font-medium capitalize">
-                    expiry date
-                  </Text>
-                  <Text className="text-base text-[#2E2C3B] font-medium capitalize">
-                    {expDate?.date > new Date() && expDate?.date.toLocaleDateString('en-Uk', { dateStyle: 'medium' })}
-                  </Text>
-                </View>
-              </View>
-              <View className="date-picker mt-2">
-                <TextInput
-                  className="bg-[#F5F6FA] border border-t-0 border-black/25 h-[50px] text-[#5D80C5] rounded-2xl px-4"
-                  placeholder="DD/MM/YYYY"
-                  value={expDate?.text}
-                  onChangeText={text => setExpDate(handleDate(text))}
-                  keyboardType="numeric"
-                  maxLength={10}
-                />
-              </View>
-            </View>
-
-            {/* Product Batch */}
-            <View className="product-batch bg-[#FEFBFB] border border-[#F2EFEF] rounded mt-3 px-5 py-2">
-              <View className="box-header flex-row items-center justify-between">
-                <View>
-                  <Text className="text-base text-[#2E2C3B] font-medium capitalize">
-                    batch no.
-                  </Text>
-                </View>
-              </View>
-              <View className="input-box mt-2">
-                <TextInput
-                  className="bg-[#F5F6FA] border border-t-0 border-black/25 h-[50px] text-[#5D80C5] rounded-2xl px-4"
-                  placeholder="Enter batch number"
-                  placeholderTextColor="#5D80C5"
-                  selectionColor="#5D80C5"
-                  keyboardType="numeric"
-                  value={batchNo}
-                  onChangeText={value => setBatchNo(value)}
-                />
-              </View>
-            </View>
-
-            {/* Product MRP */}
-            {/* <View className="product-mrp bg-[#FEFBFB] border border-[#F2EFEF] rounded mt-3 px-5 py-2">
-              <View className="box-header flex-row items-center justify-between">
-                <View>
-                  <Text className="text-base text-[#2E2C3B] font-medium">
-                    MRP Price
-                  </Text>
-                </View>
-              </View>
-              <View className="input-box mt-2">
-                <TextInput
-                  className="bg-[#F5F6FA] border border-t-0 border-black/25 h-[50px] text-[#5D80C5] rounded-2xl px-4"
-                  placeholder="Enter MRP price"
-                  placeholderTextColor="#5D80C5"
-                  selectionColor="#5D80C5"
-                  keyboardType="numeric"
-                  value={mrp}
-                  onChangeText={value => setMrp(value)}
-                />
-              </View>
-            </View> */}
-
-            <View className="button mt-4">
-              {isButtonLoading ? <ButtonLoading styles='bg-theme rounded-md p-5' /> :
-                <ButtonLg title="Mark as Received" onPress={() => readyForShelve()} />
-              }
             </View>
           </View>
         </ScrollView>

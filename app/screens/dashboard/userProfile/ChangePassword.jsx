@@ -14,6 +14,7 @@ import useAppContext from "../../../../hooks/useAppContext";
 import { getStorage, setStorage } from "../../../../hooks/useStorage";
 import styles from "../../../../styles/button";
 import { toast, validateInput } from "../../../../utils";
+import { API_URL } from '@env';
 
 const ChangePassword = ({ navigation, route }) => {
   const { authInfo } = useAppContext();
@@ -24,7 +25,6 @@ const ChangePassword = ({ navigation, route }) => {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [passwordError, setPasswordError] = useState(null);
-  const API_URL = "https://shwapnooperation.onrender.com/api/user/";
   const [token, setToken] = useState("");
   const { createActivity } = useActivity();
 
@@ -46,7 +46,7 @@ const ChangePassword = ({ navigation, route }) => {
     if (currentPassword && currentPassword) {
       setIsLoading(true);
       try {
-        await fetch(API_URL + route.params.id, {
+        await fetch(API_URL + 'api/user/' + route.params.id, {
           method: "PATCH",
           headers: {
             authorization: token,

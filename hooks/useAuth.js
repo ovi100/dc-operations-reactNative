@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
-import { Alert } from 'react-native';
+import {useEffect, useState} from 'react';
+import {Alert} from 'react-native';
 import Toast from 'react-native-toast-message';
 import useActivity from './useActivity';
-import { getStorage, removeAll, setStorage } from './useStorage';
+import {getStorage, removeAll, setStorage} from './useStorage';
+import {API_URL} from '@env';
 
 const useAuth = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -10,12 +11,11 @@ const useAuth = () => {
   const [userSites, setUserSites] = useState([]);
   const [token, setToken] = useState(null);
   const {createActivity} = useActivity();
-  const API_URL = 'https://shwapnooperation.onrender.com/api/user';
 
   const login = async (userId, password) => {
     setIsLoading(true);
     try {
-      const response = await fetch(API_URL + '/login', {
+      const response = await fetch(API_URL + 'api/user/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

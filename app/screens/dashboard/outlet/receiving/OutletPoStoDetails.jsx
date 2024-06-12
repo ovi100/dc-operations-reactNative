@@ -18,6 +18,7 @@ import useAppContext from '../../../../../hooks/useAppContext';
 import useBackHandler from '../../../../../hooks/useBackHandler';
 import { getStorage, setStorage } from '../../../../../hooks/useStorage';
 import SunmiScanner from '../../../../../utils/sunmi/scanner';
+import { API_URL } from '@env';
 
 const OutletPoStoDetails = ({ navigation, route }) => {
   const { po, dn, sto } = route.params;
@@ -35,8 +36,7 @@ const OutletPoStoDetails = ({ navigation, route }) => {
   const [articles, setArticles] = useState([]);
   const [reportArticle, setReportArticle] = useState({});
   const [reportText, setReportText] = useState('');
-  const tableHeader = po ? ['Article Code', 'Article Name', 'Quantity'] : ['Article Code', 'Quantity', 'Action'];
-  const API_URL = 'https://shwapnooperation.onrender.com/';
+  const tableHeader = po ? ['Article Code', 'PO Qty', 'GRN Qty', 'RCV Qty'] : ['Article Code', 'Quantity', 'Action'];
   const { GRNInfo } = useAppContext();
   const { grnItems, setGrnItems, setIsUpdatingGrn } = GRNInfo;
   let grnPostItems = [], remainingGrnItems = [], grnSummery = {};
@@ -358,19 +358,21 @@ const OutletPoStoDetails = ({ navigation, route }) => {
             key={index}
             className="flex-row items-center border border-tb rounded-lg mt-2.5 p-4"
           >
-            <Text
-              className="w-1/5 text-black"
-              numberOfLines={1}>
-              {item.material}
+            <View className="w-2/5">
+              <Text className="text-black" numberOfLines={1}>
+                {item.material}
+              </Text>
+              <Text className="w-full text-black" numberOfLines={2}>
+                {item.description}
+              </Text>
+            </View>
+            <Text className="w-1/5 text-black text-center" numberOfLines={1}>
+              {item.quantity}
             </Text>
-            <Text
-              className="w-3/5 h-9 leading-9 text-black text-center"
-              numberOfLines={2}>
-              {item.description}
+            <Text className="w-1/5 text-black text-center" numberOfLines={1}>
+              {item.grnQuantity}
             </Text>
-            <Text
-              className="w-1/5 text-black text-center"
-              numberOfLines={1}>
+            <Text className="w-1/5 text-blue-600 text-base text-right" numberOfLines={1}>
               {item.remainingQuantity}
             </Text>
           </View>
@@ -380,19 +382,21 @@ const OutletPoStoDetails = ({ navigation, route }) => {
           key={index}
           className="flex-row items-center border border-tb rounded-lg mt-2.5 p-4"
         >
-          <Text
-            className="w-1/5 text-black text-left"
-            numberOfLines={1}>
-            {item.material}
+          <View className="w-2/5">
+            <Text className="text-black" numberOfLines={1}>
+              {item.material}
+            </Text>
+            <Text className="w-full text-black" numberOfLines={2}>
+              {item.description}
+            </Text>
+          </View>
+          <Text className="w-1/5 text-black text-center" numberOfLines={1}>
+            {item.quantity}
           </Text>
-          <Text
-            className="w-3/5 h-9 leading-9 text-black text-center"
-            numberOfLines={2}>
-            {item.description}
+          <Text className="w-1/5 text-black text-center" numberOfLines={1}>
+            {item.grnQuantity}
           </Text>
-          <Text
-            className="w-1/5 text-black text-right"
-            numberOfLines={1}>
+          <Text className="w-1/5 text-blue-600 text-base text-right" numberOfLines={1}>
             {item.remainingQuantity}
           </Text>
         </View>

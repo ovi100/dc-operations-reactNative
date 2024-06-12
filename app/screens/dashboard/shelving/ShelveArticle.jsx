@@ -13,6 +13,7 @@ import { BoxIcon } from '../../../../constant/icons';
 import useActivity from '../../../../hooks/useActivity';
 import useBackHandler from '../../../../hooks/useBackHandler';
 import { getStorage } from '../../../../hooks/useStorage';
+import { API_URL } from '@env';
 
 const ShelveArticle = ({ navigation, route }) => {
   const { _id, batch, bins, code, description, expiryDate, receivedQuantity } = route.params;
@@ -21,7 +22,6 @@ const ShelveArticle = ({ navigation, route }) => {
   const [newQuantity, setNewQuantity] = useState(Number(receivedQuantity));
   const [user, setUser] = useState({});
   const [token, setToken] = useState('');
-  const API_URL = 'https://shwapnooperation.onrender.com/api/';
   const { createActivity } = useActivity();
 
   // Custom hook to navigate screen
@@ -50,7 +50,7 @@ const ShelveArticle = ({ navigation, route }) => {
     };
 
     try {
-      await fetch(API_URL + 'inventory', {
+      await fetch(API_URL + 'api/inventory', {
         method: 'POST',
         headers: {
           authorization: token,
@@ -102,7 +102,7 @@ const ShelveArticle = ({ navigation, route }) => {
     };
 
     try {
-      await fetch(API_URL + 'product-shelving/in-shelf/' + _id, {
+      await fetch(API_URL + 'api/product-shelving/in-shelf/' + _id, {
         method: 'POST',
         headers: {
           authorization: token,

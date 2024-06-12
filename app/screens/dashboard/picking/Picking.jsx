@@ -10,6 +10,7 @@ import CustomToast from '../../../../components/CustomToast';
 import ServerError from '../../../../components/animations/ServerError';
 import { StoNotPickedIcon, StoPickedIcon } from '../../../../constant/icons';
 import { getStorage } from '../../../../hooks/useStorage';
+import { API_URL } from '@env';
 
 const Picking = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -18,7 +19,6 @@ const Picking = ({ navigation }) => {
   const [token, setToken] = useState('');
   const [assignedData, setAssignedData] = useState([]);
   const tableHeader = ['STO', 'SKU', 'Outlet Code', 'Status'];
-  const API_URL = 'https://shwapnooperation.onrender.com/api/sto-tracking?sortBy=sto&sortOrder=asc&pageSize=500&filterBy=supplyingPlant&';
 
   useEffect(() => {
     const getAsyncStorage = async () => {
@@ -30,7 +30,7 @@ const Picking = ({ navigation }) => {
 
   const getStoData = async () => {
     try {
-      await fetch(API_URL + `value=${user.site}`, {
+      await fetch(API_URL + `api/sto-tracking?sortBy=sto&sortOrder=asc&pageSize=500&filterBy=supplyingPlant&value=${user.site}`, {
         method: 'GET',
         headers: {
           authorization: token,

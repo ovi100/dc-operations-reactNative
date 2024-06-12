@@ -6,6 +6,7 @@ import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../../components/CustomToast';
 import { ButtonBack, ButtonLg } from '../../../../../components/buttons';
 import { getStorage } from '../../../../../hooks/useStorage';
+import { API_URL } from '@env';
 
 const PickerPackerTaskAssign = ({ navigation, route }) => {
   const { sto } = route.params;
@@ -13,7 +14,6 @@ const PickerPackerTaskAssign = ({ navigation, route }) => {
   const [pickers, setPickers] = useState([]);
   const [packers, setPackers] = useState([]);
   const [token, setToken] = useState('');
-  const API_URL = 'https://shwapnooperation.onrender.com/api/';
 
   useEffect(() => {
     getStorage('token', setToken, 'string');
@@ -22,7 +22,7 @@ const PickerPackerTaskAssign = ({ navigation, route }) => {
   const getUsers = async () => {
     try {
       setIsLoading(true);
-      await fetch(API_URL + 'user?pageSize=50', {
+      await fetch(API_URL + 'api/user?pageSize=50', {
         method: 'GET',
         headers: {
           authorization: token,
@@ -38,9 +38,17 @@ const PickerPackerTaskAssign = ({ navigation, route }) => {
             setPackers(packers);
           }
         })
-        .catch(error => toast(error.message));
+        .catch(error => {
+          Toast.show({
+            type: 'customError',
+            text1: error.message,
+          });
+        });
     } catch (error) {
-      toast(error.message);
+      Toast.show({
+        type: 'customError',
+        text1: error.message,
+      });
       setIsLoading(false);
     }
   };
@@ -79,7 +87,7 @@ const PickerPackerTaskAssign = ({ navigation, route }) => {
     }
 
     try {
-      await fetch(API_URL + 'sto-tracking/update', {
+      await fetch(API_URL + 'api/sto-tracking/update', {
         method: 'PATCH',
         headers: {
           authorization: token,

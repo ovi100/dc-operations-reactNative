@@ -18,6 +18,7 @@ import ServerError from '../../../../components/animations/ServerError';
 import { ButtonBack, ButtonLg, ButtonLoading } from '../../../../components/buttons';
 import { getStorage } from '../../../../hooks/useStorage';
 import { printChildPackingList } from './printPackInfo';
+import {API_URL} from '@env';
 
 const ChildPacking = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -30,7 +31,6 @@ const ChildPacking = ({ navigation }) => {
   let tableHeader = ['Code', 'Received Qnt', 'Packed Qnt'];
   const [user, setUser] = useState({});
   const [token, setToken] = useState('');
-  const API_URL = 'https://shwapnooperation.onrender.com/';
 
   useEffect(() => {
     const getAsyncStorage = async () => {

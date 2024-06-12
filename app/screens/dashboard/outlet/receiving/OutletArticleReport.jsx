@@ -15,7 +15,7 @@ import { ButtonLg, ButtonLoading } from '../../../../../components/buttons';
 import { BoxIcon, CameraIcon, DeleteIcon } from '../../../../../constant/icons';
 import useBackHandler from '../../../../../hooks/useBackHandler';
 import { getStorage } from '../../../../../hooks/useStorage';
-
+import { API_URL } from '@env';
 
 const OutletArticleReport = ({ navigation, route }) => {
   const {
@@ -49,7 +49,6 @@ const OutletArticleReport = ({ navigation, route }) => {
   const [token, setToken] = useState('');
   const [selectedType, setSelectedType] = useState(types[0]);
   const [selectedReason, setSelectedReason] = useState(reasons[0]);
-  const API_URL = 'https://shwapnooperation.onrender.com/api/tpn';
 
   // Custom hook to navigate screen
   useBackHandler('OutletPoStoDetails', { po, dn, sto });
@@ -191,7 +190,7 @@ const OutletArticleReport = ({ navigation, route }) => {
       // console.log('Post data', postData);
 
       try {
-        await fetch(API_URL, {
+        await fetch(API_URL + 'api/tpn', {
           method: 'POST',
           headers: {
             authorization: token,

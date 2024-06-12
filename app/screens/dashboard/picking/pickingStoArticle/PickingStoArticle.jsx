@@ -7,6 +7,7 @@ import { BoxIcon } from '../../../../../constant/icons';
 import useAppContext from '../../../../../hooks/useAppContext';
 import { getStorage } from '../../../../../hooks/useStorage';
 import { updateArticleTracking } from '../processStoData';
+import {API_URL} from '@env';
 
 const PickingStoArticle = ({ navigation, route }) => {
   const {
@@ -19,7 +20,6 @@ const PickingStoArticle = ({ navigation, route }) => {
   const [pickedQuantity, setPickedQuantity] = useState();
   const { StoInfo } = useAppContext();
   const { addToSTO } = StoInfo;
-  const API_URL = 'https://shwapnooperation.onrender.com/api/';
 
   useEffect(() => {
     const getAsyncStorage = async () => {
@@ -57,7 +57,7 @@ const PickingStoArticle = ({ navigation, route }) => {
     };
 
     try {
-      await fetch(API_URL + 'article-tracking', {
+      await fetch(API_URL + 'api/article-tracking', {
         method: 'POST',
         headers: {
           authorization: token,

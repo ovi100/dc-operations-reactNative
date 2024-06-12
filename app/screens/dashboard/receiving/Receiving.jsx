@@ -15,6 +15,7 @@ import Scan from '../../../../components/animations/Scan';
 import useActivity from '../../../../hooks/useActivity';
 import { getStorage } from '../../../../hooks/useStorage';
 import SunmiScanner from '../../../../utils/sunmi/scanner';
+import {API_URL} from '@env';
 
 const Receiving = ({ navigation }) => {
   const [isCheckingPo, setIsCheckingPo] = useState(false);
@@ -23,7 +24,6 @@ const Receiving = ({ navigation }) => {
   const [token, setToken] = useState('');
   const [barcode, setBarcode] = useState('');
   const [search, setSearch] = useState('');
-  const API_URL = 'https://shwapnooperation.onrender.com/bapi/po/';
   const { startScan, stopScan } = SunmiScanner;
   const { createActivity } = useActivity();
 
@@ -50,7 +50,7 @@ const Receiving = ({ navigation }) => {
 
   const checkPo = async (po) => {
     try {
-      await fetch(API_URL + 'released', {
+      await fetch(API_URL + 'bapi/po/released', {
         method: 'POST',
         headers: {
           authorization: token,
@@ -63,7 +63,7 @@ const Receiving = ({ navigation }) => {
           if (result.status) {
             const data = result.data;
             if (data.poReleasedStatus) {
-              await fetch(API_URL + 'display', {
+              await fetch(API_URL + 'bapi/po/display', {
                 method: 'POST',
                 headers: {
                   authorization: token,

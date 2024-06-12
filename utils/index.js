@@ -1,8 +1,8 @@
-import { Alert, Dimensions, ToastAndroid } from 'react-native';
+import {Alert, Dimensions, ToastAndroid} from 'react-native';
 import Toast from 'react-native-toast-message';
 
-const handleDate = text => {
-  let input = text.replace(/\D/g, '');
+const handleDate = (value, type) => {
+  let input = value.replace(/\D/g, '');
   let day = '',
     month = '',
     year = '';
@@ -24,14 +24,29 @@ const handleDate = text => {
     });
     return;
   }
-  if (year.length === 2 && year < 24) {
+  if (
+    type === 'mfg' &&
+    year.length === 2 &&
+    year < Number((new Date().getFullYear() - 3).toString().slice(2))
+  ) {
+    Toast.show({
+      type: 'customError',
+      text1: `Minimum year must be ${new Date().getFullYear() - 3}`,
+    });
+    return;
+  }
+  if (
+    type === 'exp' &&
+    year.length === 2 &&
+    year < Number(new Date().getFullYear().toString().slice(2))
+  ) {
     Toast.show({
       type: 'customError',
       text1: `Minimum year must be ${new Date().getFullYear()}`,
     });
     return;
   }
-  if (year.length === 4 && year > 99) {
+  if (year.length === 2 && year > 99) {
     Toast.show({
       type: 'customError',
       text1: 'Year must be up to 2099',
@@ -47,13 +62,7 @@ const handleDate = text => {
 
   year = '20' + year;
 
-  console.log('day', day);
-  console.log('month', month);
-  console.log('year', year);
-
   const formattedDate = new Date(Number(year), Number(month) - 1, Number(day));
-
-  console.log('formatted Date', formattedDate);
 
   if (input.length === 10 && formattedDate < new Date()) {
     Toast.show({
@@ -63,8 +72,6 @@ const handleDate = text => {
     input = null;
     return;
   }
-
-  console.log({date: formattedDate, text: input});
 
   return {date: formattedDate, text: input};
 };
@@ -169,6 +176,5 @@ export {
   uniqueArray,
   uniqueArrayOfObjects,
   validateFile,
-  validateInput
+  validateInput,
 };
-

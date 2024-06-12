@@ -1,6 +1,6 @@
 import Toast from 'react-native-toast-message';
 import {groupBy} from '../../../../utils';
-const API_URL = 'https://shwapnooperation.onrender.com/api/';
+import {API_URL} from '@env';
 
 const mergeInventory = inventoryData => {
   return inventoryData.reduce((acc, item) => {
@@ -107,7 +107,7 @@ const stoItemsByBin = (stoItems, inventoryItems) => {
 
 const updateStoTracking = async (token, postData) => {
   try {
-    await fetch(API_URL + 'sto-tracking/update', {
+    await fetch(API_URL + 'api/sto-tracking/update', {
       method: 'PATCH',
       headers: {
         authorization: token,
@@ -133,7 +133,7 @@ const updateStoTracking = async (token, postData) => {
 
 const updateArticleTracking = async (token, postData) => {
   try {
-    await fetch(API_URL + 'article-tracking/update', {
+    await fetch(API_URL + 'api/article-tracking/update', {
       method: 'PATCH',
       headers: {
         authorization: token,

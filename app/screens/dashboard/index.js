@@ -1,6 +1,6 @@
-import { API_URL } from '@env';
-import { Link } from '@react-navigation/native';
-import React, { useEffect, useState } from 'react';
+import {API_URL} from '@env';
+import {Link} from '@react-navigation/native';
+import React, {useEffect, useState} from 'react';
 import {
   ActivityIndicator,
   Image,
@@ -10,7 +10,7 @@ import {
   View,
 } from 'react-native';
 import NoAccess from '../../../components/animations/NoAccess';
-import { ButtonProfile } from '../../../components/buttons';
+import {ButtonProfile} from '../../../components/buttons';
 import {
   AuditIcon,
   DeliveryNoteIcon,
@@ -22,7 +22,7 @@ import {
   TaskAssignIcon,
 } from '../../../constant/icons';
 import useAppContext from '../../../hooks/useAppContext';
-import { getStorage } from '../../../hooks/useStorage';
+import {getStorage} from '../../../hooks/useStorage';
 
 const Home = ({navigation}) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -128,7 +128,7 @@ const Home = ({navigation}) => {
     );
   }
 
-  if (!user && filteredLinks.length > 0) {
+  if (isLoading && !user) {
     return (
       <View className="w-full h-screen justify-center px-3">
         <ActivityIndicator size="large" color="#EB4B50" />
@@ -139,7 +139,7 @@ const Home = ({navigation}) => {
     );
   }
 
-  if (filteredLinks.length === 0) {
+  if (!isLoading && filteredLinks.length === 0) {
     return (
       <SafeAreaView className="flex-1 bg-white pt-8">
         <View className="flex-1">

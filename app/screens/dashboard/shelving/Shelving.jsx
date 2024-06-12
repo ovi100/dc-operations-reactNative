@@ -16,6 +16,7 @@ import CustomToast from '../../../../components/CustomToast';
 import ServerError from '../../../../components/animations/ServerError';
 import { getStorage } from '../../../../hooks/useStorage';
 import SunmiScanner from '../../../../utils/sunmi/scanner';
+import {API_URL} from '@env';
 
 const Shelving = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -27,7 +28,6 @@ const Shelving = ({ navigation }) => {
   const [barcode, setBarcode] = useState('');
   let [articles, setArticles] = useState([]);
   const tableHeader = ['Article Info', 'BIN ID', 'Quantity'];
-  const API_URL = 'https://shwapnooperation.onrender.com/';
   const { startScan, stopScan } = SunmiScanner;
 
   useEffect(() => {

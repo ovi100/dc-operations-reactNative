@@ -1,5 +1,6 @@
+import { API_URL } from '@env';
 import { Link } from '@react-navigation/native';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Image,
@@ -21,19 +22,24 @@ import {
   TaskAssignIcon,
 } from '../../../constant/icons';
 import useAppContext from '../../../hooks/useAppContext';
+import { getStorage } from '../../../hooks/useStorage';
 
 const Home = ({navigation}) => {
+  const [isLoading, setIsLoading] = useState(false);
   const {authInfo} = useAppContext();
   const {user, logout} = authInfo;
-  // const [user, setUser] = useState({});
+  let [sites, setSites] = useState([]);
   let filteredLinks;
+  console.log('CURRENT API URL', API_URL);
 
-  // useEffect(() => {
-  //   const getAsyncStorage = async () => {
-  //     await getStorage('user', setUser, 'object');
-  //   };
-  //   getAsyncStorage();
-  // }, []);
+  useEffect(() => {
+    const getAsyncStorage = async () => {
+      setIsLoading(true);
+      await getStorage('userSites', setSites, 'array');
+      setIsLoading(false);
+    };
+    getAsyncStorage();
+  }, []);
 
   const navLinks = [
     {
@@ -41,84 +47,88 @@ const Home = ({navigation}) => {
       icon: ReceivingIcon,
       screen: 'Receiving',
       role: 'receiver',
-      access: 'receiving-access',
+      permission: 'receiving-access',
+      access: ['dc'],
     },
     {
       name: 'Receiving',
       icon: ReceivingIcon,
       screen: 'OutletReceiving',
       role: 'receiver',
-      access: 'outlet-receiving-access',
+      permission: 'outlet-receiving-access',
+      access: ['outlet', 'darkstore'],
     },
     {
       name: 'Shelving',
       icon: ShelvingIcon,
       screen: 'Shelving',
       role: 'shelver',
-      access: 'shelving-access',
+      permission: 'shelving-access',
+      access: ['dc', 'outlet', 'darkstore'],
     },
     {
       name: 'Delivery Plan',
       icon: DeliveryPlanIcon,
       screen: 'DeliveryPlan',
       role: 'delivery-planner',
-      access: 'delivery-plan-access',
+      permission: 'delivery-plan-access',
+      access: ['dc'],
     },
     {
       name: 'Task Assign',
       icon: TaskAssignIcon,
       screen: 'TaskAssign',
       role: 'task-assigner',
-      access: 'task-assign-access',
+      permission: 'task-assign-access',
+      access: ['dc'],
     },
     {
       name: 'Picking',
       icon: PickingIcon,
       screen: 'Picking',
       role: 'picker',
-      access: 'picking-access',
+      permission: 'picking-access',
+      access: ['dc'],
     },
     {
       name: 'Child Packing',
       icon: PackingIcon,
       screen: 'ChildPacking',
       role: 'packer',
-      access: 'packing-access',
+      permission: 'packing-access',
+      access: ['dc'],
     },
     {
       name: 'Final Delivery Note',
       icon: DeliveryNoteIcon,
       screen: 'DeliveryNote',
       role: 'DN charge',
-      access: 'delivery-note-access',
+      permission: 'delivery-note-access',
+      access: ['dc'],
     },
     {
       name: 'Audit',
       icon: AuditIcon,
       screen: 'Audit',
       role: 'audit',
-      access: 'audit-access',
+      permission: 'audit-access',
+      access: ['dc', 'outlet', 'darkstore'],
     },
-    // {
-    //   name: 'Return',
-    //   icon: ReturnIcon,
-    //   screen: 'Return',
-    //   role: 'returner',
-    //   access: 'return-access',
-    // },
   ];
 
-  // console.log(user);
-
   if (user?.hasPermission.includes('*')) {
-    filteredLinks = navLinks;
-  } else {
     filteredLinks = navLinks.filter(link =>
-      user?.hasPermission.some(item => item === link.access),
+      link.access.some(item => sites.some(site => item === site.type)),
+    );
+  } else {
+    filteredLinks = navLinks.filter(
+      link =>
+        user?.hasPermission.some(item => item === link.permission) &&
+        link.access.some(item => sites.some(site => item === site.type)),
     );
   }
 
-  if (!user) {
+  if (!user && filteredLinks.length > 0) {
     return (
       <View className="w-full h-screen justify-center px-3">
         <ActivityIndicator size="large" color="#EB4B50" />
@@ -129,7 +139,7 @@ const Home = ({navigation}) => {
     );
   }
 
-  if (filteredLinks.length === 0)
+  if (filteredLinks.length === 0) {
     return (
       <SafeAreaView className="flex-1 bg-white pt-8">
         <View className="flex-1">
@@ -158,6 +168,7 @@ const Home = ({navigation}) => {
         </View>
       </SafeAreaView>
     );
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">

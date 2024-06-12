@@ -1,4 +1,4 @@
-import { useFocusEffect, useIsFocused } from '@react-navigation/native';
+import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -18,8 +18,8 @@ import { getStorage } from '../../../../hooks/useStorage';
 import SunmiScanner from '../../../../utils/sunmi/scanner';
 
 const Shelving = ({ navigation }) => {
-  const isFocused = useIsFocused();
   const [isLoading, setIsLoading] = useState(false);
+  const [flatListFooterVisible, setFlatListFooterVisible] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [pressMode, setPressMode] = useState(false);
   const [user, setUser] = useState({});
@@ -49,7 +49,19 @@ const Shelving = ({ navigation }) => {
       stopScan();
       DeviceEventEmitter.removeAllListeners('ScanDataReceived');
     };
-  }, [isFocused]);
+  }, [navigation.isFocused()]);
+
+  const handleEndReached = useCallback(() => {
+    setFlatListFooterVisible(false);
+  }, []);
+
+  const renderFooter = () => {
+    if (!flatListFooterVisible) return null;
+
+    return (
+      <ActivityIndicator size="large" color="#000" />
+    );
+  };
 
   const getShelvingData = async () => {
     try {
@@ -127,53 +139,60 @@ const Shelving = ({ navigation }) => {
 
   // console.log(articles.findIndex(article => article.code === '2304461'));
 
-  if (barcode !== '' && (pressMode === 'false' || pressMode === null)) {
-    const getArticleBarcode = async (barcode) => {
-      try {
-        await fetch('https://api.shwapno.net/shelvesu/api/barcodes/barcode/' + barcode, {
-          method: 'GET',
-          headers: {
-            authorization: token,
-            'Content-Type': 'application/json',
-          }
-        })
-          .then(response => response.json())
-          .then(result => {
-            if (result.status) {
-              const isValidBarcode = result.data.barcode.includes(barcode);
-              const article = articles.find(item => item.code === result.data.material);
+  if (barcode && pressMode === 'true') {
+    Toast.show({
+      type: 'customWarn',
+      text1: 'Turn off the press mode',
+    });
+  }
 
-              if (article && isValidBarcode) {
-                navigation.replace('BinDetails', article);
-              } else {
-                Toast.show({
-                  type: 'customInfo',
-                  text1: 'Article not found!',
-                });
-              }
-              setBarcode('');
+  const checkBarcode = async (barcode) => {
+    try {
+      await fetch('https://api.shwapno.net/shelvesu/api/barcodes/barcode/' + barcode, {
+        method: 'GET',
+        headers: {
+          authorization: token,
+          'Content-Type': 'application/json',
+        }
+      })
+        .then(response => response.json())
+        .then(result => {
+          if (result.status) {
+            const isValidBarcode = result.data.barcode.includes(barcode);
+            const article = articles.find(item => item.code === result.data.material);
+            if (article && isValidBarcode) {
+              navigation.replace('BinDetails', article);
             } else {
               Toast.show({
-                type: 'customError',
-                text1: result.message,
+                type: 'customInfo',
+                text1: 'Article not found!',
               });
-              setBarcode('');
             }
-          })
-          .catch(error => {
+          } else {
             Toast.show({
               type: 'customError',
-              text1: error.message,
+              text1: result.message,
             });
+          }
+        })
+        .catch(error => {
+          Toast.show({
+            type: 'customError',
+            text1: error.message,
           });
-      } catch (error) {
-        Toast.show({
-          type: 'customError',
-          text1: error.message,
         });
-      }
-    };
-    getArticleBarcode(barcode);
+    } catch (error) {
+      Toast.show({
+        type: 'customError',
+        text1: error.message,
+      });
+    } finally {
+      setBarcode('');
+    }
+  };
+
+  if (barcode && pressMode !== 'true') {
+    checkBarcode(barcode);
   }
 
   const renderItem = ({ item, index }) => (
@@ -246,67 +265,69 @@ const Shelving = ({ navigation }) => {
     )
   }
 
-  if (!isLoading && articles.length === 0) {
-    return (
-      <View className="w-full h-screen justify-center px-4">
-        <ServerError message="No shelving data found" />
-        <View className="button w-1/3 mx-auto mt-5">
-          <TouchableOpacity onPress={() => getShelvingList()}>
-            <Text className="bg-blue-600 text-white text-lg text-center rounded p-2 capitalize">retry</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    )
-  }
-
   return (
-    <SafeAreaView className="flex-1 bg-white pt-8">
-      <View className="flex-1 h-full px-4">
-        <View className="screen-header flex-row items-center justify-center mb-4">
-          {pressMode === 'true' ? (
-            <TouchableHighlight onPress={() => null}>
-              <Text className="text-lg text-sh font-semibold capitalize">
-                Shelving
-              </Text>
-            </TouchableHighlight>
-          ) : (
-            <Text className="text-lg text-sh font-semibold capitalize">
-              Shelving
-            </Text>
-          )}
-        </View>
-
-        <View className="content flex-1">
-          <View className="h-full pb-2">
-            <View className="flex-row justify-between bg-th mb-2 py-2 px-3">
-              {tableHeader.map(th => (
-                <Text
-                  className="text-white text-center font-bold"
-                  key={th}>
-                  {th}
-                </Text>
-              ))}
-            </View>
-
-            <FlatList
-              data={articles}
-              renderItem={renderItem}
-              keyExtractor={item => item._id}
-              initialNumToRender={10}
-              refreshControl={
-                <RefreshControl
-                  colors={["#fff"]}
-                  onRefresh={onRefresh}
-                  progressBackgroundColor="#000"
-                  refreshing={refreshing}
-                />
-              }
-            />
+    <>
+      {!isLoading && articles.length === 0 ? (
+        <View className="w-full h-screen justify-center px-4">
+          <ServerError message="No shelving data found" />
+          <View className="button w-1/3 mx-auto mt-5">
+            <TouchableOpacity onPress={() => getShelvingList()}>
+              <Text className="bg-blue-600 text-white text-lg text-center rounded p-2 capitalize">retry</Text>
+            </TouchableOpacity>
           </View>
         </View>
-      </View>
-      <CustomToast />
-    </SafeAreaView>
+      ) : (
+        <SafeAreaView className="flex-1 bg-white pt-8">
+          <View className="flex-1 h-full px-4">
+            <View className="screen-header flex-row items-center justify-center mb-4">
+              {pressMode === 'true' ? (
+                <TouchableHighlight onPress={() => null}>
+                  <Text className="text-lg text-sh font-semibold capitalize">
+                    Shelving
+                  </Text>
+                </TouchableHighlight>
+              ) : (
+                <Text className="text-lg text-sh font-semibold capitalize">
+                  Shelving
+                </Text>
+              )}
+            </View>
+
+            <View className="content flex-1">
+              <View className="h-full pb-2">
+                <View className="flex-row justify-between bg-th mb-2 py-2 px-3">
+                  {tableHeader.map(th => (
+                    <Text
+                      className="text-white text-center font-bold"
+                      key={th}>
+                      {th}
+                    </Text>
+                  ))}
+                </View>
+                <FlatList
+                  data={articles}
+                  renderItem={renderItem}
+                  keyExtractor={item => item._id}
+                  initialNumToRender={10}
+                  onEndReached={handleEndReached}
+                  ListFooterComponent={renderFooter}
+                  ListFooterComponentStyle={{ paddingVertical: 15 }}
+                  refreshControl={
+                    <RefreshControl
+                      colors={["#fff"]}
+                      onRefresh={onRefresh}
+                      progressBackgroundColor="#000"
+                      refreshing={refreshing}
+                    />
+                  }
+                />
+              </View>
+            </View>
+          </View>
+          <CustomToast />
+        </SafeAreaView>
+      )}
+    </>
   );
 };
 

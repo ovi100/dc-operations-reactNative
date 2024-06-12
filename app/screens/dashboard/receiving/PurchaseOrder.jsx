@@ -26,6 +26,7 @@ const PurchaseOrder = ({ navigation, route }) => {
   const { createActivity } = useActivity();
   const { startScan, stopScan } = SunmiScanner;
   const [isLoading, setIsLoading] = useState(false);
+  const [flatListFooterVisible, setFlatListFooterVisible] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [isButtonLoading, setIsButtonLoading] = useState(false);
   const [grnModal, setGrnModal] = useState(false);
@@ -35,7 +36,7 @@ const PurchaseOrder = ({ navigation, route }) => {
   const [user, setUser] = useState({});
   const [token, setToken] = useState('');
   const [articles, setArticles] = useState([]);
-  const tableHeader = ['Article Code', 'Receive Qnt', 'GRN Qnt'];
+  const tableHeader = ['Article Code', 'PO Qty', 'GRN Qty', 'RCV Qty'];
   const API_URL = 'https://shwapnooperation.onrender.com/';
   const { GRNInfo } = useAppContext();
   const { grnItems, setGrnItems, setIsUpdatingGrn } = GRNInfo;
@@ -64,6 +65,18 @@ const PurchaseOrder = ({ navigation, route }) => {
       DeviceEventEmitter.removeAllListeners('ScanDataReceived');
     };
   }, []);
+
+  const handleEndReached = useCallback(() => {
+    setFlatListFooterVisible(false);
+  }, []);
+
+  const renderFooter = () => {
+    if (!flatListFooterVisible) return null;
+
+    return (
+      <ActivityIndicator size="large" color="#000" />
+    );
+  };
 
   const getPoDetails = async () => {
     const getOptions = {
@@ -207,21 +220,24 @@ const PurchaseOrder = ({ navigation, route }) => {
         <TouchableOpacity onPress={() => navigation.replace('PoArticle', item)}>
           <View
             key={index}
-            className="flex-row items-center justify-between border border-tb rounded-lg mt-2.5 p-4"
+            className="flex-row items-center border border-tb rounded-lg mt-2.5 p-4"
           >
-            <View className="w-1/2">
+            <View className="w-2/5">
               <Text className="text-black" numberOfLines={1}>
                 {item.material}
               </Text>
-              <Text className="w-4/5 text-black" numberOfLines={2}>
+              <Text className="w-full text-black" numberOfLines={2}>
                 {item.description}
               </Text>
             </View>
-            <Text className="text-black flex-1 justify-center" numberOfLines={1}>
-              {item.remainingQuantity}
+            <Text className="w-1/5 text-black text-center" numberOfLines={1}>
+              {item.quantity}
             </Text>
-            <Text className="text-black text-center" numberOfLines={1}>
+            <Text className="w-1/5 text-black text-center" numberOfLines={1}>
               {item.grnQuantity}
+            </Text>
+            <Text className="w-1/5 text-blue-600 text-base text-right" numberOfLines={1}>
+              {item.remainingQuantity}
             </Text>
           </View>
         </TouchableOpacity>
@@ -239,63 +255,74 @@ const PurchaseOrder = ({ navigation, route }) => {
             </Text>
           </View>
           <Text className="text-black flex-1 justify-center" numberOfLines={1}>
-            {item.remainingQuantity}
+            {item.quantity}
           </Text>
           <Text className="text-black text-center" numberOfLines={1}>
             {item.grnQuantity}
+          </Text>
+          <Text className="text-black text-center" numberOfLines={1}>
+            {item.remainingQuantity}
           </Text>
         </View>
       )}
     </>
   );
 
-  if (barcode !== '' && (pressMode === 'false' || pressMode === null)) {
-    const getArticleBarcode = async (barcode) => {
-      try {
-        await fetch('https://api.shwapno.net/shelvesu/api/barcodes/barcode/' + barcode, {
-          method: 'GET',
-          headers: {
-            authorization: token,
-            'Content-Type': 'application/json',
-          }
-        })
-          .then(response => response.json())
-          .then(result => {
-            if (result.status) {
-              const isValidBarcode = result.data.barcode.includes(barcode);
-              const poItem = articles.find(item => item.material === result.data.material);
+  if (barcode && pressMode === 'true') {
+    Toast.show({
+      type: 'customWarn',
+      text1: 'Turn off the press mode',
+    });
+  }
 
-              if (poItem && isValidBarcode) {
-                navigation.replace('PoArticle', poItem);
-              } else {
-                Toast.show({
-                  type: 'customInfo',
-                  text1: 'Article not found!',
-                });
-              }
-              setBarcode('');
+  const checkBarcode = async (barcode) => {
+    try {
+      await fetch('https://api.shwapno.net/shelvesu/api/barcodes/barcode/' + barcode, {
+        method: 'GET',
+        headers: {
+          authorization: token,
+          'Content-Type': 'application/json',
+        }
+      })
+        .then(response => response.json())
+        .then(result => {
+          if (result.status) {
+            const isValidBarcode = result.data.barcode.includes(barcode);
+            const article = articles.find(item => item.material === result.data.material);
+
+            if (article && isValidBarcode) {
+              navigation.replace('PoArticle', article);
             } else {
               Toast.show({
-                type: 'customError',
-                text1: result.message,
+                type: 'customInfo',
+                text1: 'Article not found!',
               });
-              setBarcode('');
             }
-          })
-          .catch(error => {
+          } else {
             Toast.show({
               type: 'customError',
-              text1: error.message,
+              text1: result.message,
             });
+          }
+        })
+        .catch(error => {
+          Toast.show({
+            type: 'customError',
+            text1: error.message,
           });
-      } catch (error) {
-        Toast.show({
-          type: 'customError',
-          text1: 'Unable to fetch data',
         });
-      }
-    };
-    getArticleBarcode(barcode);
+    } catch (error) {
+      Toast.show({
+        type: 'customError',
+        text1: 'Unable to fetch data',
+      });
+    } finally {
+      setBarcode('');
+    }
+  };
+
+  if (barcode && pressMode !== 'true') {
+    checkBarcode(barcode);
   }
 
   if (grnItems) {
@@ -405,7 +432,7 @@ const PurchaseOrder = ({ navigation, route }) => {
           <View className="table h-[90%]">
             <View className="table-header flex-row justify-between bg-th text-center mb-2 p-2">
               {tableHeader.map(th => (
-                <Text className="text-white text-center font-bold" key={th}>
+                <Text className={` ${th === 'Article Code' ? 'w-2/5' : 'w-1/5'} text-white text-center font-bold`} key={th}>
                   {th}
                 </Text>
               ))}
@@ -420,6 +447,9 @@ const PurchaseOrder = ({ navigation, route }) => {
                 renderItem={renderItem}
                 keyExtractor={item => item.material}
                 initialNumToRender={10}
+                onEndReached={handleEndReached}
+                ListFooterComponent={renderFooter}
+                ListFooterComponentStyle={{ paddingVertical: 15 }}
                 refreshControl={
                   <RefreshControl
                     colors={["#fff"]}

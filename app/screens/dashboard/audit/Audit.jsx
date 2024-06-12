@@ -17,7 +17,7 @@ import { BoxIcon, ClosedBoxIcon, EmptyBoxIcon } from '../../../../constant/icons
 import { getStorage } from '../../../../hooks/useStorage';
 
 const Audit = ({ navigation }) => {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState({});
   const [token, setToken] = useState('');
   const [shelveData, setShelveData] = useState([]);
   const [searchResult, setSearchResult] = useState(null);
@@ -76,6 +76,7 @@ const Audit = ({ navigation }) => {
       });
 
       const data = await response.json();
+
       if (data.status) {
         const filteredData = data.items.filter(item => item.site === user.site);
         setShelveData(filteredData);

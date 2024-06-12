@@ -185,9 +185,10 @@ const OutletArticleDetails = ({ navigation, route }) => {
         receivedQuantity: Number(newQuantity),
         receivedBy: user.name,
         bins,
-        batch: batchNo,
+        mfgDate,
         expiryDate: expDate?.date,
-        // mrp
+        batch: batchNo,
+        mrp
       };
 
       if (po) {

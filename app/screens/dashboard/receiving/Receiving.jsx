@@ -171,12 +171,12 @@ const Receiving = ({ navigation }) => {
         {pressMode === 'true' ? (
           <TouchableHighlight onPress={() => null}>
             <Text className="text-lg text-sh font-semibold capitalize">
-              receiving
+              dc receiving
             </Text>
           </TouchableHighlight>
         ) : (
           <Text className="text-lg text-sh font-semibold capitalize">
-            receiving
+            dc receiving
           </Text>
         )}
       </View>

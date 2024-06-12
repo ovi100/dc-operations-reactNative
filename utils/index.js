@@ -24,14 +24,14 @@ const handleDate = text => {
     });
     return;
   }
-  if (year.length === 4 && year < 2024) {
+  if (year.length === 2 && year < 24) {
     Toast.show({
       type: 'customError',
       text1: `Minimum year must be ${new Date().getFullYear()}`,
     });
     return;
   }
-  if (year.length === 4 && year > 2099) {
+  if (year.length === 4 && year > 99) {
     Toast.show({
       type: 'customError',
       text1: 'Year must be up to 2099',
@@ -45,7 +45,15 @@ const handleDate = text => {
     input = input.slice(0, 5) + '/' + input.slice(5);
   }
 
-  const formattedDate = new Date(Number(year), Number(month - 1), Number(day));
+  year = '20' + year;
+
+  console.log('day', day);
+  console.log('month', month);
+  console.log('year', year);
+
+  const formattedDate = new Date(Number(year), Number(month) - 1, Number(day));
+
+  console.log('formatted Date', formattedDate);
 
   if (input.length === 10 && formattedDate < new Date()) {
     Toast.show({
@@ -55,6 +63,8 @@ const handleDate = text => {
     input = null;
     return;
   }
+
+  console.log({date: formattedDate, text: input});
 
   return {date: formattedDate, text: input};
 };
@@ -151,8 +161,11 @@ const {width: WINDOW_WIDTH, height: WINDOW_HEIGHT} = Dimensions.get('window');
 export {
   WINDOW_HEIGHT,
   WINDOW_WIDTH,
-  dateRange, formatDateYYYYMMDD,
-  groupBy, handleDate, toast,
+  dateRange,
+  formatDateYYYYMMDD,
+  groupBy,
+  handleDate,
+  toast,
   uniqueArray,
   uniqueArrayOfObjects,
   validateFile,

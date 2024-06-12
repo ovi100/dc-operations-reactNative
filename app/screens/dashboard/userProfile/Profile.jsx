@@ -88,8 +88,8 @@ const Profile = ({ navigation }) => {
             </Text>
           </View>
           <ScrollView>
-            <View className="content flex-1 justify-center mt-5">
-              <View className="pb-2">
+            <View className="content h-[92vh] justify-between">
+              <View className="">
                 <View className="profile-image mx-auto mb-4">
                   <Image
                     className="w-28 h-28 rounded-full"
@@ -160,7 +160,16 @@ const Profile = ({ navigation }) => {
                     </TouchableWithoutFeedback>
                   </View>
                 )}
-
+              </View>
+              <View className="pb-2">
+                <View className="version-info w-full">
+                  <Text className="text-gray-400 text-center font-bold capitalize">
+                    shwapno operations app
+                  </Text>
+                  <Text className="text-gray-400 text-center font-bold capitalize">
+                    v {version}
+                  </Text>
+                </View>
                 <View className="mt-5">
                   <ButtonLogin
                     title="Logout"
@@ -169,14 +178,6 @@ const Profile = ({ navigation }) => {
                     textStyles={styles.lgText}
                   />
                 </View>
-              </View>
-              <View className="version-info w-full mt-5">
-                <Text className="text-gray-400 text-center font-bold capitalize">
-                  shwapno operations app
-                </Text>
-                <Text className="text-gray-400 text-center font-bold capitalize">
-                  v {version}
-                </Text>
               </View>
             </View>
           </ScrollView>

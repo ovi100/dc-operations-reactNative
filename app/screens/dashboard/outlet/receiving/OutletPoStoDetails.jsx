@@ -452,53 +452,61 @@ const OutletPoStoDetails = ({ navigation, route }) => {
     </>
   );
 
-  if (barcode !== '' && (pressMode === 'false' || pressMode === null)) {
-    const getArticleBarcode = async (barcode) => {
-      try {
-        await fetch('https://api.shwapno.net/shelvesu/api/barcodes/barcode/' + barcode, {
-          method: 'GET',
-          headers: {
-            authorization: token,
-            'Content-Type': 'application/json',
-          }
-        })
-          .then(response => response.json())
-          .then(result => {
-            if (result.status) {
-              const isValidBarcode = result.data.barcode.includes(barcode);
-              const dnItem = articles.find(item => item.material === result.data.material);
+  if (barcode && pressMode === 'true') {
+    Toast.show({
+      type: 'customWarn',
+      text1: 'Turn off the press mode',
+    });
+  }
 
-              if (dnItem && isValidBarcode) {
-                navigation.replace('OutletArticleDetails', dnItem);
-              } else {
-                Toast.show({
-                  type: 'customInfo',
-                  text1: 'Article not found!',
-                });
-              }
-              setBarcode('');
+  const checkBarcode = async (barcode) => {
+    try {
+      await fetch('https://api.shwapno.net/shelvesu/api/barcodes/barcode/' + barcode, {
+        method: 'GET',
+        headers: {
+          authorization: token,
+          'Content-Type': 'application/json',
+        }
+      })
+        .then(response => response.json())
+        .then(result => {
+          if (result.status) {
+            const isValidBarcode = result.data.barcode.includes(barcode);
+            const article = articles.find(item => item.material === result.data.material);
+
+            if (article && isValidBarcode) {
+              navigation.replace('OutletArticleDetails', article);
             } else {
               Toast.show({
-                type: 'customError',
-                text1: result.message,
+                type: 'customInfo',
+                text1: 'Article not found!',
               });
-              setBarcode('');
             }
-          })
-          .catch(error => {
+          } else {
             Toast.show({
               type: 'customError',
-              text1: error.message,
+              text1: result.message,
             });
+          }
+        })
+        .catch(error => {
+          Toast.show({
+            type: 'customError',
+            text1: error.message,
           });
-      } catch (error) {
-        Toast.show({
-          type: 'customError',
-          text1: 'Unable to fetch data',
         });
-      }
-    };
-    getArticleBarcode(barcode);
+    } catch (error) {
+      Toast.show({
+        type: 'customError',
+        text1: 'Unable to fetch data',
+      });
+    } finally {
+      setBarcode('');
+    }
+  };
+
+  if (barcode && pressMode !== 'true') {
+    checkBarcode(barcode);
   }
 
   if (grnItems) {

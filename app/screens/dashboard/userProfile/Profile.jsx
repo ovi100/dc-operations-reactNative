@@ -97,27 +97,27 @@ const Profile = ({ navigation }) => {
                   />
                 </View>
                 <View className="name border-b border-gray-200 flex-row items-center py-4">
-                  <Image className="w-5 h-5 mr-3" source={ProfileIcon} />
-                  <Text className="text-base text-gray-400 font-medium capitalize">
+                  <Image className="w-7 h-7 mr-3" source={ProfileIcon} />
+                  <Text className="text-lg text-gray-400 font-medium capitalize">
                     {user.name}
                   </Text>
                 </View>
                 <View className="email border-b border-gray-200 flex-row items-center py-4">
-                  <Image className="w-5 h-5 mr-3" source={EmailIcon} />
-                  <Text className="text-base text-gray-400 font-medium">
+                  <Image className="w-7 h-7 mr-3" source={EmailIcon} />
+                  <Text className="text-lg text-gray-400 font-medium">
                     {user.email}
                   </Text>
                 </View>
                 <View className="role border-b border-gray-200 flex-row items-center py-4">
-                  <Image className="w-5 h-5 mr-3" source={IdIcon} />
-                  <Text className="text-base text-gray-400 font-medium capitalize">
+                  <Image className="w-7 h-7 mr-3" source={IdIcon} />
+                  <Text className="text-lg text-gray-400 font-medium capitalize">
                     {user.role}
                   </Text>
                 </View>
                 <View className="password-change border-b border-gray-200 flex-row items-center py-4">
-                  <Image className="w-5 h-5 mr-3" source={PasswordIcon} />
+                  <Image className="w-7 h-7 mr-3" source={PasswordIcon} />
                   <TouchableWithoutFeedback onPress={() => navigation.push('ChangePassword', { id: user._id })}>
-                    <Text className="text-center text-blue-600 text-base font-semibold capitalize">change password</Text>
+                    <Text className="text-center text-blue-600 text-lg font-semibold capitalize">change password</Text>
                   </TouchableWithoutFeedback>
                 </View>
                 {(user.hasPermission.includes('*') || user.hasPermission.includes('press-mode-access')) && (
@@ -125,7 +125,7 @@ const Profile = ({ navigation }) => {
                     <View className="flex-row items-center">
                       <TouchableWithoutFeedback onPress={() => toggleSwitch()}>
                         <Switch
-                          trackColor={{ false: '#1b4332', true: '#386641' }}
+                          trackColor={{ false: '#3c3c3c', true: '#386641' }}
                           thumbColor={isEnabled ? '#3a5a40' : '#081c15'}
                           ios_backgroundColor="#3e3e3e"
                           value={isEnabled}
@@ -133,20 +133,20 @@ const Profile = ({ navigation }) => {
                         />
                       </TouchableWithoutFeedback>
                       <TouchableWithoutFeedback onPress={() => toggleSwitch()}>
-                        <Text className={`text-base ${isEnabled ? 'text-[#386641]' : 'text-[#bc4749]'} font-medium ml-2`}>
-                          {isEnabled ? 'Press mode is enabled' : 'Press mode is disabled'}
+                        <Text className={`text-lg ${isEnabled ? 'text-[#386641]' : 'text-[#bc4749]'} font-medium`}>
+                          {isEnabled ? 'Press mode is on' : 'Press mode is off'}
                         </Text>
                       </TouchableWithoutFeedback>
                     </View>
                   </View>
                 )}
                 <View className="active-site border-b border-gray-200 flex-row items-center py-4">
-                  <Image className="w-5 h-5 mr-3" source={StoreIcon} />
+                  <Image className="w-7 h-7 mr-3" source={StoreIcon} />
                   <View className="flex-row items-center">
-                    <Text className="text-base text-gray-400 font-medium uppercase">
+                    <Text className="text-lg text-gray-400 font-medium uppercase">
                       {user.site}
                     </Text>
-                    <Text className="text-base text-gray-400 font-medium capitalize ml-2">
+                    <Text className="text-lg text-gray-400 font-medium capitalize ml-2">
                       (active site)
                     </Text>
                   </View>
@@ -154,9 +154,9 @@ const Profile = ({ navigation }) => {
 
                 {sites !== null && sites.length > 1 && (
                   <View className="password-change border-b border-gray-200 flex-row items-center py-4">
-                    <Image className="w-5 h-5 mr-3" source={SwapIcon} />
+                    <Image className="w-7 h-7 mr-3" source={SwapIcon} />
                     <TouchableWithoutFeedback onPress={() => navigation.replace('ChooseSite', user)}>
-                      <Text className="text-center text-blue-600 text-base font-semibold capitalize">change site</Text>
+                      <Text className="text-center text-blue-600 text-lg font-semibold capitalize">change site</Text>
                     </TouchableWithoutFeedback>
                   </View>
                 )}

@@ -121,7 +121,6 @@ const PurchaseOrder = ({ navigation, route }) => {
       }
 
       let shelvingItems = shelvingData.items;
-      // console.log('shelving items', JSON.stringify(shelvingItems));
       if (shelvingItems.length > 0) {
         shelvingItems = shelvingItems.map(item => {
           if (item.inShelf.length > 0) {
@@ -338,7 +337,6 @@ const PurchaseOrder = ({ navigation, route }) => {
     },
     { totalItems: 0, totalPrice: 0 }
   );
-
 
   const generateGRN = async (grnList) => {
     setDialogVisible(false);

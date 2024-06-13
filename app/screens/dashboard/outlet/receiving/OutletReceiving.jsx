@@ -15,7 +15,7 @@ import Scan from '../../../../../components/animations/Scan';
 import useActivity from '../../../../../hooks/useActivity';
 import { getStorage } from '../../../../../hooks/useStorage';
 import SunmiScanner from '../../../../../utils/sunmi/scanner';
-import {API_URL} from '@env';
+import { API_URL } from '@env';
 
 const Receiving = ({ navigation }) => {
   const [isChecking, setIsChecking] = useState(false);
@@ -278,14 +278,27 @@ const Receiving = ({ navigation }) => {
 
   if (barcode !== '') {
     isDn = barcode.startsWith('01');
-    console.log('is dn', isDn);
-    if (isDn) {
+    if (isDn && user.site) {
       getDnDetails(barcode);
-    } else {
-      getPoDetails(barcode);
+      setBarcode('');
+      setSearch('');
+      return;
     }
-    setBarcode('');
-    setSearch('');
+    if (!isDn && user.site) {
+      getPoDetails(barcode);
+      setBarcode('');
+      setSearch('');
+      return;
+    }
+  }
+
+  if (!user.site) {
+    return (
+      <View className="w-full h-screen justify-center px-3">
+        <ActivityIndicator size="large" color="#EB4B50" />
+        <Text className="mt-4 text-gray-400 text-base text-center">Loading user info. Please wait......</Text>
+      </View>
+    )
   }
 
   return (
@@ -294,12 +307,12 @@ const Receiving = ({ navigation }) => {
         {pressMode === 'true' ? (
           <TouchableHighlight onPress={() => null}>
             <Text className="text-lg text-sh font-semibold capitalize">
-              outlet receiving
+              {user.site.startsWith('DS') ? 'dark store' : 'outlet'} receiving
             </Text>
           </TouchableHighlight>
         ) : (
           <Text className="text-lg text-sh font-semibold capitalize">
-            outlet receiving
+            {user.site.startsWith('DS') ? 'dark store' : 'outlet'} receiving
           </Text>
         )}
       </View>
@@ -337,7 +350,7 @@ const Receiving = ({ navigation }) => {
         {isChecking ? (
           <View>
             <ActivityIndicator size="large" color="#EB4B50" />
-            <Text className="mt-4 text-gray-400 text-base text-center">Checking number</Text>
+            <Text className="mt-4 text-gray-400 text-base text-center">{`${isPo ? 'Loading po' : 'Checking dn number'}`}</Text>
           </View>
         ) : (
           <View className="relative -z-10">

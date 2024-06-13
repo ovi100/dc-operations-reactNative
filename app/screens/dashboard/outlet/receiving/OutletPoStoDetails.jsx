@@ -25,6 +25,7 @@ const OutletPoStoDetails = ({ navigation, route }) => {
   const { startScan, stopScan } = SunmiScanner;
   const [isLoading, setIsLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [flatListFooterVisible, setFlatListFooterVisible] = useState(true);
   const [isButtonLoading, setIsButtonLoading] = useState(false);
   const [grnModal, setGrnModal] = useState(false);
   const [dialogVisible, setDialogVisible] = useState(false);
@@ -64,6 +65,18 @@ const OutletPoStoDetails = ({ navigation, route }) => {
       DeviceEventEmitter.removeAllListeners('ScanDataReceived');
     };
   }, []);
+
+  const handleEndReached = useCallback(() => {
+    setFlatListFooterVisible(false);
+  }, []);
+
+  const renderFooter = () => {
+    if (!flatListFooterVisible) return null;
+
+    return (
+      <ActivityIndicator size="large" color="#000" />
+    );
+  };
 
   const getPoDetails = async () => {
     const getOptions = {
@@ -108,7 +121,6 @@ const OutletPoStoDetails = ({ navigation, route }) => {
       }
 
       let shelvingItems = shelvingData.items;
-      // console.log('shelving items', JSON.stringify(shelvingItems));
       if (shelvingItems.length > 0) {
         shelvingItems = shelvingItems.map(item => {
           if (item.inShelf.length > 0) {
@@ -126,52 +138,45 @@ const OutletPoStoDetails = ({ navigation, route }) => {
       }
 
       let poItems = poData.data.items;
-      // const historyItems = poData.data.historyTotal;
+      const historyItems = poData.data.historyTotal;
 
-      // if (historyItems.length > 0) {
-      //   poItems = poItems.map(poItem => {
-      //     const matchedItem = historyItems.find(
-      //       historyItem => historyItem.material === poItem.material
-      //     );
-      //     if (matchedItem) {
-      //       return {
-      //         ...poItem,
-      //         remainingQuantity: poItem.quantity - matchedItem.grnQuantity
-      //       };
-      //     } else {
-      //       return {
-      //         ...poItem,
-      //         remainingQuantity: poItem.quantity
-      //       };
-      //     }
-      //   }).filter(item => item.remainingQuantity !== 0);
-      // }
-      // else {
-      //   poItems = poItems.map(item => {
-      //     return {
-      //       ...item,
-      //       remainingQuantity: item.quantity
-      //     };
-      //   });
-      // }
-
-      let adjustedArticles = poItems.map(poItem => {
-        const matchedItem = shelvingItems.find(
+      poItems = poItems.map(poItem => {
+        const matchedPhItem = historyItems.find(
+          historyItem => historyItem.material === poItem.material
+        );
+        const matchedShItem = shelvingItems.find(
           shItem => shItem.code === poItem.material
         );
-        if (matchedItem) {
+        if (matchedPhItem && matchedShItem) {
           return {
             ...poItem,
-            remainingQuantity: poItem.quantity - matchedItem.receivedQuantity
+            remainingQuantity: poItem.quantity - matchedShItem.receivedQuantity,
+            grnQuantity: matchedPhItem.grnQuantity
+          };
+        } else if (matchedPhItem) {
+          return {
+            ...poItem,
+            remainingQuantity: poItem.quantity,
+            grnQuantity: matchedPhItem.grnQuantity
+          };
+        } else if (matchedShItem) {
+          return {
+            ...poItem,
+            remainingQuantity: poItem.quantity - matchedShItem.receivedQuantity,
+            grnQuantity: 0
           };
         } else {
           return {
             ...poItem,
-            remainingQuantity: poItem.quantity
+            remainingQuantity: poItem.quantity,
+            grnQuantity: 0
           };
         }
-      }).filter(item => item.remainingQuantity !== 0);
-      setArticles(adjustedArticles);
+      });
+
+      poItems = poItems.filter(item => item.remainingQuantity !== 0);
+
+      setArticles(poItems);
     } catch (error) {
       Toast.show({
         type: 'customError',
@@ -647,6 +652,9 @@ const OutletPoStoDetails = ({ navigation, route }) => {
                 renderItem={po ? renderPoItem : renderDnItem}
                 keyExtractor={item => item.material}
                 initialNumToRender={10}
+                onEndReached={handleEndReached}
+                ListFooterComponent={renderFooter}
+                ListFooterComponentStyle={{ paddingVertical: 15 }}
                 refreshControl={
                   <RefreshControl
                     colors={["#fff"]}

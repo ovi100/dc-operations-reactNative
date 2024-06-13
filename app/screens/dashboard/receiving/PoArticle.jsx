@@ -5,6 +5,7 @@ import {
   TouchableWithoutFeedback, View
 } from 'react-native';
 // import DatePicker from 'react-native-date-picker';
+import { API_URL } from '@env';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
 import { ButtonLg, ButtonLoading } from '../../../../components/buttons';
@@ -14,7 +15,6 @@ import useAppContext from '../../../../hooks/useAppContext';
 import useBackHandler from '../../../../hooks/useBackHandler';
 import { getStorage } from '../../../../hooks/useStorage';
 import { handleDate } from '../../../../utils';
-import {API_URL} from '@env';
 
 const PoArticle = ({ navigation, route }) => {
   const {
@@ -24,7 +24,7 @@ const PoArticle = ({ navigation, route }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isButtonLoading, setIsButtonLoading] = useState(false);
   const [bins, setBins] = useState([]);
-  const [newQuantity, setNewQuantity] = useState(remainingQuantity);
+  const [newQuantity, setNewQuantity] = useState(0); //update_upol
   const [mfgDate, setMfgDate] = useState(new Date());
   const [expDate, setExpDate] = useState(new Date());
   const [batchNo, setBatchNo] = useState(null);
@@ -256,7 +256,7 @@ const PoArticle = ({ navigation, route }) => {
                   <View className="input-box mt-2">
                     <TextInput
                       className="bg-[#F5F6FA] border border-t-0 border-black/25 h-[50px] text-[#5D80C5] rounded-2xl px-4"
-                      placeholder="Type Picked Quantity"
+                      placeholder="Enter received quantity"
                       placeholderTextColor="#5D80C5"
                       selectionColor="#5D80C5"
                       keyboardType="numeric"

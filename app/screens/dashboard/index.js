@@ -29,7 +29,7 @@ const Home = ({navigation}) => {
   const {authInfo} = useAppContext();
   const {user, logout} = authInfo;
   let [sites, setSites] = useState([]);
-  let filteredLinks;
+  let filteredLinks, siteType;
   console.log('CURRENT API URL', API_URL);
 
   useEffect(() => {
@@ -116,15 +116,19 @@ const Home = ({navigation}) => {
     },
   ];
 
+  if (user.site && sites.length > 0) {
+    siteType = sites.find(site => site.code === user.site).type;
+  }
+
   if (user?.hasPermission.includes('*')) {
     filteredLinks = navLinks.filter(link =>
-      link.access.some(item => sites.some(site => item === site.type)),
+      link.access.some(item => item === siteType),
     );
   } else {
     filteredLinks = navLinks.filter(
       link =>
         user?.hasPermission.some(item => item === link.permission) &&
-        link.access.some(item => sites.some(site => item === site.type)),
+        link.access.some(item => item === siteType),
     );
   }
 

@@ -1,6 +1,6 @@
-import {API_URL} from '@env';
-import {Link} from '@react-navigation/native';
-import React, {useEffect, useState} from 'react';
+import { API_URL } from '@env';
+import { Link } from '@react-navigation/native';
+import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Image,
@@ -10,7 +10,7 @@ import {
   View,
 } from 'react-native';
 import NoAccess from '../../../components/animations/NoAccess';
-import {ButtonProfile} from '../../../components/buttons';
+import { ButtonProfile } from '../../../components/buttons';
 import {
   AuditIcon,
   DeliveryNoteIcon,
@@ -22,7 +22,7 @@ import {
   TaskAssignIcon,
 } from '../../../constant/icons';
 import useAppContext from '../../../hooks/useAppContext';
-import {getStorage} from '../../../hooks/useStorage';
+import { getStorage } from '../../../hooks/useStorage';
 
 const Home = ({navigation}) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -124,7 +124,9 @@ const Home = ({navigation}) => {
     filteredLinks = navLinks.filter(link =>
       link.access.some(item => item === siteType),
     );
-  } else {
+  }
+
+  if (!user?.hasPermission.includes('*')) {
     filteredLinks = navLinks.filter(
       link =>
         user?.hasPermission.some(item => item === link.permission) &&

@@ -1,3 +1,4 @@
+import { API_URL } from '@env';
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
@@ -16,7 +17,6 @@ import CustomToast from '../../../../components/CustomToast';
 import ServerError from '../../../../components/animations/ServerError';
 import { getStorage } from '../../../../hooks/useStorage';
 import SunmiScanner from '../../../../utils/sunmi/scanner';
-import {API_URL} from '@env';
 
 const Shelving = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -92,8 +92,8 @@ const Shelving = ({ navigation }) => {
                   }
                 }
               });
+              shelvingItems = shelvingItems.filter((item) => item.receivedQuantity !== 0);
             }
-            shelvingItems = shelvingItems.filter((item) => item.receivedQuantity !== 0);
             setArticles(shelvingItems);
           } else {
             Toast.show({

@@ -1,3 +1,4 @@
+import { API_URL } from '@env';
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
@@ -13,10 +14,10 @@ import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../../components/CustomToast';
 import ServerError from '../../../../../components/animations/ServerError';
 import useAppContext from '../../../../../hooks/useAppContext';
+import useBackHandler from '../../../../../hooks/useBackHandler';
 import { getStorage } from '../../../../../hooks/useStorage';
 import SunmiScanner from '../../../../../utils/sunmi/scanner';
 import { adjustStoQuantity, mergeInventory, updateStoItems, updateStoTracking } from '../processStoData';
-import {API_URL} from '@env';
 
 const PickingSto = ({ navigation, route }) => {
   const { sto, picker, pickerId, packer, packerId } = route.params;
@@ -30,6 +31,9 @@ const PickingSto = ({ navigation, route }) => {
   const { StoInfo } = useAppContext();
   const { stoInfo, stoItems } = StoInfo;
   let pickedSto = [], stoTrackInfo = {};
+
+  // Custom hook to navigate screen
+  useBackHandler('Picking');
 
   useEffect(() => {
     const getAsyncStorage = async () => {
@@ -101,16 +105,18 @@ const PickingSto = ({ navigation, route }) => {
       let stoItems = stoData.data.items;
       let finalStoItems = [];
 
-      if (inventoryItems.length > 0 && articleTrackingItems.length > 0 && stoItems.length > 0) {
+      if (inventoryItems.length && articleTrackingItems.length && stoItems.length) {
         inventoryItems = mergeInventory(inventoryItems);
         const stoMergedData = updateStoItems(stoItems, inventoryItems);
         finalStoItems = adjustStoQuantity(stoMergedData, articleTrackingItems);
-      } else if (inventoryItems.length > 0 && stoItems.length > 0) {
+        setArticles(finalStoItems);
+      } else if (inventoryItems.length && stoItems.length) {
         inventoryItems = mergeInventory(inventoryItems);
         const stoMergedData = updateStoItems(stoItems, inventoryItems);
         finalStoItems = stoMergedData.map(stoItem => {
           return { ...stoItem, remainingQuantity: stoItem.quantity }
         }).filter(item => item.remainingQuantity !== 0);
+        setArticles(finalStoItems);
       } else {
         finalStoItems = stoItems.map(stoItem => {
           return {
@@ -118,8 +124,8 @@ const PickingSto = ({ navigation, route }) => {
             remainingQuantity: stoItem.quantity
           };
         });
+        setArticles(finalStoItems);
       }
-      setArticles(finalStoItems);
     } catch (error) {
       Toast.show({
         type: 'customError',
@@ -209,56 +215,64 @@ const PickingSto = ({ navigation, route }) => {
   }
 
   const goToStoArticleBins = async (article) => {
-    navigation.push('PickingStoArticleBinDetails', { ...article, picker, pickerId, packer, packerId });
+    navigation.replace('PickingStoArticleBinDetails', { ...article, picker, pickerId, packer, packerId });
   };
 
-  if (barcode !== '' && (pressMode === 'false' || pressMode === null)) {
-    const getArticleBarcode = async (barcode) => {
-      try {
-        await fetch('https://api.shwapno.net/shelvesu/api/barcodes/barcode/' + barcode, {
-          method: 'GET',
-          headers: {
-            authorization: token,
-            'Content-Type': 'application/json',
-          }
-        })
-          .then(response => response.json())
-          .then(result => {
-            if (result.status) {
-              const isValidBarcode = result.data.barcode.includes(barcode);
-              const article = articles.find(item => item.material === result.data.material);
+  if (barcode && pressMode === 'true') {
+    Toast.show({
+      type: 'customWarn',
+      text1: 'Turn off the press mode',
+    });
+  }
 
-              if (article && isValidBarcode) {
-                goToStoArticleBins(article);
-              } else {
-                Toast.show({
-                  type: 'customInfo',
-                  text1: 'Article not found!',
-                });
-              }
-              setBarcode('');
+  const checkBarcode = async (barcode) => {
+    try {
+      await fetch('https://api.shwapno.net/shelvesu/api/barcodes/barcode/' + barcode, {
+        method: 'GET',
+        headers: {
+          authorization: token,
+          'Content-Type': 'application/json',
+        }
+      })
+        .then(response => response.json())
+        .then(result => {
+          if (result.status) {
+            const isValidBarcode = result.data.barcode.includes(barcode);
+            const article = articles.find(item => item.material === result.data.material);
+
+            if (article && isValidBarcode) {
+              goToStoArticleBins(article);
             } else {
               Toast.show({
-                type: 'customError',
-                text1: result.message,
+                type: 'customInfo',
+                text1: 'Article not found!',
               });
-              setBarcode('');
             }
-          })
-          .catch(error => {
+          } else {
             Toast.show({
               type: 'customError',
-              text1: error.message,
+              text1: result.message,
             });
+          }
+        })
+        .catch(error => {
+          Toast.show({
+            type: 'customError',
+            text1: error.message,
           });
-      } catch (error) {
-        Toast.show({
-          type: 'customError',
-          text1: error.message,
         });
-      }
-    };
-    getArticleBarcode(barcode);
+    } catch (error) {
+      Toast.show({
+        type: 'customError',
+        text1: error.message,
+      });
+    } finally {
+      setBarcode('');
+    }
+  };
+
+  if (barcode && pressMode !== 'true') {
+    checkBarcode(barcode);
   }
 
   const renderItem = ({ item, index }) => (
@@ -277,7 +291,7 @@ const PickingSto = ({ navigation, route }) => {
                   quantity {'--> ' + item.remainingQuantity}
                 </Text>
               </View>
-              <Text className="text-black text-base mt-1" numberOfLines={2}>
+              <Text className="w-4/5 text-black text-sm mt-1" numberOfLines={2}>
                 {item.description}
               </Text>
             </View>
@@ -286,11 +300,11 @@ const PickingSto = ({ navigation, route }) => {
                 <>
                   {item.bins.slice(0, 2).map(item => (
                     <Text
-                      className="text-black text-center mb-1 last:mb-0"
+                      className="text-black text-sm text-right mb-1 last:mb-0"
                       numberOfLines={2}
                       key={item.bin}
                     >
-                      {item.bin}{' --> '}{item.quantity}
+                      {item.bin}({item.quantity})
                     </Text>
                   ))}
                   {item.bins.slice(2).length > 0 && (
@@ -303,7 +317,7 @@ const PickingSto = ({ navigation, route }) => {
                     </TouchableWithoutFeedback>
                   )}
                 </>
-              ) : (<Text className="text-black text-center">No bin has been assigned</Text>)}
+              ) : (<Text className="text-black text-sm text-center">No bin has been assigned</Text>)}
             </View>
           </View>
         </TouchableOpacity>
@@ -320,7 +334,7 @@ const PickingSto = ({ navigation, route }) => {
                 quantity {'--> ' + item.remainingQuantity}
               </Text>
             </View>
-            <Text className="text-black text-base mt-1" numberOfLines={2}>
+            <Text className="w-4/5 text-black text-sm mt-1" numberOfLines={2}>
               {item.description}
             </Text>
           </View>
@@ -329,11 +343,11 @@ const PickingSto = ({ navigation, route }) => {
               <>
                 {item.bins.slice(0, 2).map(item => (
                   <Text
-                    className="text-black text-center mb-1 last:mb-0"
+                    className="text-black text-sm text-right mb-1 last:mb-0"
                     numberOfLines={2}
                     key={item.bin}
                   >
-                    {item.bin}{' --> '}{item.quantity}
+                    {item.bin}({item.quantity})
                   </Text>
                 ))}
                 {item.bins.slice(2).length > 0 && (
@@ -346,7 +360,7 @@ const PickingSto = ({ navigation, route }) => {
                   </TouchableWithoutFeedback>
                 )}
               </>
-            ) : (<Text className="text-black text-center">No bin has been assigned</Text>)}
+            ) : (<Text className="text-black text-sm text-center">No bin has been assigned</Text>)}
           </View>
         </View>
       )}

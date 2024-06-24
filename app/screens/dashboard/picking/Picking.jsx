@@ -1,3 +1,4 @@
+import { API_URL } from '@env';
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
@@ -10,7 +11,6 @@ import CustomToast from '../../../../components/CustomToast';
 import ServerError from '../../../../components/animations/ServerError';
 import { StoNotPickedIcon, StoPickedIcon } from '../../../../constant/icons';
 import { getStorage } from '../../../../hooks/useStorage';
-import { API_URL } from '@env';
 
 const Picking = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -29,12 +29,27 @@ const Picking = ({ navigation }) => {
   }, []);
 
   const getStoData = async () => {
+    const filterBy = {
+      filter: {
+        supplyingPlant: user.site,
+        picker: { $ne: null },
+        packer: { $ne: null },
+      },
+      query: {
+        pageSize: 500,
+        sortBy: "sto",
+        sortOrder: "asc"
+      }
+    };
+
     try {
-      await fetch(API_URL + `api/sto-tracking?sortBy=sto&sortOrder=asc&pageSize=500&filterBy=supplyingPlant&value=${user.site}`, {
-        method: 'GET',
+      await fetch(API_URL + 'api/sto-tracking/all', {
+        method: 'POST',
         headers: {
           authorization: token,
+          'Content-Type': 'application/json',
         },
+        body: JSON.stringify(filterBy),
       })
         .then(response => response.json())
         .then(data => {
@@ -88,13 +103,13 @@ const Picking = ({ navigation }) => {
     <TouchableOpacity
       className="flex-row items-center border border-tb rounded-lg mt-2.5 p-4"
       key={index}
-      onPress={() => navigation.push('PickingSto', item)}
+      onPress={() => navigation.replace('PickingSto', item)}
     >
       <Text className="flex-1 text-black text-center" numberOfLines={1}>
         {item.sto.slice(0, 2) + '...' + item.sto.slice(5, item.sto.length)}
       </Text>
       <Text className="flex-1 text-black text-center" numberOfLines={1}>
-        {item.sku}
+        {item.sku - item.pickedSku}
       </Text>
       <Text className="flex-1 text-black text-center" numberOfLines={1}>
         {item.receivingPlant}
@@ -109,13 +124,13 @@ const Picking = ({ navigation }) => {
     <TouchableOpacity
       className="flex-row items-center border border-tb rounded-lg mt-2.5 p-4"
       key={index}
-      onPress={() => navigation.push('PickedSto', item)}
+      onPress={() => navigation.replace('PickedSto', item)}
     >
       <Text className="flex-1 text-black text-center" numberOfLines={1}>
         {item.sto.slice(0, 2) + '...' + item.sto.slice(5, item.sto.length)}
       </Text>
       <Text className="flex-1 text-black text-center" numberOfLines={1}>
-        {item.sku}
+        {item.pickedSku}
       </Text>
       <Text className="flex-1 text-black text-center" numberOfLines={1}>
         {item.receivingPlant}
@@ -126,7 +141,7 @@ const Picking = ({ navigation }) => {
     </TouchableOpacity>
   );
 
-  const checkStatus = ['picker assigned', 'picker packer assigned', 'inbound picking'];
+  const checkStatus = ['picker packer assigned', 'inbound picking'];
 
   const notPicked = assignedData.filter(item => checkStatus.some(status => status === item.status));
   const picked = assignedData.filter(item => item.status === 'inbound picked' || item.status === 'inbound picking');

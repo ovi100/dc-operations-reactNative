@@ -1,6 +1,6 @@
+import { API_URL } from '@env';
 import Toast from 'react-native-toast-message';
-import {groupBy} from '../../../../utils';
-import {API_URL} from '@env';
+import { groupBy } from '../../../../utils';
 
 const mergeInventory = inventoryData => {
   return inventoryData.reduce((acc, item) => {
@@ -50,6 +50,8 @@ const updateStoItems = (stoItems, inventoryItems) => {
 
     if (matchedItem) {
       return {...stoItem, bins: matchedItem.bins};
+    } else {
+      return stoItem;
     }
   });
 
@@ -172,8 +174,7 @@ const updateArticleTracking = async (token, postData) => {
 export {
   adjustStoQuantity,
   mergeInventory,
-  stoItemsByBin,
-  updateStoTracking,
-  updateArticleTracking,
-  updateStoItems,
+  stoItemsByBin, updateArticleTracking,
+  updateStoItems, updateStoTracking
 };
+

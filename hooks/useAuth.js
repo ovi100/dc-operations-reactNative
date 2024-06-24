@@ -1,9 +1,8 @@
-import {useEffect, useState} from 'react';
-import {Alert} from 'react-native';
+import { API_URL } from '@env';
+import { useEffect, useState } from 'react';
 import Toast from 'react-native-toast-message';
 import useActivity from './useActivity';
-import {getStorage, removeAll, setStorage} from './useStorage';
-import {API_URL} from '@env';
+import { getStorage, removeAll, setStorage } from './useStorage';
 
 const useAuth = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -11,6 +10,10 @@ const useAuth = () => {
   const [userSites, setUserSites] = useState([]);
   const [token, setToken] = useState(null);
   const {createActivity} = useActivity();
+
+  useEffect(() => {
+    isLoggedIn();
+  }, []);
 
   const login = async (userId, password) => {
     setIsLoading(true);
@@ -84,15 +87,13 @@ const useAuth = () => {
         setToken(null);
       }
     } catch (error) {
-      Alert.alert(error);
-      console.log('catch error', error);
+      Toast.show({
+        type: 'customError',
+        text1: error.message,
+      });
       setIsLoading(false);
     }
   };
-
-  useEffect(() => {
-    isLoggedIn();
-  }, []);
 
   const authInfo = {
     login,

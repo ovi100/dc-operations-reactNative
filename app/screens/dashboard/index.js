@@ -48,7 +48,7 @@ const Home = ({navigation}) => {
       screen: 'Receiving',
       role: 'receiver',
       permission: 'receiving-access',
-      access: ['dc'],
+      types: ['dc'],
     },
     {
       name: 'Receiving',
@@ -56,7 +56,7 @@ const Home = ({navigation}) => {
       screen: 'OutletReceiving',
       role: 'receiver',
       permission: 'outlet-receiving-access',
-      access: ['outlet', 'darkstore'],
+      types: ['outlet', 'darkstore'],
     },
     {
       name: 'Shelving',
@@ -64,7 +64,7 @@ const Home = ({navigation}) => {
       screen: 'Shelving',
       role: 'shelver',
       permission: 'shelving-access',
-      access: ['dc', 'outlet', 'darkstore'],
+      types: ['dc', 'outlet', 'darkstore'],
     },
     {
       name: 'Delivery Plan',
@@ -72,7 +72,7 @@ const Home = ({navigation}) => {
       screen: 'DeliveryPlan',
       role: 'delivery-planner',
       permission: 'delivery-plan-access',
-      access: ['dc'],
+      types: ['dc'],
     },
     {
       name: 'Task Assign',
@@ -80,7 +80,7 @@ const Home = ({navigation}) => {
       screen: 'TaskAssign',
       role: 'task-assigner',
       permission: 'task-assign-access',
-      access: ['dc'],
+      types: ['dc'],
     },
     {
       name: 'Picking',
@@ -88,7 +88,7 @@ const Home = ({navigation}) => {
       screen: 'Picking',
       role: 'picker',
       permission: 'picking-access',
-      access: ['dc'],
+      types: ['dc'],
     },
     {
       name: 'Child Packing',
@@ -96,7 +96,7 @@ const Home = ({navigation}) => {
       screen: 'ChildPacking',
       role: 'packer',
       permission: 'packing-access',
-      access: ['dc'],
+      types: ['dc'],
     },
     {
       name: 'Final Delivery Note',
@@ -104,7 +104,7 @@ const Home = ({navigation}) => {
       screen: 'DeliveryNote',
       role: 'DN charge',
       permission: 'delivery-note-access',
-      access: ['dc'],
+      types: ['dc'],
     },
     {
       name: 'Audit',
@@ -112,7 +112,7 @@ const Home = ({navigation}) => {
       screen: 'Audit',
       role: 'audit',
       permission: 'audit-access',
-      access: ['dc', 'outlet', 'darkstore'],
+      types: ['dc', 'outlet', 'darkstore'],
     },
   ];
 
@@ -122,7 +122,7 @@ const Home = ({navigation}) => {
 
   if (user?.hasPermission.includes('*')) {
     filteredLinks = navLinks.filter(link =>
-      link.access.some(item => item === siteType),
+      link.types.some(type => type === siteType),
     );
   }
 
@@ -130,7 +130,7 @@ const Home = ({navigation}) => {
     filteredLinks = navLinks.filter(
       link =>
         user?.hasPermission.some(item => item === link.permission) &&
-        link.access.some(item => item === siteType),
+        link.types.some(type => type === siteType),
     );
   }
 

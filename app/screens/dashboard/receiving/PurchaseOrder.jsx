@@ -1,3 +1,4 @@
+import { API_URL } from '@env';
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
@@ -20,7 +21,6 @@ import useBackHandler from '../../../../hooks/useBackHandler';
 import { getStorage, setStorage } from '../../../../hooks/useStorage';
 import { toast } from '../../../../utils';
 import SunmiScanner from '../../../../utils/sunmi/scanner';
-import { API_URL } from '@env';
 
 const PurchaseOrder = ({ navigation, route }) => {
   const { po } = route.params;
@@ -174,7 +174,7 @@ const PurchaseOrder = ({ navigation, route }) => {
         }
       });
 
-      poItems = poItems.filter(item => item.remainingQuantity !== 0);
+      poItems = poItems.filter(item => item.quantity !== item.grnQuantity);
 
       setArticles(poItems);
     } catch (error) {

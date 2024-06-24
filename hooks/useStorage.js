@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {toast} from '../utils';
+import { toast } from '../utils';
 
 const setStorage = async (key, value) => {
   try {
@@ -8,6 +8,23 @@ const setStorage = async (key, value) => {
       await AsyncStorage.setItem(key, jsonValue);
     } else {
       await AsyncStorage.setItem(key, value);
+    }
+  } catch (e) {
+    toast(e.message);
+  }
+};
+
+const getAll = async () => {
+  let keys = [];
+  try {
+    keys = await AsyncStorage.getAllKeys();
+    console.log('storage keys', keys);
+    if (keys.length > 0) {
+      const values = await AsyncStorage.multiGet(keys);
+      console.log('storage values', values);
+      return values;
+    } else {
+      return null;
     }
   } catch (e) {
     toast(e.message);
@@ -40,9 +57,11 @@ const removeItem = async key => {
 const removeAll = async () => {
   try {
     await AsyncStorage.clear();
+    console.log('Async storage has been cleared');
   } catch (e) {
     toast(e.message);
   }
 };
 
-export {getStorage, removeAll, removeItem, setStorage};
+export { getAll, getStorage, removeAll, removeItem, setStorage };
+

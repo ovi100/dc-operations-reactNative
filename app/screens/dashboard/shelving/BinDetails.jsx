@@ -98,7 +98,7 @@ const BinDetails = ({ navigation, route }) => {
       stopScan();
       DeviceEventEmitter.removeAllListeners('ScanDataReceived');
     };
-  }, []);
+  }, [navigation.isFocused()]);
 
   const renderItem = ({ item, index }) => (
     <View className="flex-row border border-tb rounded-lg mt-2.5 p-4" key={index}>
@@ -213,7 +213,7 @@ const BinDetails = ({ navigation, route }) => {
                   onPress: () => null,
                   style: 'cancel',
                 },
-                { text: 'OK', onPress: () => assignToBin() },
+                { text: 'Confirm', onPress: () => assignToBin() },
               ]);
             } else {
               Toast.show({

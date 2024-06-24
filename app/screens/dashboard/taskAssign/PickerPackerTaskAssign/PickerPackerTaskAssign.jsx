@@ -1,3 +1,4 @@
+import { API_URL } from '@env';
 import { Picker } from '@react-native-picker/picker';
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback, useEffect, useState } from 'react';
@@ -5,8 +6,8 @@ import { SafeAreaView, Text, View } from 'react-native';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../../components/CustomToast';
 import { ButtonBack, ButtonLg } from '../../../../../components/buttons';
+import useBackHandler from '../../../../../hooks/useBackHandler';
 import { getStorage } from '../../../../../hooks/useStorage';
-import { API_URL } from '@env';
 
 const PickerPackerTaskAssign = ({ navigation, route }) => {
   const { sto } = route.params;
@@ -14,6 +15,9 @@ const PickerPackerTaskAssign = ({ navigation, route }) => {
   const [pickers, setPickers] = useState([]);
   const [packers, setPackers] = useState([]);
   const [token, setToken] = useState('');
+
+  // Custom hook to navigate screen
+  useBackHandler('TaskAssign');
 
   useEffect(() => {
     getStorage('token', setToken, 'string');
@@ -100,10 +104,10 @@ const PickerPackerTaskAssign = ({ navigation, route }) => {
           if (data.status) {
             Toast.show({
               type: 'customSuccess',
-              text1: data.message,
+              text1: 'Task assigned successfully',
             });
             setTimeout(() => {
-              navigation.goBack();
+              navigation.replace('TaskAssign');
             }, 1000);
           } else {
             Toast.show({

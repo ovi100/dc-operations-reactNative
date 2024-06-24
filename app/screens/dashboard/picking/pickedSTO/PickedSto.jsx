@@ -1,8 +1,9 @@
+import { API_URL } from '@env';
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator, FlatList,
-  SafeAreaView,
+  Image, SafeAreaView,
   Text,
   TextInput,
   TouchableOpacity,
@@ -11,10 +12,11 @@ import {
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../../components/CustomToast';
 import Dialog from '../../../../../components/Dialog';
-import { ButtonBack, ButtonLg } from '../../../../../components/buttons';
+import { ButtonLg } from '../../../../../components/buttons';
+import { ArrowLeftIcon } from '../../../../../constant/icons';
+import useBackHandler from '../../../../../hooks/useBackHandler';
 import { getStorage } from '../../../../../hooks/useStorage';
 import { updateArticleTracking, updateStoTracking } from '../processStoData';
-import {API_URL} from '@env';
 
 const PickedSto = ({ navigation, route }) => {
   const { sto } = route.params;
@@ -23,8 +25,11 @@ const PickedSto = ({ navigation, route }) => {
   const [dialogVisible, setDialogVisible] = useState(false);
   const [user, setUser] = useState({});
   const [token, setToken] = useState('');
-  let tableHeader = ['Article Code', 'Article Name', 'Picked Qnt', 'Packed Qnt'];
+  let tableHeader = ['Article Info', 'Picked Qty', 'Packed Qty'];
   let [articles, setArticles] = useState([]);
+
+  // Custom hook to navigate screen
+  useBackHandler('Picking');
 
   useEffect(() => {
     const getAsyncStorage = async () => {
@@ -61,17 +66,17 @@ const PickedSto = ({ navigation, route }) => {
                   // console.log('article tracking response', articleTrackingData);
                   if (articleTrackingData.status) {
                     const stoItems = stoDetails.data.items;
-                    const articleTrackingItems = articleTrackingData.items.filter(article => article.sto === sto && article.inboundPickerId === user._id);
+                    const articleTrackingItems = articleTrackingData.items.filter(article => article.inboundPickerId === user._id);
                     const stoPickedItems = articleTrackingItems.map(item => {
-                      const matchedItem = stoItems.find(
-                        stoItem => item.code === stoItem.material
-                      );
-                      return {
-                        ...item,
-                        remainingPackedQuantity: item.inboundPickedQuantity - item.inboundPackedQuantity,
-                        supplyingSite: user.site,
-                        receivingPlant: matchedItem.receivingPlant,
-                      };
+                      const matchedItem = stoItems.find(stoItem => item.code === stoItem.material);
+                      if (matchedItem) {
+                        return {
+                          ...item,
+                          remainingPackedQuantity: item.inboundPickedQuantity - item.inboundPackedQuantity,
+                          supplyingSite: user.site,
+                          receivingPlant: matchedItem.receivingPlant,
+                        };
+                      }
                     }).filter(item => item.inboundPickedQuantity !== item.inboundPackedQuantity);
                     setArticles(stoPickedItems);
                   }
@@ -149,18 +154,20 @@ const PickedSto = ({ navigation, route }) => {
       key={index}
       onPress={() => null}
     >
-      <Text className="w-1/4 text-black text-center" numberOfLines={1}>
-        {item.code}
-      </Text>
-      <Text className="w-1/4 text-black text-center" numberOfLines={2}>
-        {item.name}
-      </Text>
-      <Text className="w-1/4 text-black text-center" numberOfLines={1}>
+      <View className="w-1/3">
+        <Text className="text-black" numberOfLines={1}>
+          {item.code}
+        </Text>
+        <Text className="text-black" numberOfLines={2}>
+          {item.name}
+        </Text>
+      </View>
+      <Text className="w-1/3 text-black text-center" numberOfLines={1}>
         {item.inboundPickedQuantity}
       </Text>
-      <View className="w-1/4 text-black">
+      <View className="w-1/3 mx-auto text-black">
         <TextInput
-          className="text-black border border-gray-200 text-center rounded-md px-4 focus:border-blue-500"
+          className="w-20 mx-auto text-black text-right rounded-md px-2 focus:border-blue-500"
           keyboardType="numeric"
           placeholder={item.remainingPackedQuantity.toString()}
           onChangeText={quantity => handleInputBox(item, Number(quantity))}
@@ -223,6 +230,11 @@ const PickedSto = ({ navigation, route }) => {
           }
           await updateStoTracking(token, updateSto);
           await updateArticleTracking(token, updateArticle);
+        } else {
+          Toast.show({
+            type: 'customError',
+            text1: 'One or more items quantity is empty',
+          });
         }
       })
     } catch (error) {
@@ -230,7 +242,9 @@ const PickedSto = ({ navigation, route }) => {
         type: 'customError',
         text1: error.message,
       });
-    }
+    } finally {
+      setIsSending(false);
+    };
   };
 
   if (isLoading && articles.length === 0) {
@@ -259,40 +273,44 @@ const PickedSto = ({ navigation, route }) => {
     <SafeAreaView className="flex-1 bg-white pt-8">
       <View className="flex-1 h-full px-4">
         <View className="screen-header flex-row items-center mb-4">
-          <ButtonBack navigation={navigation} />
-          <Text className="flex-1 text-lg text-sh text-center font-semibold capitalize">
-            picked {' ' + sto}
+          <TouchableOpacity onPress={() => navigation.replace('Picking')}>
+            <Image source={ArrowLeftIcon} />
+          </TouchableOpacity>
+          <Text className="flex-1 text-lg text-sh text-center font-semibold">
+            Picked STO {sto}
           </Text>
         </View>
-        <View className="content flex-1 justify-between pb-2">
-          <View className="table">
-            <View className="table-header flex-row justify-between bg-th mb-2 py-2 px-3">
-              {tableHeader.map(th => (
-                <Text className="text-white text-center font-bold" key={th} numberOfLines={2}>
-                  {th}
-                </Text>
-              ))}
+        <View className="content flex-1 justify-between mt-3 pb-2">
+          {!isLoading && articles.length === 0 ? (
+            <View className="w-full h-[90%] justify-center px-3">
+              <Text className="text-black text-xl text-center font-bold">
+                No items left
+              </Text>
             </View>
-            {!isLoading && articles.length === 0 ? (
-              <View className="w-full h-[90%] justify-center px-3">
-                <Text className="text-black text-xl text-center font-bold">
-                  No items left
-                </Text>
+          ) : (
+            <>
+              <View className="table">
+                <View className="table-header flex-row justify-between bg-th mb-2 py-2 px-3">
+                  {tableHeader.map(th => (
+                    <Text className="text-white text-center font-bold" key={th} numberOfLines={2}>
+                      {th}
+                    </Text>
+                  ))}
+                </View>
+                <FlatList
+                  data={articles}
+                  renderItem={renderItem}
+                  keyExtractor={item => item.code}
+                />
               </View>
-            ) : (
-              <FlatList
-                data={articles}
-                renderItem={renderItem}
-                keyExtractor={item => item.code}
-              />
-            )}
-          </View>
-          <View className="button">
-            <ButtonLg
-              title="Send to Packing Zone"
-              onPress={() => setDialogVisible(true)()}
-            />
-          </View>
+              <View className="button">
+                <ButtonLg
+                  title="Send to Packing Zone"
+                  onPress={() => setDialogVisible(true)}
+                />
+              </View>
+            </>
+          )}
         </View>
       </View>
       <Dialog

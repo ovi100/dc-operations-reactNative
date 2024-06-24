@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { DeviceEventEmitter, FlatList, SafeAreaView, Text, View } from 'react-native';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
+import useBackHandler from '../../../../hooks/useBackHandler';
 import SunmiScanner from '../../../../utils/sunmi/scanner';
 
 const BinDetails = ({ navigation, route }) => {
@@ -10,6 +11,8 @@ const BinDetails = ({ navigation, route }) => {
   const [barcode, setBarcode] = useState('');
   const { startScan, stopScan } = SunmiScanner;
 
+  // Custom hook to navigate screen
+  useBackHandler('PickingSto', route.params);
 
   useEffect(() => {
     startScan();
@@ -40,7 +43,7 @@ const BinDetails = ({ navigation, route }) => {
 
   const sortedBins = bins?.sort((a, b) => b.quantity - a.quantity);
 
-  if (barcode !== '') {
+  if (barcode) {
     const binItem = bins.find(item => item.bin === barcode);
     if (binItem) {
       navigation.replace('PickingStoArticle', { ...route.params, bins: binItem });

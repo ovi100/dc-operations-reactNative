@@ -1,3 +1,4 @@
+import { API_URL } from '@env';
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -13,10 +14,9 @@ import { BoxIcon } from '../../../../constant/icons';
 import useActivity from '../../../../hooks/useActivity';
 import useBackHandler from '../../../../hooks/useBackHandler';
 import { getStorage } from '../../../../hooks/useStorage';
-import { API_URL } from '@env';
 
 const ShelveArticle = ({ navigation, route }) => {
-  const { _id, batch, bins, code, description, expiryDate, receivedQuantity } = route.params;
+  const { _id, batch, bins, code, description, mrp, mfgDate, expiryDate, receivedQuantity } = route.params;
   const [isLoading, setIsLoading] = useState(false);
   const [isButtonLoading, setIsButtonLoading] = useState(false);
   const [newQuantity, setNewQuantity] = useState(Number(receivedQuantity));
@@ -46,6 +46,8 @@ const ShelveArticle = ({ navigation, route }) => {
       bin: bins.bin_id,
       site: user.site,
       batch,
+      mrp,
+      mfgDate,
       expiryDate
     };
 

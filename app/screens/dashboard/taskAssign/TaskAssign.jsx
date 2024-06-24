@@ -1,3 +1,4 @@
+import { API_URL } from '@env';
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback, useEffect, useState } from 'react';
 import {
@@ -8,7 +9,6 @@ import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
 import ServerError from '../../../../components/animations/ServerError';
 import { getStorage } from '../../../../hooks/useStorage';
-import {API_URL} from '@env';
 
 const TaskAssign = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -27,19 +27,31 @@ const TaskAssign = ({ navigation }) => {
   }, []);
 
   const getInDnList = async () => {
+    const filterBy = {
+      filter: {
+        supplyingPlant: user.site,
+        status: "in dn"
+      },
+      query: {
+        pageSize: 500,
+        sortBy: "sto",
+        sortOrder: "asc"
+      }
+    };
+
     try {
-      await fetch(API_URL + `api/sto-tracking?pageSize=500&sortBy=sto&&sortOrder=asc&filterBy=supplyingPlant&value=${user.site}`, {
-        method: 'GET',
+      await fetch(API_URL + 'api/sto-tracking/all', {
+        method: 'POST',
         headers: {
           authorization: token,
+          'Content-Type': 'application/json',
         },
+        body: JSON.stringify(filterBy),
       })
         .then(response => response.json())
         .then(data => {
           if (data.status) {
-            let status = ['in dn', 'picker assigned'];
-            const serverData = data.items.filter(item => status.some(elem => elem === item.status));
-            setTaskList(serverData);
+            setTaskList(data.items);
           } else {
             Toast.show({
               type: 'customError',
@@ -76,7 +88,7 @@ const TaskAssign = ({ navigation }) => {
   );
 
   const onRefresh = async () => {
-    if (token && user?.site) {
+    if (token && user.site) {
       setRefreshing(true);
       await getInDnList();
       setRefreshing(false);
@@ -87,7 +99,7 @@ const TaskAssign = ({ navigation }) => {
     <TouchableOpacity
       className="flex-row items-center border border-tb rounded-lg mt-2.5 p-4"
       key={index}
-      onPress={() => navigation.push('PickerPackerTaskAssign', item)}
+      onPress={() => navigation.replace('PickerPackerTaskAssign', item)}
     >
       <Text className="flex-1 text-black text-center" numberOfLines={1}>
         {item.sto.slice(0, 2) + '...' + item.sto.slice(7, item.sto.length)}

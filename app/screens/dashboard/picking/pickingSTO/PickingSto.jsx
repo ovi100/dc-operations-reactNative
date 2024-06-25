@@ -17,7 +17,7 @@ import useAppContext from '../../../../../hooks/useAppContext';
 import useBackHandler from '../../../../../hooks/useBackHandler';
 import { getStorage } from '../../../../../hooks/useStorage';
 import SunmiScanner from '../../../../../utils/sunmi/scanner';
-import { adjustStoQuantity, mergeInventory, updateStoItems, updateStoTracking } from '../processStoData';
+import { updateStoTracking } from '../processStoData';
 
 const PickingSto = ({ navigation, route }) => {
   const { sto, picker, pickerId, packer, packerId } = route.params;
@@ -57,75 +57,34 @@ const PickingSto = ({ navigation, route }) => {
   }, [navigation.isFocused()]);
 
   const getStoDetails = async () => {
-    const getOptions = {
-      method: 'GET',
-      headers: {
-        authorization: token,
-      }
-    };
     const postOptions = {
       method: 'POST',
       headers: {
         authorization: token,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ sto }),
+      body: JSON.stringify({ sto, site: user.site }),
     };
-    const fetchInventory = fetch(API_URL + `api/inventory?filterBy=site&value=${user.site}&pageSize=500`, getOptions);
-    const fetchArticleTracking = fetch(API_URL + `api/article-tracking?filterBy=sto&value=${sto}&pageSize=500`, getOptions);
-    const fetchSto = fetch(API_URL + 'bapi/sto/display', postOptions);
 
     try {
-      const [inventoryResponse, articleTrackingResponse, stoResponse] = await Promise.all([fetchInventory, fetchArticleTracking, fetchSto]);
-
-      if (!inventoryResponse.ok) {
-        Toast.show({
-          type: 'customError',
-          text1: "Failed to fetch inventory data",
+      await fetch(API_URL + 'api/service/sto-picking', postOptions)
+        .then(response => response.json())
+        .then(data => {
+          if (data.status) {
+            setArticles(data.items);
+          } else {
+            Toast.show({
+              type: 'customError',
+              text1: data.message,
+            });
+          }
+        })
+        .catch(error => {
+          Toast.show({
+            type: 'customError',
+            text1: error.message,
+          });
         });
-      } else if (!articleTrackingResponse.ok) {
-        Toast.show({
-          type: 'customError',
-          text1: "Failed to fetch article tracking data",
-        });
-      } else {
-        Toast.show({
-          type: 'customError',
-          text1: "Failed to fetch sto data",
-        });
-      }
-
-      // Parse the JSON data from the responses
-      const inventoryData = await inventoryResponse.json();
-      const articleTrackingData = await articleTrackingResponse.json();
-      const stoData = await stoResponse.json();
-
-      let inventoryItems = inventoryData.items;
-      let articleTrackingItems = articleTrackingData.items;
-      let stoItems = stoData.data.items;
-      let finalStoItems = [];
-
-      if (inventoryItems.length && articleTrackingItems.length && stoItems.length) {
-        inventoryItems = mergeInventory(inventoryItems);
-        const stoMergedData = updateStoItems(stoItems, inventoryItems);
-        finalStoItems = adjustStoQuantity(stoMergedData, articleTrackingItems);
-        setArticles(finalStoItems);
-      } else if (inventoryItems.length && stoItems.length) {
-        inventoryItems = mergeInventory(inventoryItems);
-        const stoMergedData = updateStoItems(stoItems, inventoryItems);
-        finalStoItems = stoMergedData.map(stoItem => {
-          return { ...stoItem, remainingQuantity: stoItem.quantity }
-        }).filter(item => item.remainingQuantity !== 0);
-        setArticles(finalStoItems);
-      } else {
-        finalStoItems = stoItems.map(stoItem => {
-          return {
-            ...stoItem,
-            remainingQuantity: stoItem.quantity
-          };
-        });
-        setArticles(finalStoItems);
-      }
     } catch (error) {
       Toast.show({
         type: 'customError',
@@ -288,7 +247,7 @@ const PickingSto = ({ navigation, route }) => {
                   {item.material}
                 </Text>
                 <Text className="text-black text-xs font-bold" numberOfLines={1}>
-                  quantity {'--> ' + item.remainingQuantity}
+                  quantity {'--> ' + item.quantity}
                 </Text>
               </View>
               <Text className="w-4/5 text-black text-sm mt-1" numberOfLines={2}>
@@ -331,7 +290,7 @@ const PickingSto = ({ navigation, route }) => {
                 {item.material}
               </Text>
               <Text className="text-black text-xs font-bold" numberOfLines={1}>
-                quantity {'--> ' + item.remainingQuantity}
+                quantity {'--> ' + item.quantity}
               </Text>
             </View>
             <Text className="w-4/5 text-black text-sm mt-1" numberOfLines={2}>

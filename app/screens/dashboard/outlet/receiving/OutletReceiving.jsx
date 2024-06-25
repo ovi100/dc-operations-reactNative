@@ -1,3 +1,4 @@
+import { API_URL } from '@env';
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -15,7 +16,6 @@ import Scan from '../../../../../components/animations/Scan';
 import useActivity from '../../../../../hooks/useActivity';
 import { getStorage } from '../../../../../hooks/useStorage';
 import SunmiScanner from '../../../../../utils/sunmi/scanner';
-import { API_URL } from '@env';
 
 const Receiving = ({ navigation }) => {
   const [isChecking, setIsChecking] = useState(false);
@@ -52,6 +52,47 @@ const Receiving = ({ navigation }) => {
   const isPo = (search.startsWith('1') || barcode.startsWith('1')) || (search.startsWith('2') || barcode.startsWith('2')) || (search.startsWith('3') || barcode.startsWith('3'))
     || (search.startsWith('4') || barcode.startsWith('4')) || (search.startsWith('6') || barcode.startsWith('6')) || (search.startsWith('7') || barcode.startsWith('7'));
 
+  // const fetchPoDisplay = async (po, site) => {
+  //   await fetch(API_URL + 'bapi/po/display', {
+  //     method: 'POST',
+  //     headers: {
+  //       authorization: token,
+  //       'Content-Type': 'application/json',
+  //     },
+  //     body: JSON.stringify({ po }),
+  //   })
+  //     .then(response => response.json())
+  //     .then(async poDetails => {
+  //       if (poDetails.status) {
+  //         const poData = poDetails.data;
+  //         // const companyCode = poData.companyCode;
+  //         const poItem = poData.items[0];
+  //         if (poItem.receivingPlant === site) {
+  //           navigation.replace('OutletPoStoDetails', { po });
+  //         } else {
+  //           Toast.show({
+  //             type: 'customError',
+  //             text1: 'Not authorized to receive PO',
+  //           });
+  //         }
+  //       } else {
+  //         Toast.show({
+  //           type: 'customError',
+  //           text1: poDetails.message.trim(),
+  //         });
+  //         if (poDetails.message.trim() === 'MIS Logged Off the PC where BAPI is Hosted') {
+  //           //log user activity
+  //           await createActivity(user._id, 'error', result.message.trim());
+  //         }
+  //       }
+  //     })
+  //     .catch(error => {
+  //       Toast.show({
+  //         type: 'customError',
+  //         text1: error.message,
+  //       });
+  //     });
+  // }
   const checkPo = async (po) => {
     if (user.site.startsWith('DS')) {
       try {
@@ -350,7 +391,7 @@ const Receiving = ({ navigation }) => {
         {isChecking ? (
           <View>
             <ActivityIndicator size="large" color="#EB4B50" />
-            <Text className="mt-4 text-gray-400 text-base text-center">{`${isPo ? 'Loading po' : 'Checking dn number'}`}</Text>
+            <Text className="mt-4 text-gray-400 text-base text-center">{`${isPo ? 'Checking po number' : 'Checking dn number'}`}</Text>
           </View>
         ) : (
           <View className="relative -z-10">

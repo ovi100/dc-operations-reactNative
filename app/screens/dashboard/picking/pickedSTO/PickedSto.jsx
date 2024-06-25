@@ -139,11 +139,12 @@ const PickedSto = ({ navigation, route }) => {
     } else if (quantity > item.remainingPackedQuantity) {
       Toast.show({
         type: 'customError',
-        text1: 'Packed quantity cannot be greater than picked quantity',
+        text1: 'Quantity cannot be greater than picked quantity',
       });
     } else {
       const newItems = [...articles];
       newItems[index].inboundPackedQuantity = quantity;
+      // newItems[index].remainingPackedQuantity = quantity - newItems[index].inboundPackedQuantity;
       setArticles(newItems);
     }
   }
@@ -162,14 +163,17 @@ const PickedSto = ({ navigation, route }) => {
           {item.name}
         </Text>
       </View>
-      <Text className="w-1/3 text-black text-center" numberOfLines={1}>
-        {item.inboundPickedQuantity}
-      </Text>
-      <View className="w-1/3 mx-auto text-black">
+      <View className="w-1/3">
+        <Text className="text-black text-center" numberOfLines={1}>
+          {item.inboundPickedQuantity}
+        </Text>
+      </View>
+      <View className="w-1/3 text-black flex-row justify-end">
         <TextInput
-          className="w-20 mx-auto text-black text-right rounded-md px-2 focus:border-blue-500"
+          className="w-20 text-black text-center border border-blue-500 rounded-md px-2 focus:border-blue-500"
           keyboardType="numeric"
-          placeholder={item.remainingPackedQuantity.toString()}
+          placeholder="Enter qty"
+          // placeholder={item.remainingPackedQuantity.toString()}
           onChangeText={quantity => handleInputBox(item, Number(quantity))}
         />
       </View>
@@ -178,8 +182,9 @@ const PickedSto = ({ navigation, route }) => {
 
   const sendToPackingZone = () => {
     setDialogVisible(false);
-    setIsSending(true);
     try {
+      setIsSending(true);
+      console.log('sending articles', articles)
       articles.map(async item => {
         let updateArticle = {
           sto: item.sto,
@@ -228,7 +233,9 @@ const PickedSto = ({ navigation, route }) => {
               status: 'inbound packed'
             };
           }
+          console.log('sto update object: ', updateSto);
           await updateStoTracking(token, updateSto);
+          console.log('article update object: ', updateArticle);
           await updateArticleTracking(token, updateArticle);
         } else {
           Toast.show({

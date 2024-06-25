@@ -12,7 +12,7 @@ import { updateArticleTracking } from '../processStoData';
 
 const PickingStoArticle = ({ navigation, route }) => {
   const {
-    sto, material, description, quantity, remainingQuantity, bins,
+    sto, material, description, quantity, bins,
     receivingPlant, picker, pickerId, packer, packerId
   } = route.params;
   const [isButtonLoading, setIsButtonLoading] = useState(false);
@@ -166,7 +166,7 @@ const PickingStoArticle = ({ navigation, route }) => {
             </View>
             <View className="quantity flex-row items-center gap-3">
               <Image source={BoxIcon} />
-              <Text className="text-black font-bold">{remainingQuantity}</Text>
+              <Text className="text-black font-bold">{quantity}</Text>
             </View>
           </View>
           <View className="input-box mt-6">

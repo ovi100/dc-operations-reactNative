@@ -196,7 +196,7 @@ const PickedSto = ({ navigation, route }) => {
         };
 
         if (item.inboundPackedQuantity) {
-          if (item.remainingPackedQuantity === item.inboundPackedQuantity && item.packingStartingTime === null) {
+          if ((item.remainingPackedQuantity === item.inboundPackedQuantity) && item.packingStartingTime === null) {
             updateSto = {
               ...updateSto,
               packingStartingTime: new Date(),
@@ -233,9 +233,9 @@ const PickedSto = ({ navigation, route }) => {
               status: 'inbound packed'
             };
           }
-          console.log('sto update object: ', updateSto);
+          // console.log('sto update object: ', updateSto);
           await updateStoTracking(token, updateSto);
-          console.log('article update object: ', updateArticle);
+          // console.log('article update object: ', updateArticle);
           await updateArticleTracking(token, updateArticle);
         } else {
           Toast.show({

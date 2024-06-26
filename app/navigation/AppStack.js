@@ -4,6 +4,8 @@ import useAppContext from '../../hooks/useAppContext';
 // screens components
 import Home from '../screens/dashboard';
 import Audit from '../screens/dashboard/audit/Audit';
+import AuditArticleDetails from '../screens/dashboard/audit/AuditArticleDetails';
+import AuditBinList from '../screens/dashboard/audit/AuditBinList';
 import DeliveryNote from '../screens/dashboard/deliveryNote/DeliveryNote';
 import DeliveryPlan from '../screens/dashboard/deliveryPlan/DeliveryPlan';
 import OutletArticleDetails from '../screens/dashboard/outlet/receiving/OutletArticleDetails';
@@ -42,6 +44,12 @@ const AppStack = () => {
   const screens = [
     {id: 'home', name: 'Home', component: Home},
     {id: 'audit', name: 'Audit', component: Audit},
+    {
+      id: 'audit-article-details',
+      name: 'AuditArticleDetails',
+      component: AuditArticleDetails,
+    },
+    {id: 'audit-bin-list', name: 'AuditBinList', component: AuditBinList},
     {id: 'profile', name: 'Profile', component: Profile},
     {id: 'choose-site', name: 'ChooseSite', component: ChooseSite},
     {id: 'change-password', name: 'ChangePassword', component: ChangePassword},

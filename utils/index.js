@@ -1,4 +1,4 @@
-import {Alert, Dimensions, ToastAndroid} from 'react-native';
+import { Alert, Dimensions, ToastAndroid } from 'react-native';
 import Toast from 'react-native-toast-message';
 
 const handleDate = (value, type) => {
@@ -68,6 +68,15 @@ const handleDate = (value, type) => {
     Toast.show({
       type: 'customError',
       text1: 'Date must be greater than today',
+    });
+    input = null;
+    return;
+  }
+
+  if (input.length === 2 && new Date(Number(input)) < new Date()) {
+    Toast.show({
+      type: 'customError',
+      text1: 'Invalid date format',
     });
     input = null;
     return;
@@ -163,11 +172,34 @@ const dateRange = range => {
   };
 };
 
+const dateDiffInDays = (date1, date2) => {
+  if (date1 && date2) {
+    const mfg = new Date(date1);
+    const exp = new Date(date2);
+    const oneDay = 24 * 60 * 60 * 1000;
+    return Math.round(Math.abs((exp - mfg) / oneDay));
+  }
+  return null;
+};
+
+const calculateShelfLife = (mfg, exp) => {
+  if (mfg && exp) {
+    const date = new Date();
+    const totalDays = dateDiffInDays(mfg, exp);
+    const daysPassed = dateDiffInDays(mfg, date);
+    const shelfLife = Math.round(100 - (daysPassed / totalDays) * 100);
+    return shelfLife;
+  }
+  return 0;
+};
+
 const {width: WINDOW_WIDTH, height: WINDOW_HEIGHT} = Dimensions.get('window');
 
 export {
   WINDOW_HEIGHT,
   WINDOW_WIDTH,
+  calculateShelfLife,
+  dateDiffInDays,
   dateRange,
   formatDateYYYYMMDD,
   groupBy,
@@ -176,5 +208,6 @@ export {
   uniqueArray,
   uniqueArrayOfObjects,
   validateFile,
-  validateInput,
+  validateInput
 };
+

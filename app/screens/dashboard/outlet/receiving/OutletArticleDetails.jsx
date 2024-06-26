@@ -14,7 +14,7 @@ import useActivity from '../../../../../hooks/useActivity';
 import useAppContext from '../../../../../hooks/useAppContext';
 import useBackHandler from '../../../../../hooks/useBackHandler';
 import { getStorage } from '../../../../../hooks/useStorage';
-import { handleDate } from '../../../../../utils';
+import { calculateShelfLife, handleDate } from '../../../../../utils';
 
 const OutletArticleDetails = ({ navigation, route }) => {
   const {
@@ -200,20 +200,7 @@ const OutletArticleDetails = ({ navigation, route }) => {
     }
   };
 
-  // Function to calculate the difference in days between two dates
-  function dateDiffInDays(date1, date2) {
-    const oneDay = 24 * 60 * 60 * 1000; // hours * minutes * seconds * milliseconds
-    return Math.round(Math.abs((date2 - date1) / oneDay));
-  }
-
-  // Calculate the total lifespan of the product in days
-  const totalLifespan = dateDiffInDays(mfgDate?.date, expDate?.date);
-
-  // Calculate the number of days from the manufacturing date to the current date
-  const daysPassed = dateDiffInDays(mfgDate?.date, new Date());
-
-  // Calculate the percentage of the product's life that has passed
-  const percentageOfLifePassed = 100 - ((daysPassed / totalLifespan) * 100);
+  const shelfLife = calculateShelfLife(mfgDate?.date, expDate?.date);
 
   if (isLoading) {
     return (
@@ -376,8 +363,8 @@ const OutletArticleDetails = ({ navigation, route }) => {
                   </View>
                 </View>
 
-                <View className="w-1/2 mx-auto rounded-md mt-5 bg-green-600 py-3">
-                  <Text className="text-lg text-white text-center font-bold capitalize">shelf life: {percentageOfLifePassed ? `${percentageOfLifePassed.toFixed(2)}%` : '0%'}</Text>
+                <View className={`w-1/2 mx-auto ${shelfLife >= 50 ? 'bg-green-600' : shelfLife >= 10 ? 'bg-orange-600' : 'bg-red-600'} rounded-md mt-5 py-3`}>
+                  <Text className="text-lg text-white text-center font-bold capitalize">shelf life: {shelfLife + '%'}</Text>
                 </View>
               </View>
               <View className="button">

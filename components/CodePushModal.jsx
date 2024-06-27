@@ -23,6 +23,9 @@ const CodePushModal = ({ visible, header, subHeader, progress, message }) => {
             <Text className="text-base text-black text-center font-semibold mb-3">
               {message}
             </Text>
+            <View className="progress mb-3">
+              <Text className="text-black text-center font-bold">{`${percent}%`}</Text>
+            </View>
             <View className="relative flex-row items-center gap-3">
               <View className="progress relative bg-gray-300 w-full h-1.5 rounded-full mt-4">
                 <View

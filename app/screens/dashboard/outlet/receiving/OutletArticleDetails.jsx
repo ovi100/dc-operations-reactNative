@@ -317,7 +317,7 @@ const OutletArticleDetails = ({ navigation, route }) => {
                         <Text className="text-base text-[#2E2C3B] font-medium">
                           MFG Date
                         </Text>
-                        {mfgDate?.date && (
+                        {mfgDate?.text?.length === 8 && (
                           <Text className="text-base text-[#2E2C3B] font-medium capitalize">
                             {mfgDate?.date.toLocaleDateString('en-Uk', { dateStyle: 'medium' })}
                           </Text>
@@ -343,7 +343,7 @@ const OutletArticleDetails = ({ navigation, route }) => {
                         <Text className="text-base text-[#2E2C3B] font-medium capitalize">
                           exp date
                         </Text>
-                        {expDate?.date && (
+                        {expDate?.text?.length === 8 && (
                           <Text className="text-base text-[#2E2C3B] font-medium capitalize">
                             {expDate?.date.toLocaleDateString('en-Uk', { dateStyle: 'medium' })}
                           </Text>
@@ -363,9 +363,11 @@ const OutletArticleDetails = ({ navigation, route }) => {
                   </View>
                 </View>
 
-                <View className={`w-1/2 mx-auto ${shelfLife >= 50 ? 'bg-green-600' : shelfLife >= 10 ? 'bg-orange-600' : 'bg-red-600'} rounded-md mt-5 py-3`}>
-                  <Text className="text-lg text-white text-center font-bold capitalize">shelf life: {shelfLife + '%'}</Text>
-                </View>
+                {(mfgDate?.text?.length === 8 && expDate?.text?.length === 8) && (
+                  <View className={`w-1/2 mx-auto ${shelfLife >= 50 ? 'bg-green-600' : shelfLife >= 10 ? 'bg-orange-500' : 'bg-red-600'} rounded-md mt-5 py-3`}>
+                    <Text className="text-lg text-white text-center font-bold capitalize">shelf life: {shelfLife + '%'}</Text>
+                  </View>
+                )}
               </View>
               <View className="button">
                 {isButtonLoading ? <ButtonLoading styles='bg-theme rounded-md p-5' /> :

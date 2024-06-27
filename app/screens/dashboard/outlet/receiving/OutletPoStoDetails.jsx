@@ -1,3 +1,4 @@
+import { API_URL } from '@env';
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
@@ -18,7 +19,6 @@ import useAppContext from '../../../../../hooks/useAppContext';
 import useBackHandler from '../../../../../hooks/useBackHandler';
 import { getStorage, setStorage } from '../../../../../hooks/useStorage';
 import SunmiScanner from '../../../../../utils/sunmi/scanner';
-import { API_URL } from '@env';
 
 const OutletPoStoDetails = ({ navigation, route }) => {
   const { po, dn, sto } = route.params;
@@ -37,7 +37,7 @@ const OutletPoStoDetails = ({ navigation, route }) => {
   const [articles, setArticles] = useState([]);
   const [reportArticle, setReportArticle] = useState({});
   const [reportText, setReportText] = useState('');
-  const tableHeader = po ? ['Article Code', 'PO Qty', 'GRN Qty', 'RCV Qty'] : ['Article Code', 'Quantity', 'Action'];
+  const tableHeader = po ? ['Article Info', 'PO Qty', 'GRN Qty', 'RCV Qty'] : ['Article Code', 'Quantity', 'Action'];
   const { GRNInfo } = useAppContext();
   const { grnItems, setGrnItems, setIsUpdatingGrn } = GRNInfo;
   let grnPostItems = [], remainingGrnItems = [], grnSummery = {};
@@ -631,9 +631,9 @@ const OutletPoStoDetails = ({ navigation, route }) => {
         </View>
         <View className="content flex-1 justify-between pb-2">
           <View className="table h-[90%]">
-            <View className="table-header flex-row justify-between bg-th text-center mb-2 p-2">
+            <View className="table-header flex-row bg-th text-center mb-2 p-2">
               {tableHeader.map(th => (
-                <Text className="text-white text-center font-bold" key={th}>
+                <Text className={`${th === 'Article Info' ? 'w-2/5' : 'w-1/5'} text-white text-center font-bold`} key={th}>
                   {th}
                 </Text>
               ))}

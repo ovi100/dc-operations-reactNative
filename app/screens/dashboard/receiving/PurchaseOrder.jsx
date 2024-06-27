@@ -37,7 +37,7 @@ const PurchaseOrder = ({ navigation, route }) => {
   const [user, setUser] = useState({});
   const [token, setToken] = useState('');
   const [articles, setArticles] = useState([]);
-  const tableHeader = ['Article Code', 'PO Qty', 'GRN Qty', 'RCV Qty'];
+  const tableHeader = ['Article Info', 'PO Qty', 'GRN Qty', 'RCV Qty'];
   const { GRNInfo } = useAppContext();
   const { grnItems, setGrnItems, setIsUpdatingGrn } = GRNInfo;
   let grnPostItems = [], remainingGrnItems = [], grnSummery = {};
@@ -428,9 +428,9 @@ const PurchaseOrder = ({ navigation, route }) => {
         </View>
         <View className="content flex-1 justify-between pb-2">
           <View className="table h-[90%]">
-            <View className="table-header flex-row justify-between bg-th text-center mb-2 p-2">
+            <View className="table-header flex-row bg-th text-center mb-2 p-2">
               {tableHeader.map(th => (
-                <Text className={` ${th === 'Article Code' ? 'w-2/5' : 'w-1/5'} text-white text-center font-bold`} key={th}>
+                <Text className={` ${th === 'Article Info' ? 'w-2/5' : 'w-1/5'} text-white text-center font-bold`} key={th}>
                   {th}
                 </Text>
               ))}

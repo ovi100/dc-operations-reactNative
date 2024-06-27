@@ -1,7 +1,21 @@
-import { Alert, Dimensions, ToastAndroid } from 'react-native';
+import {Alert, Dimensions, ToastAndroid} from 'react-native';
 import Toast from 'react-native-toast-message';
 
 const handleDate = (value, type) => {
+  const dateRange = {
+    0: 31,
+    1: 29,
+    2: 31,
+    3: 30,
+    4: 31,
+    5: 30,
+    6: 31,
+    7: 31,
+    8: 30,
+    9: 31,
+    10: 30,
+    11: 31,
+  };
   let input = value.replace(/\D/g, '');
   let day = '',
     month = '',
@@ -9,50 +23,108 @@ const handleDate = (value, type) => {
   day = input.slice(0, 2);
   month = input.slice(2, 4);
   year = input.slice(4);
+  const mfgDateCheck = new Date(
+    Number('20' + year),
+    Number(month) - 1,
+    Number(day),
+  );
+  const expDateCheck =
+    new Date(Number('20' + year), Number(month) - 1, Number(day)) < new Date();
 
-  if (day.length === 2 && day > 31) {
+  if (
+    (day.length === 2 && Number(day) === 0) ||
+    (month.length === 2 && Number(month) === 0) ||
+    (year.length === 2 && Number(year) === 0)
+  ) {
     Toast.show({
       type: 'customError',
-      text1: 'Day must be between 1 and 31',
+      text1: `${
+        Number(day) === 0 ? 'Day' : Number(month) === 0 ? 'Month' : 'Year'
+      } must be grater than zeo`,
     });
     return;
   }
-  if (month.length === 2 && month > 12) {
+
+  if (day.length === 2 && Number(day) > dateRange[Number(month) - 1]) {
+    Toast.show({
+      type: 'customError',
+      text1: `Day must be between 1 and ${dateRange[Number(month) - 1]}`,
+    });
+    return;
+  }
+  if (
+    day.length === 2 &&
+    month.length === 2 &&
+    Number(month) === 2 &&
+    Number('20' + year) % 4 === 0 &&
+    Number(day) > 29
+  ) {
+    Toast.show({
+      type: 'customError',
+      text1: 'Day must be between 1 and 29',
+    });
+    return;
+  }
+
+  if (
+    day.length === 2 &&
+    month.length === 2 &&
+    Number(month) === 2 &&
+    Number('20' + year) % 4 !== 0 &&
+    Number(day) > 28
+  ) {
+    Toast.show({
+      type: 'customError',
+      text1: 'Day must be between 1 and 28',
+    });
+    return;
+  }
+
+  if (month.length === 2 && Number(month) > 12) {
     Toast.show({
       type: 'customError',
       text1: 'Month must be between 1 and 12',
     });
     return;
   }
+
   if (
     type === 'mfg' &&
     year.length === 2 &&
-    year < Number((new Date().getFullYear() - 3).toString().slice(2))
+    year < Number((new Date().getFullYear() - 6).toString().slice(2))
   ) {
     Toast.show({
       type: 'customError',
-      text1: `Minimum year must be ${new Date().getFullYear() - 3}`,
+      text1: `Minimum MFG year must be ${new Date().getFullYear() - 6}`,
     });
     return;
   }
   if (
-    type === 'exp' &&
+    type === 'mfg' &&
     year.length === 2 &&
-    year < Number(new Date().getFullYear().toString().slice(2))
+    new Date(Number('20' + year), Number(month) - 1, Number(day)) > new Date()
   ) {
     Toast.show({
       type: 'customError',
-      text1: `Minimum year must be ${new Date().getFullYear()}`,
+      text1: 'Maximum MFG year must be less than current date',
     });
     return;
   }
-  if (year.length === 2 && year > 99) {
+  if (type === 'exp' && year.length === 2 && expDateCheck) {
+    Toast.show({
+      type: 'customError',
+      text1: 'Minimum EXP date must be grater than current date',
+    });
+    return;
+  }
+  if (year.length === 2 && Number(year) > 99) {
     Toast.show({
       type: 'customError',
       text1: 'Year must be up to 2099',
     });
     return;
   }
+
   if (input.length > 2) {
     input = input.slice(0, 2) + '/' + input.slice(2);
   }
@@ -60,27 +132,11 @@ const handleDate = (value, type) => {
     input = input.slice(0, 5) + '/' + input.slice(5);
   }
 
-  year = '20' + year;
-
-  const formattedDate = new Date(Number(year), Number(month) - 1, Number(day));
-
-  if (input.length === 10 && formattedDate < new Date()) {
-    Toast.show({
-      type: 'customError',
-      text1: 'Date must be greater than today',
-    });
-    input = null;
-    return;
-  }
-
-  if (input.length === 2 && new Date(Number(input)) < new Date()) {
-    Toast.show({
-      type: 'customError',
-      text1: 'Invalid date format',
-    });
-    input = null;
-    return;
-  }
+  const formattedDate = new Date(
+    Number('20' + year),
+    Number(month) - 1,
+    Number(day),
+  );
 
   return {date: formattedDate, text: input};
 };
@@ -208,6 +264,5 @@ export {
   uniqueArray,
   uniqueArrayOfObjects,
   validateFile,
-  validateInput
+  validateInput,
 };
-

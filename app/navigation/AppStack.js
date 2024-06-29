@@ -1,4 +1,4 @@
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import React from 'react';
 import useAppContext from '../../hooks/useAppContext';
 // screens components
@@ -34,6 +34,9 @@ import TaskAssign from '../screens/dashboard/taskAssign/TaskAssign';
 import ChangePassword from '../screens/dashboard/userProfile/ChangePassword';
 import ChooseSite from '../screens/dashboard/userProfile/ChooseSite';
 import Profile from '../screens/dashboard/userProfile/Profile';
+import AuditBinDetails from '../screens/dashboard/audit/AuditBinDetails';
+import AuditBatchList from '../screens/dashboard/audit/AuditBatchList';
+import AuditBatchDetails from '../screens/dashboard/audit/AuditBatchDetails';
 
 const Stack = createNativeStackNavigator();
 
@@ -50,6 +53,17 @@ const AppStack = () => {
       component: AuditArticleDetails,
     },
     {id: 'audit-bin-list', name: 'AuditBinList', component: AuditBinList},
+    {
+      id: 'audit-bin-details',
+      name: 'AuditBinDetails',
+      component: AuditBinDetails,
+    },
+    {id: 'audit-batch-list', name: 'AuditBatchList', component: AuditBatchList},
+    {
+      id: 'audit-batch-details',
+      name: 'AuditBatchDetails',
+      component: AuditBatchDetails,
+    },
     {id: 'profile', name: 'Profile', component: Profile},
     {id: 'choose-site', name: 'ChooseSite', component: ChooseSite},
     {id: 'change-password', name: 'ChangePassword', component: ChangePassword},

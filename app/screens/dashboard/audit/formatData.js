@@ -35,7 +35,6 @@ const mergeInventory = array => {
         quantity: curr.quantity,
         site: curr.site,
         status: curr.description,
-        tracking: curr.tracking,
         updatedAt: curr.updatedAt,
       });
     }

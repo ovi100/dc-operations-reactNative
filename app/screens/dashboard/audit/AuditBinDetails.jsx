@@ -7,10 +7,8 @@ import { mergeInventory } from './formatData';
 import useBackHandler from '../../../../hooks/useBackHandler';
 import SunmiScanner from '../../../../utils/sunmi/scanner';
 import { getStorage } from '../../../../hooks/useStorage';
-import Toast from 'react-native-toast-message';
-import CustomToast from '../../../../components/CustomToast';
 
-const AuditArticleDetails = ({ navigation, route }) => {
+const AuditBinDetails = ({ navigation, route }) => {
   const { code, articles } = route.params;
   const [article] = mergeInventory(articles);
   const bins = article.bins;
@@ -72,18 +70,7 @@ const AuditArticleDetails = ({ navigation, route }) => {
     </View>
   );
 
-  if (barcode) {
-    const binItem = bins.find(item => item.bin === barcode);
-    if (binItem) {
-      // console.log({ code, description: article.description, bin: binItem.bin, tracking: binItem.tracking });
-      navigation.replace('AuditBatchList', { code, description: article.description, bin: binItem.bin, tracking: binItem.tracking });
-    } else {
-      Toast.show({
-        type: 'customError',
-        text1: 'Bin not found',
-      });
-    }
-  }
+  console.log('Bins', bins);
 
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">
@@ -128,9 +115,8 @@ const AuditArticleDetails = ({ navigation, route }) => {
           </View>
         </View>
       </View>
-      <CustomToast />
     </SafeAreaView>
   )
 }
 
-export default AuditArticleDetails;
+export default AuditBinDetails;

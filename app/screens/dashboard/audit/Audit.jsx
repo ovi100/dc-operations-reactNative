@@ -80,9 +80,9 @@ const Audit = ({ navigation }) => {
         .then(data => {
           if (data.status) {
             if (isBin) {
-              navigation.push('AuditBinList', { bin: code, articles: data.items });
+              navigation.replace('AuditBinList', { bin: code, articles: data.items });
             } else {
-              navigation.push('AuditArticleDetails', { code, articles: data.items });
+              navigation.replace('AuditArticleDetails', { code, articles: data.items });
             }
           } else {
             Toast.show({

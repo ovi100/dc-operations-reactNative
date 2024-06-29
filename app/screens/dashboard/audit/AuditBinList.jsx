@@ -1,7 +1,11 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, DeviceEventEmitter, FlatList, SafeAreaView, Text, TouchableHighlight, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator, DeviceEventEmitter, FlatList, SafeAreaView,
+  Text, TouchableHighlight, TouchableOpacity, View
+} from 'react-native';
 import { getStorage } from '../../../../hooks/useStorage';
 import SunmiScanner from '../../../../utils/sunmi/scanner';
+import useBackHandler from '../../../../hooks/useBackHandler';
 
 const AuditBinList = ({ navigation, route }) => {
   const { bin, articles } = route.params;
@@ -10,6 +14,8 @@ const AuditBinList = ({ navigation, route }) => {
   const [barcode, setBarcode] = useState('');
   const tableHeader = ['Code', 'Description', 'Quantity'];
   const { startScan, stopScan } = SunmiScanner;
+  // Custom hook to navigate screen
+  useBackHandler('Audit');
 
   useEffect(() => {
     const getAsyncStorage = async () => {
@@ -47,7 +53,7 @@ const AuditBinList = ({ navigation, route }) => {
   const renderItem = ({ item, index }) => (
     <>
       {pressMode === 'true' ? (
-        <TouchableOpacity onPress={() => navigation.replace('PoArticle', item)}>
+        <TouchableOpacity onPress={() => navigation.replace('', item)}>
           <View
             key={index}
             className="flex-row items-center justify-between border border-tb rounded-lg mt-2.5 p-4"
@@ -125,7 +131,7 @@ const AuditBinList = ({ navigation, route }) => {
               keyExtractor={item => item.material}
               initialNumToRender={10}
               onEndReached={handleEndReached}
-              ListFooterComponent={renderFooter}
+              ListFooterComponent={articles.length > 10 ? renderFooter : null}
               ListFooterComponentStyle={{ paddingVertical: 15 }}
             />
           </View>

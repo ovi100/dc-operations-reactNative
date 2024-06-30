@@ -10,7 +10,7 @@ import SunmiScanner from '../../../../utils/sunmi/scanner';
 import { mergeInventory } from './formatData';
 
 const AuditArticleDetails = ({ navigation, route }) => {
-  const { material, description, bin, quantity, tracking, articles } = route.params;
+  const { screen, material, description, bin, quantity, tracking, articles } = route.params;
   const [article] = mergeInventory(articles);
   const bins = article?.bins ? article.bins : [{ bin, quantity }];
   const [pressMode, setPressMode] = useState(false);
@@ -20,7 +20,11 @@ const AuditArticleDetails = ({ navigation, route }) => {
   const { startScan, stopScan } = SunmiScanner;
 
   // Custom hook to navigate screen
-  useBackHandler('Audit');
+  if (screen) {
+    useBackHandler(screen, route.params);
+  } else {
+    useBackHandler('Audit');
+  }
 
   useEffect(() => {
     const getAsyncStorage = async () => {
@@ -71,16 +75,17 @@ const AuditArticleDetails = ({ navigation, route }) => {
     </View>
   );
 
-  // if (material) {
-  //   navigation.replace('AuditBatchList', { material, description: article?.description ? article.description : description, bin, tracking: tracking });
-  // }
-
 
   if (barcode) {
     const binItem = bins.find(item => item.bin === barcode);
     if (binItem) {
-      // console.log({ code, description: article.description, bin: binItem.bin, tracking: binItem.tracking });
-      navigation.replace('AuditBatchList', { material, description: article?.description ? article.description : description, bin: binItem.bin, tracking: binItem?.tracking ? binItem.tracking : tracking });
+      navigation.replace('AuditBatchList', {
+        material,
+        description: article?.description ? article.description : description,
+        bin: binItem.bin,
+        tracking: binItem?.tracking ? binItem.tracking : tracking,
+        ...route.params
+      });
     } else {
       Toast.show({
         type: 'customError',
@@ -89,7 +94,7 @@ const AuditArticleDetails = ({ navigation, route }) => {
     }
   }
 
-  // console.log('route data', route.params);
+  // console.log('Article route data', route.params);
 
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">

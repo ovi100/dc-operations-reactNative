@@ -53,7 +53,7 @@ const AuditBinList = ({ navigation, route }) => {
   const renderItem = ({ item, index }) => (
     <>
       {pressMode === 'true' ? (
-        <TouchableOpacity onPress={() => navigation.replace('AuditArticleDetails', item)}>
+        <TouchableOpacity onPress={() => navigation.replace('AuditArticleDetails', { screen: 'AuditBinList', ...item, ...route.params })}>
           <View
             key={index}
             className="flex-row items-center border border-tb rounded-lg mt-2.5 p-4"

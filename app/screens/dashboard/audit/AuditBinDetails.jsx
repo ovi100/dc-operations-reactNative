@@ -70,7 +70,7 @@ const AuditBinDetails = ({ navigation, route }) => {
     </View>
   );
 
-  console.log('Bins', bins);
+  // console.log('Bin Details', bins);
 
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">

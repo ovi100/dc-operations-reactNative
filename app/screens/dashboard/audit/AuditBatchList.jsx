@@ -8,9 +8,9 @@ import useBackHandler from '../../../../hooks/useBackHandler';
 const AuditBatchList = ({ navigation, route }) => {
   const { material, description, bin, tracking } = route.params;
   const [flatListFooterVisible, setFlatListFooterVisible] = useState(true);
-  const tableHeader = ['Exp Date', 'Batch No', 'Quantity', 'MRP'];
+  const tableHeader = ['Exp Date', 'Batch No', 'Quantity'];
   // Custom hook to navigate screen
-  useBackHandler('AuditArticleDetails');
+  useBackHandler('AuditArticleDetails', route.params);
 
   const handleEndReached = useCallback(() => {
     setFlatListFooterVisible(false);
@@ -24,32 +24,27 @@ const AuditBatchList = ({ navigation, route }) => {
     );
   };
 
-  console.log('batch list', route.params);
+  // console.log('batch list', route.params);
 
   const renderItem = ({ item }) => (
-    <TouchableOpacity onPress={() => navigation.push('AuditBatchDetails', { material, description, bin, ...item })}>
+    <TouchableOpacity onPress={() => navigation.push('AuditBatchDetails', { material, description, bin, ...item, ...route.params })}>
       <View
         key={item._id}
         className="flex-row items-center border border-tb rounded-lg mt-2.5 p-4"
       >
-        <View className="w-1/4">
+        <View className="w-1/3">
           <Text className="text-black text-center" numberOfLines={1}>
             {item.expiryDate ? new Date(item.expiryDate).toLocaleDateString('en-US', { dateStyle: 'medium' }) : 'Not found'}
           </Text>
         </View>
-        <View className="w-1/4">
+        <View className="w-1/3">
           <Text className="text-black text-center" numberOfLines={2}>
             {item.batch ? item.batch : 'Not found'}
           </Text>
         </View>
-        <View className="w-1/4">
+        <View className="w-1/3">
           <Text className="text-black text-center" numberOfLines={1}>
             {item.quantity}
-          </Text>
-        </View>
-        <View className="w-1/4">
-          <Text className="text-black text-center" numberOfLines={1}>
-            {item.mrp ? item.mrp : 0}
           </Text>
         </View>
       </View>
@@ -74,7 +69,7 @@ const AuditBatchList = ({ navigation, route }) => {
           <View className="table h-[90%]">
             <View className="table-header flex-row items-center bg-th text-center mb-2 p-2">
               {tableHeader.map(th => (
-                <Text className="w-1/4 text-white text-center font-bold" key={th}>
+                <Text className="w-1/3 text-white text-center font-bold" key={th}>
                   {th}
                 </Text>
               ))}

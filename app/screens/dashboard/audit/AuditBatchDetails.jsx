@@ -6,6 +6,7 @@ import {
 import CircularProgress from 'react-native-circular-progress-indicator';
 import { BatchIcon, BoxIcon, MrpIcon, StopWatchGreenIcon, StopWatchRedIcon } from '../../../../constant/icons';
 import { calculateShelfLife } from '../../../../utils';
+import useBackHandler from '../../../../hooks/useBackHandler';
 // import { ButtonLg, ButtonLoading } from '../../../../components/buttons';
 
 const AuditBatchDetails = ({ navigation, route }) => {
@@ -16,7 +17,8 @@ const AuditBatchDetails = ({ navigation, route }) => {
   const [newExpDate, setNewExpDate] = useState({ date: new Date(expiryDate), text: '' });
   const [newBatch, setNewBatch] = useState(batch);
   const [newMrp, setNewMrp] = useState(mrp);
-
+  // Custom hook to navigate screen
+  useBackHandler('AuditBatchList', route.params);
 
   // const updateBatch = () => {
   //   setIsButtonLoading(true);
@@ -27,8 +29,6 @@ const AuditBatchDetails = ({ navigation, route }) => {
   // };
 
   const shelfLife = calculateShelfLife(newMfgDate?.date, newExpDate?.date);
-
-  // console.log('batch details', batch, expiryDate, mfgDate, mrp, quantity);
 
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">

@@ -6,7 +6,7 @@ import {
 import useBackHandler from '../../../../hooks/useBackHandler';
 
 const AuditBatchList = ({ navigation, route }) => {
-  const { code, description, bin, tracking } = route.params;
+  const { material, description, bin, tracking } = route.params;
   const [flatListFooterVisible, setFlatListFooterVisible] = useState(true);
   const tableHeader = ['Exp Date', 'Batch No', 'Quantity', 'MRP'];
   // Custom hook to navigate screen
@@ -27,7 +27,7 @@ const AuditBatchList = ({ navigation, route }) => {
   console.log('batch list', route.params);
 
   const renderItem = ({ item }) => (
-    <TouchableOpacity onPress={() => navigation.replace('AuditBatchDetails', { code, description, bin, ...item })}>
+    <TouchableOpacity onPress={() => navigation.push('AuditBatchDetails', { material, description, bin, ...item })}>
       <View
         key={item._id}
         className="flex-row items-center border border-tb rounded-lg mt-2.5 p-4"
@@ -39,7 +39,7 @@ const AuditBatchList = ({ navigation, route }) => {
         </View>
         <View className="w-1/4">
           <Text className="text-black text-center" numberOfLines={2}>
-            {item.batch}
+            {item.batch ? item.batch : 'Not found'}
           </Text>
         </View>
         <View className="w-1/4">
@@ -61,7 +61,7 @@ const AuditBatchList = ({ navigation, route }) => {
       <View className="flex-1 h-full px-4">
         <View className="screen-header mb-4">
           <Text className="text-lg text-sh text-center font-medium capitalize">
-            article{' ' + code}
+            article{' ' + material}
           </Text>
           <Text className="text-base text-sh text-center font-medium capitalize">
             {description}
@@ -85,7 +85,7 @@ const AuditBatchList = ({ navigation, route }) => {
               keyExtractor={item => item._id}
               initialNumToRender={10}
               onEndReached={handleEndReached}
-              ListFooterComponent={tracking.length > 10 ? renderFooter : null}
+              ListFooterComponent={tracking?.length > 10 ? renderFooter : null}
               ListFooterComponentStyle={{ paddingVertical: 15 }}
             />
           </View>

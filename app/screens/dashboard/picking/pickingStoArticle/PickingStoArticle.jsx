@@ -165,7 +165,7 @@ const PickingStoArticle = ({ navigation, route }) => {
               </Text>
             </View>
             <View className="quantity flex-row items-center gap-3">
-              <Image source={BoxIcon} />
+              <Image className="w-10 h-10" source={BoxIcon} />
               <Text className="text-black font-bold">{quantity}</Text>
             </View>
           </View>

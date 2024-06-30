@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Image, SafeAreaView, Text, TextInput, View } from 'react-native';
-import { ButtonBack, ButtonLg } from '../../../../../components/buttons';
-import { BoxIcon } from '../../../../../constant/icons';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../../components/CustomToast';
+import { ButtonBack, ButtonLg } from '../../../../../components/buttons';
+import { BoxIcon } from '../../../../../constant/icons';
 
 const ReturnDetails = ({ navigation, route }) => {
   const { id, name, quantity } = route.params;
@@ -65,7 +65,7 @@ const ReturnDetails = ({ navigation, route }) => {
               </Text>
             </View>
             <View className="quantity flex-row items-center gap-3">
-              <Image source={BoxIcon} />
+              <Image className="w-5 h-5" source={BoxIcon} />
               <Text className="font-bold text-black">{quantity}</Text>
             </View>
           </View>

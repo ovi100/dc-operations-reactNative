@@ -241,7 +241,7 @@ const ShelveArticle = ({ navigation, route }) => {
               </Text>
             </View>
             <View className="quantity flex-row items-center gap-3">
-              <Image source={BoxIcon} />
+              <Image className="w-5 h-5" source={BoxIcon} />
               <Text className="font-bold text-black">{receivedQuantity}</Text>
             </View>
           </View>

@@ -88,7 +88,7 @@ const Profile = ({ navigation }) => {
             </Text>
           </View>
           <ScrollView>
-            <View className="content h-[92vh] justify-between">
+            <View className="content justify-between">
               <View className="">
                 <View className="profile-image mx-auto mb-4">
                   <Image
@@ -161,7 +161,7 @@ const Profile = ({ navigation }) => {
                   </View>
                 )}
               </View>
-              <View className="pb-2">
+              <View className="pb-2 mt-10">
                 <View className="version-info w-full">
                   <Text className="text-gray-400 text-center font-bold capitalize">
                     shwapno operations app

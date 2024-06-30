@@ -36,14 +36,21 @@ import SwitchOn from './switch-on.png';
 import TaskAssignIcon from './task-assign-icon.png';
 import UserIcon from './user-icon.png';
 import WarehouseIcon from './warehouse-icon.png';
+import StopWatchGreenIcon from './stopwatch-green.png';
+import StopWatchRedIcon from './stopwatch-red.png';
+import BatchIcon from './boxes.png';
+import MrpIcon from './taka.png';
+import ChartIcon from './pie-chart.png';
 
 export {
   ArrowLeftIcon,
   AuditIcon,
   AvatarImage,
   BoxIcon,
+  BatchIcon,
   CalendarIcon,
   CameraIcon,
+  ChartIcon,
   CloseIcon,
   ClosedBoxIcon,
   DeleteIcon,
@@ -56,6 +63,7 @@ export {
   IdIcon,
   ImageIcon,
   InfoIcon,
+  MrpIcon,
   PackingIcon,
   PasswordIcon,
   PhoneIcon,
@@ -70,11 +78,12 @@ export {
   StoNotPickedIcon,
   StoPickedIcon,
   StoreIcon,
+  StopWatchGreenIcon,
+  StopWatchRedIcon,
   SwapIcon,
   SwitchOff,
   SwitchOn,
   TaskAssignIcon,
   UserIcon,
-  WarehouseIcon
+  WarehouseIcon,
 };
-

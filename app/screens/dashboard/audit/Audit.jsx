@@ -82,7 +82,7 @@ const Audit = ({ navigation }) => {
             if (isBin) {
               navigation.replace('AuditBinList', { bin: code, articles: data.items });
             } else {
-              navigation.replace('AuditArticleDetails', { code, articles: data.items });
+              navigation.replace('AuditArticleDetails', { material: code, articles: data.items });
             }
           } else {
             Toast.show({
@@ -143,7 +143,7 @@ const Audit = ({ navigation }) => {
           <TextInput
             className="bg-[#F5F6FA] text-black rounded-bl-lg rounded-tl-lg px-4"
             placeholder="Search by article code or bin number"
-            keyboardType="phone-pad"
+            keyboardType="default"
             placeholderTextColor="#CBC9D9"
             selectionColor="#CBC9D9"
             onChangeText={value => setSearch(value)}
@@ -170,7 +170,7 @@ const Audit = ({ navigation }) => {
         {isLoading ? (
           <View>
             <ActivityIndicator size="large" color="#EB4B50" />
-            <Text className="mt-4 text-gray-400 text-base text-center">searching code</Text>
+            <Text className="mt-4 text-gray-400 text-base text-center">searching info....</Text>
           </View>
         ) : (
           <View className="relative -z-10">

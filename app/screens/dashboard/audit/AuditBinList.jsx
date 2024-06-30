@@ -48,27 +48,27 @@ const AuditBinList = ({ navigation, route }) => {
     );
   };
 
-  console.log('audit article list', route.params.articles);
+  // console.log('audit article list', route.params.articles);
 
   const renderItem = ({ item, index }) => (
     <>
       {pressMode === 'true' ? (
-        <TouchableOpacity onPress={() => navigation.replace('', item)}>
+        <TouchableOpacity onPress={() => navigation.replace('AuditArticleDetails', item)}>
           <View
             key={index}
-            className="flex-row items-center justify-between border border-tb rounded-lg mt-2.5 p-4"
+            className="flex-row items-center border border-tb rounded-lg mt-2.5 p-4"
           >
-            <View className="">
+            <View className="w-1/4">
               <Text className="text-black text-center" numberOfLines={1}>
                 {item.material}
               </Text>
             </View>
-            <View className="">
+            <View className="w-1/2 flex-1">
               <Text className="text-black text-center" numberOfLines={2}>
                 {item.description}
               </Text>
             </View>
-            <View className="">
+            <View className="w-1/4">
               <Text className="text-black text-center" numberOfLines={1}>
                 {item.quantity}
               </Text>
@@ -78,19 +78,19 @@ const AuditBinList = ({ navigation, route }) => {
       ) : (
         <View
           key={index}
-          className="flex-row items-center justify-between border border-tb rounded-lg mt-2.5 p-4"
+          className="flex-row items-center border border-tb rounded-lg mt-2.5 p-4"
         >
-          <View className="">
+          <View className="w-1/4">
             <Text className="text-black text-center" numberOfLines={1}>
               {item.material}
             </Text>
           </View>
-          <View className="">
+          <View className="w-1/2 flex-1">
             <Text className="text-black text-center" numberOfLines={2}>
               {item.description}
             </Text>
           </View>
-          <View className="">
+          <View className="w-1/4">
             <Text className="text-black text-center" numberOfLines={1}>
               {item.quantity}
             </Text>
@@ -118,9 +118,9 @@ const AuditBinList = ({ navigation, route }) => {
         </View>
         <View className="content flex-1 justify-between pb-2">
           <View className="table h-[90%]">
-            <View className="table-header flex-row justify-between bg-th text-center mb-2 p-2">
+            <View className="table-header flex-row bg-th text-center mb-2 p-2">
               {tableHeader.map(th => (
-                <Text className="text-white text-center font-bold" key={th}>
+                <Text className={`${th === 'Description' ? 'w-1/2' : 'w-1/4'} text-white text-center font-bold`} key={th}>
                   {th}
                 </Text>
               ))}

@@ -1,19 +1,18 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import {
-  ActivityIndicator, DeviceEventEmitter, FlatList, KeyboardAvoidingView,
-  Platform, SafeAreaView, ScrollView, Text, TouchableHighlight, View
+  ActivityIndicator, DeviceEventEmitter, FlatList, SafeAreaView, Text, TouchableHighlight, View
 } from 'react-native';
-import { mergeInventory } from './formatData';
-import useBackHandler from '../../../../hooks/useBackHandler';
-import SunmiScanner from '../../../../utils/sunmi/scanner';
-import { getStorage } from '../../../../hooks/useStorage';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
+import useBackHandler from '../../../../hooks/useBackHandler';
+import { getStorage } from '../../../../hooks/useStorage';
+import SunmiScanner from '../../../../utils/sunmi/scanner';
+import { mergeInventory } from './formatData';
 
 const AuditArticleDetails = ({ navigation, route }) => {
-  const { code, articles } = route.params;
+  const { material, description, bin, quantity, tracking, articles } = route.params;
   const [article] = mergeInventory(articles);
-  const bins = article.bins;
+  const bins = article?.bins ? article.bins : [{ bin, quantity }];
   const [pressMode, setPressMode] = useState(false);
   const [flatListFooterVisible, setFlatListFooterVisible] = useState(true);
   const [barcode, setBarcode] = useState('');
@@ -72,11 +71,16 @@ const AuditArticleDetails = ({ navigation, route }) => {
     </View>
   );
 
+  // if (material) {
+  //   navigation.replace('AuditBatchList', { material, description: article?.description ? article.description : description, bin, tracking: tracking });
+  // }
+
+
   if (barcode) {
     const binItem = bins.find(item => item.bin === barcode);
     if (binItem) {
       // console.log({ code, description: article.description, bin: binItem.bin, tracking: binItem.tracking });
-      navigation.replace('AuditBatchList', { code, description: article.description, bin: binItem.bin, tracking: binItem.tracking });
+      navigation.replace('AuditBatchList', { material, description: article?.description ? article.description : description, bin: binItem.bin, tracking: binItem?.tracking ? binItem.tracking : tracking });
     } else {
       Toast.show({
         type: 'customError',
@@ -84,6 +88,8 @@ const AuditArticleDetails = ({ navigation, route }) => {
       });
     }
   }
+
+  // console.log('route data', route.params);
 
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">
@@ -93,16 +99,16 @@ const AuditArticleDetails = ({ navigation, route }) => {
             {pressMode === 'true' ? (
               <TouchableHighlight onPress={() => null}>
                 <Text className="text-lg text-sh font-medium capitalize">
-                  article{' ' + code}
+                  article{' ' + material}
                 </Text>
               </TouchableHighlight>
             ) : (
               <Text className="text-lg text-sh font-medium capitalize">
-                article{' ' + code}
+                article{' ' + material}
               </Text>
             )}
             <Text className="text-base text-sh text-right font-medium capitalize">
-              {article.description}
+              {article?.description ? article?.description : description}
             </Text>
           </View>
         </View>

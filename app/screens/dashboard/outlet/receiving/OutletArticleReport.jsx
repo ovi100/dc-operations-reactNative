@@ -277,7 +277,7 @@ const OutletArticleReport = ({ navigation, route }) => {
                   </Text>
                 </View>
                 <View className="quantity flex-row items-center gap-3">
-                  <Image source={BoxIcon} />
+                  <Image className="w-10 h-10" source={BoxIcon} />
                   <Text className="font-bold text-black">{remainingQuantity}</Text>
                 </View>
               </View>

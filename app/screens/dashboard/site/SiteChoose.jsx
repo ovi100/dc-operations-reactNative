@@ -68,8 +68,8 @@ const SiteChoose = ({ navigation }) => {
 
   // console.log('user from site choose', user);
 
-  const updateUser = async (newSite) => {
-    let newUser = { ...user, site: newSite };
+  const updateUser = async (siteObj) => {
+    let newUser = { ...user, site: siteObj.code, storage_location: siteObj.storage_location };
     setUser(newUser);
     await setStorage("user", newUser);
     navigation.navigate('Home');
@@ -90,7 +90,7 @@ const SiteChoose = ({ navigation }) => {
   }
 
   if (singleSite) {
-    updateUser(singleSite.code);
+    updateUser(singleSite);
   }
 
   if (isLoading) {
@@ -145,7 +145,7 @@ const SiteChoose = ({ navigation }) => {
             {sites?.map(item => (
               <TouchableOpacity
                 className="site-box items-center w-1/3 mt-8"
-                onPress={() => updateUser(item.code)}
+                onPress={() => updateUser(item)}
                 key={item.code}>
                 <View className="flex-col items-center">
                   <View className="icon">

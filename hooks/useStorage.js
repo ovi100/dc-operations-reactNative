@@ -18,10 +18,8 @@ const getAll = async () => {
   let keys = [];
   try {
     keys = await AsyncStorage.getAllKeys();
-    console.log('storage keys', keys);
     if (keys.length > 0) {
       const values = await AsyncStorage.multiGet(keys);
-      console.log('storage values', values);
       return values;
     } else {
       return null;
@@ -57,7 +55,6 @@ const removeItem = async key => {
 const removeAll = async () => {
   try {
     await AsyncStorage.clear();
-    console.log('Async storage has been cleared');
   } catch (e) {
     toast(e.message);
   }

@@ -32,7 +32,7 @@ import SiteChoose from '../screens/dashboard/site/SiteChoose';
 import PickerPackerTaskAssign from '../screens/dashboard/taskAssign/PickerPackerTaskAssign/PickerPackerTaskAssign';
 import TaskAssign from '../screens/dashboard/taskAssign/TaskAssign';
 import ChangePassword from '../screens/dashboard/userProfile/ChangePassword';
-import ChooseSite from '../screens/dashboard/userProfile/ChooseSite';
+import ChangeSite from '../screens/dashboard/userProfile/ChangeSite';
 import Profile from '../screens/dashboard/userProfile/Profile';
 import AuditBinDetails from '../screens/dashboard/audit/AuditBinDetails';
 import AuditBatchList from '../screens/dashboard/audit/AuditBatchList';
@@ -65,7 +65,7 @@ const AppStack = () => {
       component: AuditBatchDetails,
     },
     {id: 'profile', name: 'Profile', component: Profile},
-    {id: 'choose-site', name: 'ChooseSite', component: ChooseSite},
+    {id: 'change-site', name: 'ChangeSite', component: ChangeSite},
     {id: 'change-password', name: 'ChangePassword', component: ChangePassword},
     {id: 'receiving', name: 'Receiving', component: Receiving},
     {id: 'purchase-order', name: 'PurchaseOrder', component: PurchaseOrder},

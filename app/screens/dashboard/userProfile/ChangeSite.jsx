@@ -10,7 +10,7 @@ import useAppContext from '../../../../hooks/useAppContext';
 import useBackHandler from '../../../../hooks/useBackHandler';
 import { getStorage, setStorage } from '../../../../hooks/useStorage';
 
-const ChooseSite = ({ navigation, route }) => {
+const ChangeSite = ({ navigation, route }) => {
   const params = route.params;
   const [isLoading, setIsLoading] = useState(false);
   const { authInfo } = useAppContext();
@@ -29,8 +29,8 @@ const ChooseSite = ({ navigation, route }) => {
     getUserInfo();
   }, []);
 
-  const updateUser = async (newSite) => {
-    let newUser = { ...user, site: newSite };
+  const updateUser = async (siteObj) => {
+    let newUser = { ...user, site: siteObj.code, storage_location: siteObj.storage_location };
     setUser(newUser);
     await setStorage("user", newUser);
     Toast.show({
@@ -66,7 +66,7 @@ const ChooseSite = ({ navigation, route }) => {
             {sites?.map(item => (
               <TouchableOpacity
                 className="site-box items-center w-1/3 mt-8"
-                onPress={() => updateUser(item.code)}
+                onPress={() => updateUser(item)}
                 key={item.code}>
                 <View className="flex-col items-center">
                   <View className="icon">
@@ -85,4 +85,4 @@ const ChooseSite = ({ navigation, route }) => {
 }
 
 
-export default ChooseSite;
+export default ChangeSite;

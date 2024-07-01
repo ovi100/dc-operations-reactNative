@@ -25,7 +25,7 @@ const Profile = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isEnabled, setIsEnabled] = useState(false);
   const [dialogVisible, setDialogVisible] = useState(false);
-  const [user, setLsUser] = useState({});
+  const [user, setUser] = useState({});
   const [sites, setSites] = useState([]);
   const { authInfo } = useAppContext();
   const { logout } = authInfo;
@@ -33,7 +33,7 @@ const Profile = ({ navigation }) => {
   useEffect(() => {
     const getUserInfo = async () => {
       setIsLoading(true);
-      await getStorage('user', setLsUser, 'object');
+      await getStorage('user', setUser, 'object');
       await getStorage('userSites', setSites, 'array');
       setIsLoading(false);
     }
@@ -72,6 +72,9 @@ const Profile = ({ navigation }) => {
     )
   }
 
+  // console.log('user sites', JSON.stringify(sites));
+  // console.log('user info', JSON.stringify(user));
+
   return (
     <>
       {!user.name ? (
@@ -83,7 +86,7 @@ const Profile = ({ navigation }) => {
         <View className="flex-1 bg-white px-4">
           <View className="screen-header flex-row items-center my-5">
             <ButtonBack navigation={navigation} />
-            <Text className="flex-1 text-lg text-black text-center font-semibold capitalize">
+            <Text className="flex-1 text-base text-black text-center font-semibold capitalize">
               profile
             </Text>
           </View>
@@ -97,27 +100,27 @@ const Profile = ({ navigation }) => {
                   />
                 </View>
                 <View className="name border-b border-gray-200 flex-row items-center py-4">
-                  <Image className="w-7 h-7 mr-3" source={ProfileIcon} />
-                  <Text className="text-lg text-gray-400 font-medium capitalize">
+                  <Image className="w-6 h-6 mr-3" source={ProfileIcon} />
+                  <Text className="text-base text-gray-400 font-medium capitalize">
                     {user.name}
                   </Text>
                 </View>
                 <View className="email border-b border-gray-200 flex-row items-center py-4">
-                  <Image className="w-7 h-7 mr-3" source={EmailIcon} />
-                  <Text className="text-lg text-gray-400 font-medium">
+                  <Image className="w-6 h-6 mr-3" source={EmailIcon} />
+                  <Text className="text-base text-gray-400 font-medium">
                     {user.email}
                   </Text>
                 </View>
                 <View className="role border-b border-gray-200 flex-row items-center py-4">
-                  <Image className="w-7 h-7 mr-3" source={IdIcon} />
-                  <Text className="text-lg text-gray-400 font-medium capitalize">
+                  <Image className="w-6 h-6 mr-3" source={IdIcon} />
+                  <Text className="text-base text-gray-400 font-medium capitalize">
                     {user.role}
                   </Text>
                 </View>
                 <View className="password-change border-b border-gray-200 flex-row items-center py-4">
-                  <Image className="w-7 h-7 mr-3" source={PasswordIcon} />
+                  <Image className="w-6 h-6 mr-3" source={PasswordIcon} />
                   <TouchableWithoutFeedback onPress={() => navigation.push('ChangePassword', { id: user._id })}>
-                    <Text className="text-center text-blue-600 text-lg font-semibold capitalize">change password</Text>
+                    <Text className="text-center text-blue-600 text-base font-semibold capitalize">change password</Text>
                   </TouchableWithoutFeedback>
                 </View>
                 {(user.hasPermission.includes('*') || user.hasPermission.includes('press-mode-access')) && (
@@ -133,7 +136,7 @@ const Profile = ({ navigation }) => {
                         />
                       </TouchableWithoutFeedback>
                       <TouchableWithoutFeedback onPress={() => toggleSwitch()}>
-                        <Text className={`text-lg ${isEnabled ? 'text-[#386641]' : 'text-[#bc4749]'} font-medium`}>
+                        <Text className={`text-base ${isEnabled ? 'text-[#386641]' : 'text-[#bc4749]'} font-medium`}>
                           {isEnabled ? 'Press mode is on' : 'Press mode is off'}
                         </Text>
                       </TouchableWithoutFeedback>
@@ -141,12 +144,12 @@ const Profile = ({ navigation }) => {
                   </View>
                 )}
                 <View className="active-site border-b border-gray-200 flex-row items-center py-4">
-                  <Image className="w-7 h-7 mr-3" source={StoreIcon} />
+                  <Image className="w-6 h-6 mr-3" source={StoreIcon} />
                   <View className="flex-row items-center">
-                    <Text className="text-lg text-gray-400 font-medium uppercase">
+                    <Text className="text-base text-gray-400 font-medium uppercase">
                       {user.site}
                     </Text>
-                    <Text className="text-lg text-gray-400 font-medium capitalize ml-2">
+                    <Text className="text-base text-gray-400 font-medium capitalize ml-2">
                       (active site)
                     </Text>
                   </View>
@@ -154,9 +157,9 @@ const Profile = ({ navigation }) => {
 
                 {sites !== null && sites.length > 1 && (
                   <View className="password-change border-b border-gray-200 flex-row items-center py-4">
-                    <Image className="w-7 h-7 mr-3" source={SwapIcon} />
+                    <Image className="w-6 h-6 mr-3" source={SwapIcon} />
                     <TouchableWithoutFeedback onPress={() => navigation.replace('ChooseSite', user)}>
-                      <Text className="text-center text-blue-600 text-lg font-semibold capitalize">change site</Text>
+                      <Text className="text-center text-blue-600 text-base font-semibold capitalize">change site</Text>
                     </TouchableWithoutFeedback>
                   </View>
                 )}

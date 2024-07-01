@@ -2,7 +2,7 @@ import { API_URL } from '@env';
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
-  ActivityIndicator, DeviceEventEmitter, FlatList,
+  ActivityIndicator, Alert, DeviceEventEmitter, FlatList,
   RefreshControl, SafeAreaView,
   ScrollView,
   Text, TouchableHighlight,
@@ -37,7 +37,7 @@ const OutletPoStoDetails = ({ navigation, route }) => {
   const [articles, setArticles] = useState([]);
   const [reportArticle, setReportArticle] = useState({});
   const [reportText, setReportText] = useState('');
-  const tableHeader = po ? ['Article Info', 'PO Qty', 'GRN Qty', 'RCV Qty'] : ['Article Code', 'Quantity', 'Action'];
+  const tableHeader = po ? ['Article Info', 'PO Qty', 'GRN Qty', 'REM Qty'] : ['Article Info', 'Quantity', 'Action'];
   const { GRNInfo } = useAppContext();
   const { grnItems, setGrnItems, setIsUpdatingGrn } = GRNInfo;
   let grnPostItems = [], remainingGrnItems = [], grnSummery = {};
@@ -548,6 +548,43 @@ const OutletPoStoDetails = ({ navigation, route }) => {
     setReportArticle({});
   }
 
+  const postGRNData = () => {
+    const isSameStorageLocation = user.storage_location.some(
+      item => item.name === 'receiving' && item.code === storageLocation
+    );
+
+    const updateGRNData = () => {
+      const storageLocation = user.storage_location.find(item => item.name === 'receiving').code;
+      grnPostItems = grnPostItems.map(item => {
+        return { ...item, storageLocation }
+      });
+      console.log('grnPostItems', grnPostItems);
+      setDialogVisible(true);
+    };
+
+    if (!storageLocation) {
+      Alert.alert('PO do not have storage location', 'Do you want to set user storage location as po storage location?', [
+        {
+          text: 'Cancel',
+          onPress: () => null,
+          style: 'cancel',
+        },
+        { text: 'YES', onPress: () => updateGRNData() },
+      ]);
+    } else if (!isSameStorageLocation) {
+      Alert.alert("PO and user storage location isn't same", "Do you want to set user storage location as po storage location?", [
+        {
+          text: 'Cancel',
+          onPress: () => null,
+          style: 'cancel',
+        },
+        { text: 'YES', onPress: () => updateGRNData() },
+      ]);
+    } else {
+      setDialogVisible(true);
+    }
+  };
+
   const generateGRN = async (grnList) => {
     setDialogVisible(false);
     setGrnModal(false);
@@ -733,7 +770,7 @@ const OutletPoStoDetails = ({ navigation, route }) => {
                   </View>
                 </View>
                 <View className="button w-1/3 mx-auto mt-5">
-                  <TouchableWithoutFeedback onPress={() => setDialogVisible(true)}>
+                  <TouchableWithoutFeedback onPress={() => postGRNData()}>
                     <Text className="bg-blue-600 text-white text-lg text-center rounded p-2 capitalize">confirm</Text>
                   </TouchableWithoutFeedback>
                 </View>

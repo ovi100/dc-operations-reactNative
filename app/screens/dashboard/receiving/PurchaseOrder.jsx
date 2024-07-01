@@ -3,6 +3,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   DeviceEventEmitter, FlatList,
   RefreshControl,
   SafeAreaView, ScrollView, Text, TouchableHighlight,
@@ -37,7 +38,8 @@ const PurchaseOrder = ({ navigation, route }) => {
   const [user, setUser] = useState({});
   const [token, setToken] = useState('');
   const [articles, setArticles] = useState([]);
-  const tableHeader = ['Article Info', 'PO Qty', 'GRN Qty', 'RCV Qty'];
+  const [storageLocation, setStorageLocation] = useState('');
+  const tableHeader = ['Article Info', 'PO Qty', 'GRN Qty', 'REM Qty'];
   const { GRNInfo } = useAppContext();
   const { grnItems, setGrnItems, setIsUpdatingGrn } = GRNInfo;
   let grnPostItems = [], remainingGrnItems = [], grnSummery = {};
@@ -118,6 +120,8 @@ const PurchaseOrder = ({ navigation, route }) => {
           text1: 'Not authorized to receive PO',
         });
         return;
+      } else {
+        setStorageLocation(poItem?.storageLocation);
       }
 
       let shelvingItems = shelvingData.items;
@@ -338,6 +342,43 @@ const PurchaseOrder = ({ navigation, route }) => {
     { totalItems: 0, totalPrice: 0 }
   );
 
+  const postGRNData = () => {
+    const isSameStorageLocation = user.storage_location.some(
+      item => item.name === 'receiving' && item.code === storageLocation
+    );
+
+    const updateGRNData = () => {
+      const storageLocation = user.storage_location.find(item => item.name === 'receiving').code;
+      grnPostItems = grnPostItems.map(item => {
+        return { ...item, storageLocation }
+      });
+      console.log('grnPostItems', grnPostItems);
+      setDialogVisible(true);
+    };
+
+    if (!storageLocation) {
+      Alert.alert('PO do not have storage location', 'Do you want to set user storage location as po storage location?', [
+        {
+          text: 'Cancel',
+          onPress: () => null,
+          style: 'cancel',
+        },
+        { text: 'YES', onPress: () => updateGRNData() },
+      ]);
+    } else if (!isSameStorageLocation) {
+      Alert.alert("PO and user storage location isn't same", "Do you want to set user storage location as po storage location?", [
+        {
+          text: 'Cancel',
+          onPress: () => null,
+          style: 'cancel',
+        },
+        { text: 'YES', onPress: () => updateGRNData() },
+      ]);
+    } else {
+      setDialogVisible(true);
+    }
+  };
+
   const generateGRN = async (grnList) => {
     setDialogVisible(false);
     setGrnModal(false);
@@ -508,7 +549,7 @@ const PurchaseOrder = ({ navigation, route }) => {
                   </View>
                 </View>
                 <View className="button w-1/3 mx-auto mt-5">
-                  <TouchableWithoutFeedback onPress={() => setDialogVisible(true)}>
+                  <TouchableWithoutFeedback onPress={() => postGRNData()}>
                     <Text className="bg-blue-600 text-white text-lg text-center rounded p-2 capitalize">confirm</Text>
                   </TouchableWithoutFeedback>
                 </View>

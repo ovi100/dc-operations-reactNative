@@ -15,13 +15,15 @@ import CustomToast from '../../../../../components/CustomToast';
 import Dialog from '../../../../../components/Dialog';
 import Modal from '../../../../../components/Modal';
 import { ButtonLg, ButtonLoading } from '../../../../../components/buttons';
-import useAppContext from '../../../../../hooks/useAppContext';
+import useActivity from '../../../../../hooks/useActivity';
 import useBackHandler from '../../../../../hooks/useBackHandler';
-import { getStorage, setStorage } from '../../../../../hooks/useStorage';
+import { getStorage } from '../../../../../hooks/useStorage';
+import { deleteTempData } from '../../../../../utils/apiServices';
 import SunmiScanner from '../../../../../utils/sunmi/scanner';
 
 const OutletPoStoDetails = ({ navigation, route }) => {
   const { po, dn, sto } = route.params;
+  const { createActivity } = useActivity();
   const { startScan, stopScan } = SunmiScanner;
   const [isLoading, setIsLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -35,12 +37,13 @@ const OutletPoStoDetails = ({ navigation, route }) => {
   const [user, setUser] = useState({});
   const [token, setToken] = useState('');
   const [articles, setArticles] = useState([]);
+  let [grnItems, setGrnItems] = useState([]);
+  const [tempDataId, setTempDataId] = useState('');
+  const [storageLocation, setStorageLocation] = useState('');
   const [reportArticle, setReportArticle] = useState({});
   const [reportText, setReportText] = useState('');
   const tableHeader = po ? ['Article Info', 'PO Qty', 'GRN Qty', 'REM Qty'] : ['Article Info', 'Quantity', 'Action'];
-  const { GRNInfo } = useAppContext();
-  const { grnItems, setGrnItems, setIsUpdatingGrn } = GRNInfo;
-  let grnPostItems = [], remainingGrnItems = [], grnSummery = {};
+  let grnSummery = {};
 
   // Custom hook to navigate screen
   useBackHandler('OutletReceiving');
@@ -77,6 +80,19 @@ const OutletPoStoDetails = ({ navigation, route }) => {
       <ActivityIndicator size="large" color="#000" />
     );
   };
+
+  useFocusEffect(
+    useCallback(() => {
+      if (token && po && user.site) {
+        getPoInfo();
+        return;
+      }
+      if (token && dn && user.site) {
+        getDnInfo();
+        return;
+      }
+    }, [token, po, dn, user.site]),
+  );
 
   const getPoDetails = async () => {
     const getOptions = {
@@ -117,22 +133,16 @@ const OutletPoStoDetails = ({ navigation, route }) => {
           type: 'customError',
           text1: 'Not authorized to receive PO',
         });
-        return;
+      } else {
+        setStorageLocation(poItem?.storageLocation);
       }
 
       let shelvingItems = shelvingData.items;
       if (shelvingItems.length > 0) {
         shelvingItems = shelvingItems.map(item => {
-          if (item.inShelf.length > 0) {
-            return {
-              ...item,
-              receivedQuantity: item.receivedQuantity - item.inShelf.reduce((acc, item) => acc + item.quantity, 0)
-            }
-          } else {
-            return {
-              ...item,
-              receivedQuantity: item.receivedQuantity
-            }
+          return {
+            ...item,
+            receivedQuantity: item.receivedQuantity
           }
         });
       }
@@ -188,6 +198,7 @@ const OutletPoStoDetails = ({ navigation, route }) => {
   const getPoInfo = async () => {
     setIsLoading(true);
     await getPoDetails();
+    await getGRNFromDb();
     setIsLoading(false);
   }
 
@@ -329,28 +340,54 @@ const OutletPoStoDetails = ({ navigation, route }) => {
   const getDnInfo = async () => {
     setIsLoading(true);
     await getDnDetails();
+    await getGRNFromDb();
     setIsLoading(false);
   }
 
-  useFocusEffect(
-    useCallback(() => {
-      if (token && po && user.site) {
-        getPoInfo();
-        return;
-      }
-      if (token && dn && user.site) {
-        getDnInfo();
-        return;
-      }
-    }, [token, po, dn, user.site]),
-  );
+  const getGRNFromDb = async () => {
+    const filterObject = {
+      userId: user._id,
+      po,
+      type: 'grn data'
+    };
+    try {
+      await fetch(API_URL + 'api/tempData/getall', {
+        method: 'POST',
+        headers: {
+          authorization: token,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(filterObject),
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.status) {
+            setTempDataId(data._id);
+            setGrnItems(data.items);
+          }
+        })
+        .catch(error => {
+          Toast.show({
+            type: 'customError',
+            text1: error.message,
+          });
+        });
+    } catch (error) {
+      Toast.show({
+        type: 'customError',
+        text1: error.message,
+      });
+    }
+  };
 
   const onRefresh = async () => {
     setRefreshing(true);
     if (po) {
       await getPoDetails();
+      await getGRNFromDb();
     } else {
       await getDnDetails();
+      await getGRNFromDb();
     }
     setRefreshing(false);
   };
@@ -518,18 +555,15 @@ const OutletPoStoDetails = ({ navigation, route }) => {
     checkBarcode(barcode);
   }
 
-  if (grnItems) {
-    remainingGrnItems = grnItems.filter(grnItem => grnItem.po !== (po || sto));
-    grnPostItems = grnItems.filter(grnItem => grnItem.po === (po || sto));
+  if (grnItems.length) {
+    grnSummery = grnItems.reduce((acc, curr, i) => {
+      acc.totalItems = i + 1;
+      acc.totalPrice += curr.quantity * curr.netPrice;
+      return acc;
+    },
+      { totalItems: 0, totalPrice: 0 }
+    );
   }
-
-  grnSummery = grnPostItems.reduce((acc, curr, i) => {
-    acc.totalItems = i + 1;
-    acc.totalPrice += curr.quantity * curr.netPrice;
-    return acc;
-  },
-    { totalItems: 0, totalPrice: 0 }
-  );
 
   const confirmReport = (article) => {
     setReportArticle(article);
@@ -539,7 +573,6 @@ const OutletPoStoDetails = ({ navigation, route }) => {
       setReportText('Do you want to report?');
     }
     setReportDialogVisible(true);
-    //console.log(article);
   }
 
   const gotoReport = () => {
@@ -555,10 +588,9 @@ const OutletPoStoDetails = ({ navigation, route }) => {
 
     const updateGRNData = () => {
       const storageLocation = user.storage_location.find(item => item.name === 'receiving').code;
-      grnPostItems = grnPostItems.map(item => {
+      grnItems = grnItems.map(item => {
         return { ...item, storageLocation }
       });
-      console.log('grnPostItems', grnPostItems);
       setDialogVisible(true);
     };
 
@@ -612,17 +644,23 @@ const OutletPoStoDetails = ({ navigation, route }) => {
         body: JSON.stringify(postData),
       })
         .then(response => response.json())
-        .then(result => {
+        .then(async result => {
           if (result.status) {
             Toast.show({
               type: 'customSuccess',
               text1: result.message,
             });
-            setStorage('grnItems', remainingGrnItems);
-            setIsUpdatingGrn(true);
-            setGrnItems(remainingGrnItems);
+            await deleteTempData(token, tempDataId);
+            onRefresh();
+            await createActivity(
+              user._id,
+              'grn_request',
+              `${user.name} send request for grn with document ${po ? po : dn}`,
+            );
             setIsButtonLoading(false);
-
+            if (articles.length === 0) {
+              useBackHandler('OutletReceiving');
+            }
           } else {
             Toast.show({
               type: 'customError',
@@ -675,7 +713,7 @@ const OutletPoStoDetails = ({ navigation, route }) => {
                 </Text>
               ))}
             </View>
-            {!isLoading && articles.length === 0 && grnPostItems.length > 0 ? (
+            {!isLoading && articles.length === 0 && grnItems.length > 0 ? (
               <Text className="text-black text-lg text-center font-bold mt-5">
                 No articles left to receive
               </Text>
@@ -704,7 +742,7 @@ const OutletPoStoDetails = ({ navigation, route }) => {
             )}
 
           </View>
-          {articles.length === 0 && grnPostItems.length > 0 && (
+          {(dn || sto) && articles.length === 0 && grnItems.length > 0 && (
             <View className="button">
               {isButtonLoading ? <ButtonLoading styles='bg-theme rounded-md p-5' /> :
                 <ButtonLg
@@ -714,7 +752,7 @@ const OutletPoStoDetails = ({ navigation, route }) => {
               }
             </View>
           )}
-          {po && grnPostItems.length > 0 && (
+          {po && grnItems.length > 0 && (
             <View className="button">
               {isButtonLoading ? <ButtonLoading styles='bg-theme rounded-md p-5' /> :
                 <ButtonLg
@@ -733,7 +771,7 @@ const OutletPoStoDetails = ({ navigation, route }) => {
       >
         <View className="content h-auto max-h-[85%]">
           <View className="grn-list mt-3 pb-3">
-            {grnPostItems.length > 0 ? (
+            {grnItems.length > 0 ? (
               <>
                 <View className="bg-th flex-row items-center justify-between p-2">
                   <Text className="text-white text-xs">Article Code</Text>
@@ -746,7 +784,7 @@ const OutletPoStoDetails = ({ navigation, route }) => {
                   )}
                 </View>
                 <ScrollView className="max-h-full">
-                  {grnPostItems.map((item) => (
+                  {grnItems.map((item) => (
                     <View className="bg-gray-100 flex-row items-center justify-between mt-1 p-2.5" key={item.material}>
                       <Text className="text-sh text-xs">{item.material}</Text>
                       {po && (
@@ -788,7 +826,7 @@ const OutletPoStoDetails = ({ navigation, route }) => {
         modalHeader="Are you sure?"
         modalSubHeader="GRN will be generated"
         onClose={() => setDialogVisible(false)}
-        onSubmit={() => generateGRN(grnPostItems)}
+        onSubmit={() => generateGRN(grnItems)}
         leftButtonText="cancel"
         rightButtonText="proceed"
       />

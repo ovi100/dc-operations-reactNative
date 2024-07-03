@@ -1,4 +1,4 @@
-import {Alert, Dimensions, ToastAndroid} from 'react-native';
+import { Alert, Dimensions, ToastAndroid } from 'react-native';
 import Toast from 'react-native-toast-message';
 
 const handleDate = (value, type) => {
@@ -264,5 +264,6 @@ export {
   uniqueArray,
   uniqueArrayOfObjects,
   validateFile,
-  validateInput,
+  validateInput
 };
+

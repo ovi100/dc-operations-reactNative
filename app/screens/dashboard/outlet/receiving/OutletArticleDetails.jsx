@@ -15,6 +15,7 @@ import useAppContext from '../../../../../hooks/useAppContext';
 import useBackHandler from '../../../../../hooks/useBackHandler';
 import { getStorage } from '../../../../../hooks/useStorage';
 import { calculateShelfLife, handleDate } from '../../../../../utils';
+import { addToGRNInDb } from '../../../../../utils/apiServices';
 
 const OutletArticleDetails = ({ navigation, route }) => {
   const {
@@ -31,9 +32,8 @@ const OutletArticleDetails = ({ navigation, route }) => {
   const [mrp, setMrp] = useState(null);
   const [token, setToken] = useState('');
   const { createActivity } = useActivity();
-  const { GRNInfo, authInfo } = useAppContext();
+  const { authInfo } = useAppContext();
   const { user } = authInfo;
-  const { addToGRN } = GRNInfo;
 
   // Custom hook to navigate screen
   useBackHandler('OutletPoStoDetails', { po, dn, sto });
@@ -88,7 +88,8 @@ const OutletArticleDetails = ({ navigation, route }) => {
               type: 'customSuccess',
               text1: data.message,
             });
-            addToGRN(grnItem);
+            // addToGRN(grnItem);
+            await addToGRNInDb(token, grnItem);
             //log user activity
             await createActivity(
               user._id,
@@ -101,9 +102,6 @@ const OutletArticleDetails = ({ navigation, route }) => {
               type: 'customError',
               text1: data.message,
             });
-            // setTimeout(() => {
-            //   navigation.replace('OutletPoStoDetails', { po, sto });
-            // }, 1500);
           }
         })
         .catch(error => {
@@ -144,6 +142,8 @@ const OutletArticleDetails = ({ navigation, route }) => {
       if (po) {
         // for po -> grn
         grnItem = {
+          userId: user._id,
+          type: 'grn data',
           movementType: '101',
           movementIndicator: 'B',
           storageLocation,
@@ -159,6 +159,8 @@ const OutletArticleDetails = ({ navigation, route }) => {
       } else {
         // for sto/dn -> TPN
         grnItem = {
+          userId: user._id,
+          type: 'grn data',
           movementType: '101',
           movementIndicator: 'B',
           storageLocation,

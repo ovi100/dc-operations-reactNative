@@ -3,7 +3,8 @@ import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator, Alert, Image, ScrollView, Switch,
   Text,
-  TouchableWithoutFeedback, View
+  TouchableWithoutFeedback, View,
+  useWindowDimensions
 } from 'react-native';
 import Dialog from '../../../../components/Dialog';
 import { ButtonBack, ButtonLogin } from '../../../../components/buttons';
@@ -22,6 +23,7 @@ import { version } from '../../../../package.json';
 import styles from '../../../../styles/button';
 
 const Profile = ({ navigation }) => {
+  const { width, height } = useWindowDimensions();
   const [isLoading, setIsLoading] = useState(false);
   const [isEnabled, setIsEnabled] = useState(false);
   const [dialogVisible, setDialogVisible] = useState(false);
@@ -74,6 +76,7 @@ const Profile = ({ navigation }) => {
 
   // console.log('user sites', JSON.stringify(sites));
   // console.log('user info', JSON.stringify(user));
+  // console.log('Device size', width, height);
 
   return (
     <>
@@ -83,15 +86,15 @@ const Profile = ({ navigation }) => {
           <Text className="mt-4 text-gray-400 text-base text-center">Loading profile. Please wait......</Text>
         </View>
       ) : (
-        <View className="flex-1 bg-white px-4">
+        <View className="h-[99%] bg-white px-4">
           <View className="screen-header flex-row items-center my-5">
             <ButtonBack navigation={navigation} />
             <Text className="flex-1 text-base text-black text-center font-semibold capitalize">
               profile
             </Text>
           </View>
-          <ScrollView>
-            <View className="content justify-between">
+          <ScrollView className="">
+            <View className="content h-[88vh] flex-col justify-between">
               <View className="">
                 <View className="profile-image mx-auto mb-4">
                   <Image
@@ -99,32 +102,32 @@ const Profile = ({ navigation }) => {
                     source={AvatarImage}
                   />
                 </View>
-                <View className="name border-b border-gray-200 flex-row items-center py-4">
+                <View className="name border-b border-gray-200 flex-row items-center py-2.5">
                   <Image className="w-6 h-6 mr-3" source={ProfileIcon} />
                   <Text className="text-base text-gray-400 font-medium capitalize">
                     {user.name}
                   </Text>
                 </View>
-                <View className="email border-b border-gray-200 flex-row items-center py-4">
+                <View className="email border-b border-gray-200 flex-row items-center py-2.5">
                   <Image className="w-6 h-6 mr-3" source={EmailIcon} />
                   <Text className="text-base text-gray-400 font-medium">
                     {user.email}
                   </Text>
                 </View>
-                <View className="role border-b border-gray-200 flex-row items-center py-4">
+                <View className="role border-b border-gray-200 flex-row items-center py-2.5">
                   <Image className="w-6 h-6 mr-3" source={IdIcon} />
                   <Text className="text-base text-gray-400 font-medium capitalize">
                     {user.role}
                   </Text>
                 </View>
-                <View className="password-change border-b border-gray-200 flex-row items-center py-4">
+                <View className="password-change border-b border-gray-200 flex-row items-center py-2.5">
                   <Image className="w-6 h-6 mr-3" source={PasswordIcon} />
                   <TouchableWithoutFeedback onPress={() => navigation.push('ChangePassword', { id: user._id })}>
                     <Text className="text-center text-blue-600 text-base font-semibold capitalize">change password</Text>
                   </TouchableWithoutFeedback>
                 </View>
                 {(user.hasPermission.includes('*') || user.hasPermission.includes('press-mode-access')) && (
-                  <View className="switch border-b border-gray-200 flex-row items-center py-4">
+                  <View className="switch border-b border-gray-200 flex-row items-center py-2.5">
                     <View className="flex-row items-center">
                       <TouchableWithoutFeedback onPress={() => toggleSwitch()}>
                         <Switch
@@ -143,7 +146,7 @@ const Profile = ({ navigation }) => {
                     </View>
                   </View>
                 )}
-                <View className="active-site border-b border-gray-200 flex-row items-center py-4">
+                <View className="active-site border-b border-gray-200 flex-row items-center py-2.5">
                   <Image className="w-6 h-6 mr-3" source={StoreIcon} />
                   <View className="flex-row items-center">
                     <Text className="text-base text-gray-400 font-medium uppercase">
@@ -156,15 +159,15 @@ const Profile = ({ navigation }) => {
                 </View>
 
                 {sites !== null && sites.length > 1 && (
-                  <View className="password-change border-b border-gray-200 flex-row items-center py-4">
+                  <View className="password-change border-b border-gray-200 flex-row items-center py-2.5">
                     <Image className="w-6 h-6 mr-3" source={SwapIcon} />
-                    <TouchableWithoutFeedback onPress={() => navigation.replace('ChooseSite', user)}>
+                    <TouchableWithoutFeedback onPress={() => navigation.replace('ChangeSite', user)}>
                       <Text className="text-center text-blue-600 text-base font-semibold capitalize">change site</Text>
                     </TouchableWithoutFeedback>
                   </View>
                 )}
               </View>
-              <View className="pb-2 mt-10">
+              <View className="">
                 <View className="version-info w-full">
                   <Text className="text-gray-400 text-center font-bold capitalize">
                     shwapno operations app

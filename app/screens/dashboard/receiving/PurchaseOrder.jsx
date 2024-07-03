@@ -17,10 +17,10 @@ import Dialog from '../../../../components/Dialog';
 import Modal from '../../../../components/Modal';
 import { ButtonLg, ButtonLoading } from '../../../../components/buttons';
 import useActivity from '../../../../hooks/useActivity';
-import useAppContext from '../../../../hooks/useAppContext';
 import useBackHandler from '../../../../hooks/useBackHandler';
-import { getStorage, setStorage } from '../../../../hooks/useStorage';
+import { getStorage } from '../../../../hooks/useStorage';
 import { toast } from '../../../../utils';
+import { deleteTempData } from '../../../../utils/apiServices';
 import SunmiScanner from '../../../../utils/sunmi/scanner';
 
 const PurchaseOrder = ({ navigation, route }) => {
@@ -38,11 +38,11 @@ const PurchaseOrder = ({ navigation, route }) => {
   const [user, setUser] = useState({});
   const [token, setToken] = useState('');
   const [articles, setArticles] = useState([]);
+  let [grnItems, setGrnItems] = useState([]);
+  const [tempDataId, setTempDataId] = useState('');
   const [storageLocation, setStorageLocation] = useState('');
   const tableHeader = ['Article Info', 'PO Qty', 'GRN Qty', 'REM Qty'];
-  const { GRNInfo } = useAppContext();
-  const { grnItems, setGrnItems, setIsUpdatingGrn } = GRNInfo;
-  let grnPostItems = [], remainingGrnItems = [], grnSummery = {};
+  let grnSummery = {};
 
   // Custom hook to navigate screen
   useBackHandler('Receiving');
@@ -79,6 +79,14 @@ const PurchaseOrder = ({ navigation, route }) => {
       <ActivityIndicator size="large" color="#000" />
     );
   };
+
+  useFocusEffect(
+    useCallback(() => {
+      if (token && po && user.site) {
+        getPoInfo();
+      }
+    }, [token, po, user.site]),
+  );
 
   const getPoDetails = async () => {
     const getOptions = {
@@ -119,7 +127,6 @@ const PurchaseOrder = ({ navigation, route }) => {
           type: 'customError',
           text1: 'Not authorized to receive PO',
         });
-        return;
       } else {
         setStorageLocation(poItem?.storageLocation);
       }
@@ -127,16 +134,9 @@ const PurchaseOrder = ({ navigation, route }) => {
       let shelvingItems = shelvingData.items;
       if (shelvingItems.length > 0) {
         shelvingItems = shelvingItems.map(item => {
-          if (item.inShelf.length > 0) {
-            return {
-              ...item,
-              receivedQuantity: item.receivedQuantity - item.inShelf.reduce((acc, item) => acc + item.quantity, 0)
-            }
-          } else {
-            return {
-              ...item,
-              receivedQuantity: item.receivedQuantity
-            }
+          return {
+            ...item,
+            receivedQuantity: item.receivedQuantity
           }
         });
       }
@@ -189,28 +189,58 @@ const PurchaseOrder = ({ navigation, route }) => {
     }
   };
 
+  const getGRNFromDb = async () => {
+    const filterObject = {
+      userId: user._id,
+      po,
+      type: 'grn data'
+    };
+    try {
+      await fetch(API_URL + 'api/tempData/getall', {
+        method: 'POST',
+        headers: {
+          authorization: token,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(filterObject),
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.status) {
+            setTempDataId(data._id);
+            setGrnItems(data.items);
+          }
+        })
+        .catch(error => {
+          Toast.show({
+            type: 'customError',
+            text1: error.message,
+          });
+        });
+    } catch (error) {
+      Toast.show({
+        type: 'customError',
+        text1: error.message,
+      });
+    }
+  };
+
   const getPoInfo = async () => {
     const start = performance.now();
     setIsLoading(true);
     await getPoDetails();
+    await getGRNFromDb();
     setIsLoading(false);
     const end = performance.now();
     const time = (end - start) / 1000
     toast(`Loading time: ${time.toFixed(2)} Seconds`);
   }
 
-  useFocusEffect(
-    useCallback(() => {
-      if (token && po && user.site) {
-        getPoInfo();
-      }
-    }, [token, po, user.site]),
-  );
-
   const onRefresh = async () => {
     const start = performance.now();
     setRefreshing(true);
     await getPoDetails();
+    await getGRNFromDb();
     setRefreshing(false);
     const end = performance.now();
     const time = (end - start) / 1000
@@ -328,19 +358,15 @@ const PurchaseOrder = ({ navigation, route }) => {
     checkBarcode(barcode);
   }
 
-  if (grnItems) {
-    remainingGrnItems = grnItems.filter(grnItem => grnItem.po !== po);
-    grnPostItems = grnItems.filter(grnItem => grnItem.po === po);
-  }
-
-  grnSummery = grnPostItems.reduce(
-    (acc, curr, i) => {
+  if (grnItems.length) {
+    grnSummery = grnItems.reduce((acc, curr, i) => {
       acc.totalItems = i + 1;
       acc.totalPrice += curr.quantity * curr.netPrice;
       return acc;
     },
-    { totalItems: 0, totalPrice: 0 }
-  );
+      { totalItems: 0, totalPrice: 0 }
+    );
+  }
 
   const postGRNData = () => {
     const isSameStorageLocation = user.storage_location.some(
@@ -349,10 +375,9 @@ const PurchaseOrder = ({ navigation, route }) => {
 
     const updateGRNData = () => {
       const storageLocation = user.storage_location.find(item => item.name === 'receiving').code;
-      grnPostItems = grnPostItems.map(item => {
+      grnItems = grnItems.map(item => {
         return { ...item, storageLocation }
       });
-      console.log('grnPostItems', grnPostItems);
       setDialogVisible(true);
     };
 
@@ -407,9 +432,8 @@ const PurchaseOrder = ({ navigation, route }) => {
               type: 'customSuccess',
               text1: result.message,
             });
-            setStorage('grnItems', remainingGrnItems);
-            setGrnItems(remainingGrnItems);
-            setIsUpdatingGrn(true);
+            await deleteTempData(token, tempDataId);
+            onRefresh();
             //log user activity
             await createActivity(
               user._id,
@@ -417,7 +441,9 @@ const PurchaseOrder = ({ navigation, route }) => {
               `${user.name} send request for grn with document ${po}`,
             );
             setIsButtonLoading(false);
-
+            if (articles.length === 0) {
+              useBackHandler('Receiving');
+            }
           } else {
             Toast.show({
               type: 'customError',
@@ -501,7 +527,7 @@ const PurchaseOrder = ({ navigation, route }) => {
             )}
 
           </View>
-          {Boolean(grnPostItems.length) && (
+          {Boolean(grnItems.length) && (
             <View className="button">
               {isButtonLoading ? <ButtonLoading styles='bg-theme rounded-md p-5' /> :
                 <ButtonLg
@@ -520,7 +546,7 @@ const PurchaseOrder = ({ navigation, route }) => {
       >
         <View className="content h-auto max-h-[85%]">
           <View className="grn-list mt-3 pb-3">
-            {grnPostItems.length > 0 ? (
+            {grnItems.length > 0 ? (
               <>
                 <View className="bg-th flex-row items-center justify-between p-2">
                   <Text className="text-white text-xs">Article Code</Text>
@@ -529,7 +555,7 @@ const PurchaseOrder = ({ navigation, route }) => {
                   <Text className="text-white text-xs">Total Price(৳)</Text>
                 </View>
                 <ScrollView className="max-h-full">
-                  {grnPostItems.map((item) => (
+                  {grnItems.map((item) => (
                     <View className="bg-gray-100 flex-row items-center justify-between mt-1 p-2.5" key={item.material}>
                       <Text className="text-sh text-xs">{item.material}</Text>
                       <Text className="text-sh text-xs">{item.netPrice}</Text>
@@ -567,7 +593,7 @@ const PurchaseOrder = ({ navigation, route }) => {
         modalHeader="Are you sure?"
         modalSubHeader="GRN will be generated"
         onClose={() => setDialogVisible(false)}
-        onSubmit={() => generateGRN(grnPostItems)}
+        onSubmit={() => generateGRN(grnItems)}
         leftButtonText="cancel"
         rightButtonText="proceed"
       />

@@ -15,6 +15,7 @@ import useAppContext from '../../../../hooks/useAppContext';
 import useBackHandler from '../../../../hooks/useBackHandler';
 import { getStorage } from '../../../../hooks/useStorage';
 import { calculateShelfLife, handleDate } from '../../../../utils';
+import { addToGRNInDb } from '../../../../utils/apiServices';
 
 const PoArticle = ({ navigation, route }) => {
   const {
@@ -30,9 +31,8 @@ const PoArticle = ({ navigation, route }) => {
   const [batchNo, setBatchNo] = useState(null);
   const [mrp, setMrp] = useState(null);
   const [token, setToken] = useState('');
-  const { GRNInfo, authInfo } = useAppContext();
+  const { authInfo } = useAppContext();
   const { user } = authInfo;
-  const { addToGRN } = GRNInfo;
   const { createActivity } = useActivity();
 
   // Custom hook to navigate screen
@@ -109,6 +109,8 @@ const PoArticle = ({ navigation, route }) => {
       });
     } else {
       const grnItem = {
+        userId: user._id,
+        type: 'grn data',
         movementType: '101',
         movementIndicator: 'B',
         storageLocation,
@@ -158,7 +160,8 @@ const PoArticle = ({ navigation, route }) => {
                 type: 'customSuccess',
                 text1: data.message,
               });
-              addToGRN(grnItem);
+              // addToGRN(grnItem);
+              await addToGRNInDb(token, grnItem);
               //log user activity
               await createActivity(
                 user._id,
@@ -171,7 +174,6 @@ const PoArticle = ({ navigation, route }) => {
                 type: 'customError',
                 text1: data.message,
               });
-              // navigation.replace('PurchaseOrder', { po });
             }
           })
           .catch(error => {

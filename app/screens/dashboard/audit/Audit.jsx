@@ -1,5 +1,5 @@
 import { API_URL } from '@env';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useState } from 'react';
 import {
   ActivityIndicator,
   DeviceEventEmitter,
@@ -25,6 +25,14 @@ const Audit = ({ navigation }) => {
   const [barcode, setBarcode] = useState('');
   const [search, setSearch] = useState('');
   const { startScan, stopScan } = SunmiScanner;
+
+  useLayoutEffect(() => {
+    let screenOptions = {
+      headerBackVisible: pressMode === 'true' ? false : true,
+      headerTitleAlign: 'center',
+    };
+    navigation.setOptions(screenOptions);
+  }, [navigation.isFocused()]);
 
   useEffect(() => {
     const getAsyncStorage = async () => {
@@ -123,20 +131,6 @@ const Audit = ({ navigation }) => {
 
   return (
     <KeyboardAvoidingView className="flex-1 bg-white pt-8 px-4" behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-      <View className="screen-header flex-row items-center justify-center mb-4">
-        {pressMode === 'true' ? (
-          <TouchableHighlight onPress={() => null}>
-            <Text className="text-lg text-sh font-semibold capitalize">
-              audit
-            </Text>
-          </TouchableHighlight>
-        ) : (
-          <Text className="text-lg text-sh font-semibold capitalize">
-            audit
-          </Text>
-        )}
-      </View>
-
       {/* Search Box */}
       <View className="search flex-row">
         <View className="input-box w-4/5">

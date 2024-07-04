@@ -1,42 +1,73 @@
-import React, { useEffect, useState } from 'react';
+import { API_URL } from '@env';
+import { HeaderBackButton } from '@react-navigation/elements';
+import React, { useEffect, useLayoutEffect, useState } from 'react';
 import {
-  ActivityIndicator, Image, KeyboardAvoidingView,
-  Platform, SafeAreaView, ScrollView, Text, TextInput,
+  ActivityIndicator, Image,
+  KeyboardAvoidingView, Platform,
+  SafeAreaView, ScrollView, Text, TextInput,
   TouchableWithoutFeedback, View
 } from 'react-native';
-// import DatePicker from 'react-native-date-picker';
-import { API_URL } from '@env';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
-import { ButtonLg, ButtonLoading } from '../../../../components/buttons';
+import { ButtonLg, ButtonLoading, ButtonProfile } from '../../../../components/buttons';
 import { BoxIcon } from '../../../../constant/icons';
 import useActivity from '../../../../hooks/useActivity';
 import useAppContext from '../../../../hooks/useAppContext';
 import useBackHandler from '../../../../hooks/useBackHandler';
 import { getStorage } from '../../../../hooks/useStorage';
-import { calculateShelfLife, handleDate } from '../../../../utils';
-import { addToGRNInDb } from '../../../../utils/apiServices';
+import { calculateShelfLife } from '../../../../utils';
+import { addTempData } from '../../../../utils/apiServices';
 
-const PoArticle = ({ navigation, route }) => {
+const ArticleDetails = ({ navigation, route }) => {
   const {
-    description, material, po, poItem, quantity, netPrice,
-    remainingQuantity, receivingPlant, storageLocation, unit
+    description, material, po, poItem, sto, dn, dnItem, quantity,
+    netPrice, remainingQuantity, receivingPlant, storageLocation, unit
   } = route.params;
   const [isLoading, setIsLoading] = useState(false);
   const [isButtonLoading, setIsButtonLoading] = useState(false);
   const [bins, setBins] = useState([]);
-  const [newQuantity, setNewQuantity] = useState(0); //update_upol
+  const [newQuantity, setNewQuantity] = useState(0);
   const [mfgDate, setMfgDate] = useState(new Date());
   const [expDate, setExpDate] = useState(new Date());
   const [batchNo, setBatchNo] = useState(null);
   const [mrp, setMrp] = useState(null);
   const [token, setToken] = useState('');
+  const { createActivity } = useActivity();
   const { authInfo } = useAppContext();
   const { user } = authInfo;
-  const { createActivity } = useActivity();
 
   // Custom hook to navigate screen
-  useBackHandler('PurchaseOrder', { po });
+  useBackHandler('PoStoDetails', { po, dn, sto });
+
+  const screenHeader = () => (
+    <View className="screen-header bg-white flex-row items-center justify-between py-2 pr-3">
+      <HeaderBackButton onPress={() => navigation.replace('PoStoDetails', { po, dn, sto })} />
+      <View className="text items-center">
+        <TouchableWithoutFeedback>
+          <View className="flex-row">
+            <Text className="text-base text-sh font-medium capitalize">
+              article details
+            </Text>
+            <Text className="text-base text-sh font-bold capitalize">
+              {' ' + material}
+            </Text>
+          </View>
+        </TouchableWithoutFeedback>
+        <Text className="text-sm text-sh text-right font-medium capitalize" numberOfLines={2}>
+          {description}
+        </Text>
+      </View>
+      <ButtonProfile onPress={() => navigation.push('Profile')} />
+    </View>
+  );
+
+  useLayoutEffect(() => {
+    let screenOptions = {
+      headerTitleAlign: 'center',
+      header: () => screenHeader(),
+    };
+    navigation.setOptions(screenOptions);
+  }, [navigation.isFocused(), user.site]);
 
   useEffect(() => {
     const getAsyncStorage = async () => {
@@ -47,44 +78,77 @@ const PoArticle = ({ navigation, route }) => {
 
   useEffect(() => {
     const getBins = async (code, site) => {
-      try {
-        await fetch(`https://api.shwapno.net/shelvesu/api/bins/product/${code}/${site}`, {
-          method: 'GET',
-          headers: {
-            authorization: token,
-            'Content-Type': 'application/json',
-          }
-        })
-          .then(res => res.json())
-          .then(result => {
-            if (result.status) {
-              let binsData = result.bins.map(result => {
-                return { bin_id: result.bin_ID, gondola_id: result.gondola_ID ? result.gondola_ID : "NA" };
-              });
-              setBins(binsData);
-            }
-          })
-          .catch(error => {
-            Toast.show({
-              type: 'customError',
-              text1: error.message,
+      setIsLoading(true);
+      await fetch(`https://api.shwapno.net/shelvesu/api/bins/product/${code}/${site}`)
+        .then(res => res.json())
+        .then(result => {
+          if (result.status) {
+            let binsData = result.bins.map(result => {
+              return { bin_id: result.bin_ID, gondola_id: result.gondola_ID ? result.gondola_ID : "NA" };
             });
-          });
-      } catch (error) {
-        Toast.show({
-          type: 'customError',
-          text1: error.message,
+            setBins(binsData);
+            setIsLoading(false);
+          } else {
+            setIsLoading(false);
+          }
         });
-      }
     };
 
     if (material && user.site) {
-      setIsLoading(true);
       getBins(material, user.site);
-      setIsLoading(false);
     }
 
   }, [material, user.site]);
+
+  const postShelvingData = async (postData, grnItem) => {
+    setIsButtonLoading(true);
+    try {
+      await fetch(API_URL + 'api/product-shelving/ready', {
+        method: 'POST',
+        headers: {
+          authorization: token,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(postData),
+      })
+        .then(response => response.json())
+        .then(async data => {
+          if (data.status) {
+            Toast.show({
+              type: 'customSuccess',
+              text1: data.message,
+            });
+            await addTempData(token, grnItem);
+            //log user activity
+            await createActivity(
+              user._id,
+              'shelving_ready',
+              `${user.name} ready material ${material} with quantity of ${newQuantity} of ${po ? 'po' : 'dn'} ${po ? po : dn} for shelving`,
+            );
+            navigation.replace('PoStoDetails', { po, dn, sto });
+          } else {
+            Toast.show({
+              type: 'customError',
+              text1: data.message,
+            });
+          }
+        })
+        .catch(error => {
+          Toast.show({
+            type: 'customError',
+            text1: error.message,
+          });
+
+        });
+    } catch (error) {
+      Toast.show({
+        type: 'customError',
+        text1: error.message,
+      });
+    } finally {
+      setIsButtonLoading(false);
+    }
+  }
 
   const readyForShelve = async () => {
     if (!newQuantity) {
@@ -102,30 +166,47 @@ const PoArticle = ({ navigation, route }) => {
         type: 'customWarn',
         text1: 'Quantity exceed',
       });
-    } else if (batchNo && !/^[a-zA-Z0-9]+$/.test(batchNo)) {
-      Toast.show({
-        type: 'customError',
-        text1: 'Batch number must be an alphanumeric',
-      });
     } else {
-      const grnItem = {
-        userId: user._id,
-        type: 'grn data',
-        movementType: '101',
-        movementIndicator: 'B',
-        storageLocation,
-        po: po,
-        poItem: Number(poItem).toString(),
-        material: material,
-        plant: receivingPlant,
-        quantity: Number(newQuantity),
-        netPrice,
-        uom: unit,
-        uomIso: unit,
-      };
+      let grnItem = {};
+      if (po) {
+        // for po -> grn
+        grnItem = {
+          userId: user._id,
+          type: 'grn data',
+          movementType: '101',
+          movementIndicator: 'B',
+          storageLocation,
+          po,
+          poItem: Number(poItem).toString(),
+          material: material,
+          plant: receivingPlant,
+          quantity: Number(newQuantity),
+          netPrice,
+          uom: unit,
+          uomIso: unit,
+        };
+      } else {
+        // for sto/dn -> TPN
+        grnItem = {
+          userId: user._id,
+          type: 'grn data',
+          movementType: '101',
+          movementIndicator: 'B',
+          storageLocation,
+          po: sto,
+          poItem: Number(dnItem).toString(),
+          dn,
+          dnItem: Number(dnItem).toString(),
+          material: material,
+          plant: receivingPlant,
+          quantity: Number(newQuantity),
+          netPrice,
+          uom: unit,
+          uomIso: unit,
+        };
+      }
 
       let shelvingObject = {
-        po: po,
         code: material,
         description: description,
         userId: user._id,
@@ -140,95 +221,34 @@ const PoArticle = ({ navigation, route }) => {
         mrp: Number(mrp)
       };
 
-      // console.log('shelving object', shelvingObject);
+      if (po) {
+        shelvingObject.po = po;
+      } else {
+        shelvingObject.sto = sto;
+      }
 
-      try {
-        setIsButtonLoading(true);
-        await fetch(API_URL + 'api/product-shelving/ready', {
-          method: 'POST',
-          headers: {
-            authorization: token,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(shelvingObject),
-        })
-          .then(response => response.json())
-          .then(async data => {
-            // console.log('ready response', data);
-            if (data.status) {
-              Toast.show({
-                type: 'customSuccess',
-                text1: data.message,
-              });
-              // addToGRN(grnItem);
-              await addToGRNInDb(token, grnItem);
-              //log user activity
-              await createActivity(
-                user._id,
-                'shelving_ready',
-                `${user.name} ready material ${material} with quantity of ${newQuantity} of PO ${po} for shelving`,
-              );
-              navigation.replace('PurchaseOrder', { po });
-            } else {
-              Toast.show({
-                type: 'customError',
-                text1: data.message,
-              });
-            }
-          })
-          .catch(error => {
-            Toast.show({
-              type: 'customError',
-              text1: error.message,
-            });
-          });
-      } catch (error) {
-        Toast.show({
-          type: 'customError',
-          text1: error.message,
-        });
-      } finally {
-        setIsButtonLoading(false);
-      };
+      await postShelvingData(shelvingObject, grnItem);
     }
   };
+
+  const shelfLife = calculateShelfLife(mfgDate?.date, expDate?.date);
 
   if (isLoading) {
     return (
       <View className="w-full h-screen justify-center px-3">
         <ActivityIndicator size="large" color="#EB4B50" />
-        <Text className="mt-4 text-gray-400 text-base text-center">Loading article. Please wait......</Text>
+        <Text className="mt-4 text-gray-400 text-base text-center">Loading article details. Please wait......</Text>
       </View>
     )
   }
 
-  const shelfLife = calculateShelfLife(mfgDate?.date, expDate?.date);
-
   return (
-    <SafeAreaView className="flex-1 bg-white pt-8">
+    <SafeAreaView className="flex-1 bg-white">
       <KeyboardAvoidingView className="flex-1" behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <ScrollView>
           <View className="flex-1 px-4">
-            <View className="screen-header mb-4">
-              <View className="text items-center">
-                <TouchableWithoutFeedback>
-                  <View className="flex-row">
-                    <Text className="text-lg text-sh font-medium capitalize">
-                      receiving article
-                    </Text>
-                    <Text className="text-lg text-sh font-bold capitalize">
-                      {' ' + material}
-                    </Text>
-                  </View>
-                </TouchableWithoutFeedback>
-                <Text className="text-base text-sh text-right font-medium capitalize">
-                  {description}
-                </Text>
-              </View>
-            </View>
-
-            <View className="content h-[85vh] flex-1 justify-around">
-              <View className="input-boxes">
+            <View className="content h-[90vh] justify-between">
+              <View className="input-boxes mt-3">
                 {/* Quantity Box */}
                 <View className="quantity-box bg-[#FEFBFB] border border-[#F2EFEF] rounded px-5 py-2">
                   <View className="box-header flex-row items-center justify-between">
@@ -376,4 +396,4 @@ const PoArticle = ({ navigation, route }) => {
   );
 };
 
-export default PoArticle;
+export default ArticleDetails;

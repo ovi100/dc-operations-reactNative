@@ -1,5 +1,6 @@
 import { API_URL } from '@env';
-import React, { useEffect, useState } from 'react';
+import { HeaderBackButton } from '@react-navigation/elements';
+import React, { useEffect, useLayoutEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Image, KeyboardAvoidingView,
@@ -9,7 +10,7 @@ import {
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
-import { ButtonLg, ButtonLoading } from '../../../../components/buttons';
+import { ButtonLg, ButtonLoading, ButtonProfile } from '../../../../components/buttons';
 import { BoxIcon } from '../../../../constant/icons';
 import useActivity from '../../../../hooks/useActivity';
 import useBackHandler from '../../../../hooks/useBackHandler';
@@ -36,6 +37,34 @@ const ShelveArticle = ({ navigation, route }) => {
     }
     getAsyncStorage();
   }, []);
+
+  const screenHeader = () => (
+    <View className="screen-header bg-white flex-row items-center justify-between py-2 pr-3">
+      <HeaderBackButton onPress={() => navigation.replace('Shelving')} />
+      <View className="text items-center">
+        <View className="flex-row">
+          <Text className="text-base text-sh font-medium capitalize">
+            shelving article
+          </Text>
+          <Text className="text-base text-sh font-bold capitalize">
+            {' ' + code}
+          </Text>
+        </View>
+        <Text className="text-sm text-sh text-center font-medium capitalize" numberOfLines={2}>
+          {description}
+        </Text>
+      </View>
+      <ButtonProfile onPress={() => navigation.push('Profile')} />
+    </View>
+  );
+
+  useLayoutEffect(() => {
+    let screenOptions = {
+      headerTitleAlign: 'center',
+      header: () => screenHeader(),
+    };
+    navigation.setOptions(screenOptions);
+  }, [navigation.isFocused()]);
 
   const updateInventory = async () => {
     let updateStock = {
@@ -183,78 +212,64 @@ const ShelveArticle = ({ navigation, route }) => {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white pt-8 px-4">
-      <KeyboardAvoidingView className="flex-1" behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-        <View className="screen-header mb-4">
-          <View className="text items-center">
-            <View className="flex-row">
-              <Text className="text-base text-sh font-medium capitalize">
-                shelving article
+    <SafeAreaView className="flex-1 bg-white px-4">
+      <KeyboardAvoidingView className="flex-1 justify-between pb-2" behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+        <View>
+          <View className="table mt-3 mb-4">
+            <View className="flex-row bg-th text-center mb-2 py-2">
+              <Text className="flex-1 text-white text-center font-bold">
+                Bin ID
               </Text>
-              <Text className="text-base text-sh font-bold capitalize">
-                {' ' + code}
+              <Text className="flex-1 text-white text-center font-bold">
+                Batch No
+              </Text>
+              <Text className="flex-1 text-white text-center font-bold">
+                Expiry Date
               </Text>
             </View>
-            <Text className="text-base text-sh text-right font-medium capitalize my-1.5">
-              {description}
-            </Text>
+            <View className="flex-row justify-between border border-tb rounded-lg mt-2.5 p-4">
+              <Text
+                className="text-black text-center"
+                numberOfLines={1}>
+                {bins.bin_id}
+              </Text>
+              <Text
+                className="text-black text-center"
+                numberOfLines={1}>
+                {batch}
+              </Text>
+              <Text
+                className="text-black text-center"
+                numberOfLines={1}>
+                {expiryDate && new Date(expiryDate).toLocaleDateString('en-Uk', { dateStyle: 'medium' })}
+              </Text>
+            </View>
           </View>
-        </View>
 
-        <View className="table mb-4">
-          <View className="flex-row bg-th text-center mb-2 py-2">
-            <Text className="flex-1 text-white text-center font-bold">
-              Bin ID
-            </Text>
-            <Text className="flex-1 text-white text-center font-bold">
-              Batch No
-            </Text>
-            <Text className="flex-1 text-white text-center font-bold">
-              Expiry Date
-            </Text>
-          </View>
-          <View className="flex-row justify-between border border-tb rounded-lg mt-2.5 p-4">
-            <Text
-              className="text-black text-center"
-              numberOfLines={1}>
-              {bins.bin_id}
-            </Text>
-            <Text
-              className="text-black text-center"
-              numberOfLines={1}>
-              {batch}
-            </Text>
-            <Text
-              className="text-black text-center"
-              numberOfLines={1}>
-              {expiryDate && new Date(expiryDate).toLocaleDateString('en-Uk', { dateStyle: 'medium' })}
-            </Text>
-          </View>
-        </View>
-
-        {/* Quantity Box */}
-        <View className="quantity-box bg-[#FEFBFB] border border-[#F2EFEF] p-5">
-          <View className="box-header flex-row items-center justify-between">
-            <View className="text">
-              <Text className="text-base text-[#2E2C3B] font-medium capitalize">
-                shelved quantity
-              </Text>
+          {/* Quantity Box */}
+          <View className="quantity-box bg-[#FEFBFB] border border-[#F2EFEF] p-5">
+            <View className="box-header flex-row items-center justify-between">
+              <View className="text">
+                <Text className="text-base text-[#2E2C3B] font-medium capitalize">
+                  shelved quantity
+                </Text>
+              </View>
+              <View className="quantity flex-row items-center gap-3">
+                <Image className="w-5 h-5" source={BoxIcon} />
+                <Text className="font-bold text-black">{receivedQuantity}</Text>
+              </View>
             </View>
-            <View className="quantity flex-row items-center gap-3">
-              <Image className="w-5 h-5" source={BoxIcon} />
-              <Text className="font-bold text-black">{receivedQuantity}</Text>
+            <View className="input-box mt-6">
+              <TextInput
+                className="bg-[#F5F6FA] border border-t-0 border-black/25 h-[50px] text-[#5D80C5] rounded-2xl mb-3 px-4"
+                placeholder="Type Picked Quantity"
+                placeholderTextColor="#5D80C5"
+                selectionColor="#5D80C5"
+                keyboardType="default"
+                value={newQuantity.toString()}
+                onChangeText={value => setNewQuantity(value)}
+              />
             </View>
-          </View>
-          <View className="input-box mt-6">
-            <TextInput
-              className="bg-[#F5F6FA] border border-t-0 border-black/25 h-[50px] text-[#5D80C5] rounded-2xl mb-3 px-4"
-              placeholder="Type Picked Quantity"
-              placeholderTextColor="#5D80C5"
-              selectionColor="#5D80C5"
-              keyboardType="default"
-              value={newQuantity.toString()}
-              onChangeText={value => setNewQuantity(value)}
-            />
           </View>
         </View>
 

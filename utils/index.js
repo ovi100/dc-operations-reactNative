@@ -249,21 +249,20 @@ const calculateShelfLife = (mfg, exp) => {
   return 0;
 };
 
-const {width: WINDOW_WIDTH, height: WINDOW_HEIGHT} = Dimensions.get('window');
+const {width, height} = Dimensions.get('window');
+
+console.log(width, height);
 
 export {
-  WINDOW_HEIGHT,
-  WINDOW_WIDTH,
   calculateShelfLife,
   dateDiffInDays,
   dateRange,
   formatDateYYYYMMDD,
   groupBy,
-  handleDate,
-  toast,
+  handleDate, height, toast,
   uniqueArray,
   uniqueArrayOfObjects,
   validateFile,
-  validateInput
+  validateInput, width
 };
 

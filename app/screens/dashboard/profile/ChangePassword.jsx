@@ -1,4 +1,6 @@
-import { useEffect, useState } from "react";
+import { API_URL } from '@env';
+import { HeaderBackButton } from '@react-navigation/elements';
+import { useEffect, useLayoutEffect, useState } from "react";
 import {
   Image,
   SafeAreaView,
@@ -7,14 +9,13 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { ButtonBack, ButtonLoading, ButtonLogin } from "../../../../components/buttons";
+import { ButtonLoading, ButtonLogin } from "../../../../components/buttons";
 import { EyeInvisibleIcon, EyeVisibleIcon } from "../../../../constant/icons";
 import useActivity from "../../../../hooks/useActivity";
 import useAppContext from "../../../../hooks/useAppContext";
 import { getStorage, setStorage } from "../../../../hooks/useStorage";
 import styles from "../../../../styles/button";
 import { toast, validateInput } from "../../../../utils";
-import { API_URL } from '@env';
 
 const ChangePassword = ({ navigation, route }) => {
   const { authInfo } = useAppContext();
@@ -27,6 +28,17 @@ const ChangePassword = ({ navigation, route }) => {
   const [passwordError, setPasswordError] = useState(null);
   const [token, setToken] = useState("");
   const { createActivity } = useActivity();
+
+  useLayoutEffect(() => {
+    let screenOptions = {
+      headerTitle: 'Change Password',
+      headerTitleAlign: 'center',
+      headerLeft: () => (
+        <HeaderBackButton onPress={() => navigation.goBack()} />
+      ),
+    };
+    navigation.setOptions(screenOptions);
+  }, [navigation.isFocused()]);
 
   useEffect(() => {
     getStorage("token", setToken);
@@ -85,14 +97,8 @@ const ChangePassword = ({ navigation, route }) => {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-white pt-14">
+    <SafeAreaView className="flex-1 bg-white">
       <View className="flex-1 px-4">
-        <View className="screen-header flex-row items-center mb-4">
-          <ButtonBack navigation={navigation} />
-          <Text className="flex-1 text-lg text-sh text-center font-semibold capitalize">
-            change password
-          </Text>
-        </View>
         <View className="content mt-5 pt-5">
           <View className="password relative mb-4">
             <TextInput

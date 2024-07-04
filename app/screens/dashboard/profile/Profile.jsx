@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, { useEffect, useState } from 'react';
+import { HeaderBackButton } from '@react-navigation/elements';
+import React, { useEffect, useLayoutEffect, useState } from 'react';
 import {
   ActivityIndicator, Alert, Image, ScrollView, Switch,
   Text,
@@ -7,7 +8,7 @@ import {
   useWindowDimensions
 } from 'react-native';
 import Dialog from '../../../../components/Dialog';
-import { ButtonBack, ButtonLogin } from '../../../../components/buttons';
+import { ButtonLogin } from '../../../../components/buttons';
 import {
   AvatarImage,
   EmailIcon,
@@ -42,6 +43,16 @@ const Profile = ({ navigation }) => {
     getUserInfo();
   }, [navigation.isFocused()]);
 
+  useLayoutEffect(() => {
+    let screenOptions = {
+      headerTitleAlign: 'center',
+      headerLeft: () => (
+        <HeaderBackButton onPress={() => navigation.goBack()} />
+      ),
+    };
+    navigation.setOptions(screenOptions);
+  }, [navigation.isFocused()]);
+
   useEffect(() => {
     const getPressMode = async () => {
       try {
@@ -58,11 +69,9 @@ const Profile = ({ navigation }) => {
     getPressMode();
   }, [isEnabled]);
 
-  const toggleSwitch = () => {
-    setIsEnabled(previousState => {
-      setStorage('pressMode', String(!previousState));
-      return !previousState;
-    });
+  const toggleSwitch = async () => {
+    setIsEnabled(previousState => !previousState);
+    await setStorage('pressMode', String(!isEnabled));
   };
 
   if (isLoading) {
@@ -86,16 +95,10 @@ const Profile = ({ navigation }) => {
           <Text className="mt-4 text-gray-400 text-base text-center">Loading profile. Please wait......</Text>
         </View>
       ) : (
-        <View className="h-[99%] bg-white px-4">
-          <View className="screen-header flex-row items-center my-5">
-            <ButtonBack navigation={navigation} />
-            <Text className="flex-1 text-base text-black text-center font-semibold capitalize">
-              profile
-            </Text>
-          </View>
+        <View className="h-full bg-white px-4">
           <ScrollView className="">
             <View className="content h-[88vh] flex-col justify-between">
-              <View className="">
+              <View className="top">
                 <View className="profile-image mx-auto mb-4">
                   <Image
                     className="w-28 h-28 rounded-full"
@@ -159,15 +162,15 @@ const Profile = ({ navigation }) => {
                 </View>
 
                 {sites !== null && sites.length > 1 && (
-                  <View className="password-change border-b border-gray-200 flex-row items-center py-2.5">
+                  <View className="change-site border-b border-gray-200 flex-row items-center py-2.5">
                     <Image className="w-6 h-6 mr-3" source={SwapIcon} />
-                    <TouchableWithoutFeedback onPress={() => navigation.replace('ChangeSite', user)}>
+                    <TouchableWithoutFeedback onPress={() => navigation.push('ChangeSite', user)}>
                       <Text className="text-center text-blue-600 text-base font-semibold capitalize">change site</Text>
                     </TouchableWithoutFeedback>
                   </View>
                 )}
               </View>
-              <View className="">
+              <View className="footer">
                 <View className="version-info w-full">
                   <Text className="text-gray-400 text-center font-bold capitalize">
                     shwapno operations app
@@ -190,7 +193,7 @@ const Profile = ({ navigation }) => {
           <Dialog
             isOpen={dialogVisible}
             modalHeader="Are you sure?"
-            modalSubHeader="Some saved data and setting might be lost."
+            modalSubHeader="Some saved data and settings might be lost."
             onClose={() => setDialogVisible(false)}
             onSubmit={() => logout()}
             leftButtonText="cancel"

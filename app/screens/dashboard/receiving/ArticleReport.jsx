@@ -1,3 +1,4 @@
+import { API_URL } from '@env';
 import storage from '@react-native-firebase/storage';
 import { Picker } from '@react-native-picker/picker';
 import React, { useEffect, useState } from 'react';
@@ -10,14 +11,11 @@ import {
 } from 'react-native';
 import { launchCamera } from 'react-native-image-picker';
 import Toast from 'react-native-toast-message';
-import CustomToast from '../../../../../components/CustomToast';
-import { ButtonLg, ButtonLoading } from '../../../../../components/buttons';
-import { BoxIcon, CameraIcon, DeleteIcon } from '../../../../../constant/icons';
-import useBackHandler from '../../../../../hooks/useBackHandler';
-import { getStorage } from '../../../../../hooks/useStorage';
-import { API_URL } from '@env';
+import { ButtonLg, ButtonLoading } from '../../../../components/buttons';
+import { BoxIcon, CameraIcon, DeleteIcon } from '../../../../constant/icons';
+import { getStorage } from '../../../../hooks/useStorage';
 
-const OutletArticleReport = ({ navigation, route }) => {
+const ArticleReport = ({ navigation, route }) => {
   const {
     description, material, po, sto, dn, dnItem, quantity, netPrice,
     remainingQuantity, receivingPlant, storageLocation, unit
@@ -51,7 +49,7 @@ const OutletArticleReport = ({ navigation, route }) => {
   const [selectedReason, setSelectedReason] = useState(reasons[0]);
 
   // Custom hook to navigate screen
-  useBackHandler('OutletPoStoDetails', { po, dn, sto });
+  useBackHandler('PoStoDetails', { po, dn, sto });
 
   useEffect(() => {
     const getAsyncStorage = async () => {
@@ -207,7 +205,7 @@ const OutletArticleReport = ({ navigation, route }) => {
                 text1: result.message,
               });
               setTimeout(() => {
-                navigation.replace('OutletPoStoDetails', { po, dn, sto });
+                navigation.replace('PoStoDetails', { po, dn, sto });
               }, 1500);
             } else {
               Toast.show({
@@ -242,8 +240,6 @@ const OutletArticleReport = ({ navigation, route }) => {
       </View>
     )
   }
-
-  // console.log(image !== null || selectedType === "Missing")
 
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">
@@ -378,12 +374,6 @@ const OutletArticleReport = ({ navigation, route }) => {
               </View>
             )}
 
-            {/* <View className="button mt-4">
-              {isButtonLoading ? <ButtonLoading styles='bg-theme rounded-md p-5' /> :
-                <ButtonLg title="Submit" onPress={() => submitReport()} />
-              }
-            </View> */}
-
             {progress > 0 && (
               <View className="progress relative bg-gray-300 w-full h-1 rounded-full mt-4" >
                 <View className="absolute top-0 bg-green-600 h-1 rounded-full" style={{ width: `${progress}%` }}></View>
@@ -397,4 +387,4 @@ const OutletArticleReport = ({ navigation, route }) => {
   );
 };
 
-export default OutletArticleReport;
+export default ArticleReport;

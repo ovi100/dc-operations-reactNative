@@ -1,42 +1,42 @@
-import { API_URL } from '@env';
 import React, { useEffect, useState } from 'react';
 import {
-  ActivityIndicator, Image,
-  KeyboardAvoidingView, Platform,
-  SafeAreaView, ScrollView, Text, TextInput,
+  ActivityIndicator, Image, KeyboardAvoidingView,
+  Platform, SafeAreaView, ScrollView, Text, TextInput,
   TouchableWithoutFeedback, View
 } from 'react-native';
+// import DatePicker from 'react-native-date-picker';
+import { API_URL } from '@env';
 import Toast from 'react-native-toast-message';
-import CustomToast from '../../../../../components/CustomToast';
-import { ButtonLg, ButtonLoading } from '../../../../../components/buttons';
-import { BoxIcon } from '../../../../../constant/icons';
-import useActivity from '../../../../../hooks/useActivity';
-import useAppContext from '../../../../../hooks/useAppContext';
-import useBackHandler from '../../../../../hooks/useBackHandler';
-import { getStorage } from '../../../../../hooks/useStorage';
-import { calculateShelfLife, handleDate } from '../../../../../utils';
-import { addToGRNInDb } from '../../../../../utils/apiServices';
+import CustomToast from '../../../../components/CustomToast';
+import { ButtonLg, ButtonLoading } from '../../../../components/buttons';
+import { BoxIcon } from '../../../../constant/icons';
+import useActivity from '../../../../hooks/useActivity';
+import useAppContext from '../../../../hooks/useAppContext';
+import useBackHandler from '../../../../hooks/useBackHandler';
+import { getStorage } from '../../../../hooks/useStorage';
+import { calculateShelfLife, handleDate } from '../../../../utils';
+import { addTempData } from '../../../../utils/apiServices';
 
-const OutletArticleDetails = ({ navigation, route }) => {
+const DcPoArticleDetails = ({ navigation, route }) => {
   const {
-    description, material, po, poItem, sto, dn, dnItem, quantity,
-    netPrice, remainingQuantity, receivingPlant, storageLocation, unit
+    description, material, po, poItem, quantity, netPrice,
+    remainingQuantity, receivingPlant, storageLocation, unit
   } = route.params;
   const [isLoading, setIsLoading] = useState(false);
   const [isButtonLoading, setIsButtonLoading] = useState(false);
   const [bins, setBins] = useState([]);
-  const [newQuantity, setNewQuantity] = useState(0);
+  const [newQuantity, setNewQuantity] = useState(0); //update_upol
   const [mfgDate, setMfgDate] = useState(new Date());
   const [expDate, setExpDate] = useState(new Date());
   const [batchNo, setBatchNo] = useState(null);
   const [mrp, setMrp] = useState(null);
   const [token, setToken] = useState('');
-  const { createActivity } = useActivity();
   const { authInfo } = useAppContext();
   const { user } = authInfo;
+  const { createActivity } = useActivity();
 
   // Custom hook to navigate screen
-  useBackHandler('OutletPoStoDetails', { po, dn, sto });
+  useBackHandler('DcPoDetails', { po });
 
   useEffect(() => {
     const getAsyncStorage = async () => {
@@ -47,79 +47,44 @@ const OutletArticleDetails = ({ navigation, route }) => {
 
   useEffect(() => {
     const getBins = async (code, site) => {
-      setIsLoading(true);
-      await fetch(`https://api.shwapno.net/shelvesu/api/bins/product/${code}/${site}`)
-        .then(res => res.json())
-        .then(result => {
-          if (result.status) {
-            let binsData = result.bins.map(result => {
-              return { bin_id: result.bin_ID, gondola_id: result.gondola_ID ? result.gondola_ID : "NA" };
-            });
-            setBins(binsData);
-            setIsLoading(false);
-          } else {
-            setIsLoading(false);
+      try {
+        await fetch(`https://api.shwapno.net/shelvesu/api/bins/product/${code}/${site}`, {
+          method: 'GET',
+          headers: {
+            authorization: token,
+            'Content-Type': 'application/json',
           }
+        })
+          .then(res => res.json())
+          .then(result => {
+            if (result.status) {
+              let binsData = result.bins.map(result => {
+                return { bin_id: result.bin_ID, gondola_id: result.gondola_ID ? result.gondola_ID : "NA" };
+              });
+              setBins(binsData);
+            }
+          })
+          .catch(error => {
+            Toast.show({
+              type: 'customError',
+              text1: error.message,
+            });
+          });
+      } catch (error) {
+        Toast.show({
+          type: 'customError',
+          text1: error.message,
         });
+      }
     };
 
     if (material && user.site) {
+      setIsLoading(true);
       getBins(material, user.site);
+      setIsLoading(false);
     }
 
   }, [material, user.site]);
-
-  const postShelvingData = async (postData, grnItem) => {
-    setIsButtonLoading(true);
-    try {
-      await fetch(API_URL + 'api/product-shelving/ready', {
-        method: 'POST',
-        headers: {
-          authorization: token,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(postData),
-      })
-        .then(response => response.json())
-        .then(async data => {
-          // console.log('ready response', data);
-          if (data.status) {
-            Toast.show({
-              type: 'customSuccess',
-              text1: data.message,
-            });
-            // addToGRN(grnItem);
-            await addToGRNInDb(token, grnItem);
-            //log user activity
-            await createActivity(
-              user._id,
-              'shelving_ready',
-              `${user.name} ready material ${material} with quantity of ${newQuantity} of ${po ? 'po' : 'dn'} ${po ? po : dn} for shelving`,
-            );
-            navigation.replace('OutletPoStoDetails', { po, dn, sto });
-          } else {
-            Toast.show({
-              type: 'customError',
-              text1: data.message,
-            });
-          }
-        })
-        .catch(error => {
-          Toast.show({
-            type: 'customError',
-            text1: error.message,
-          });
-
-        });
-    } catch (error) {
-      Toast.show({
-        type: 'customError',
-        text1: error.message,
-      });
-    } finally {
-      setIsButtonLoading(false);
-    }
-  }
 
   const readyForShelve = async () => {
     if (!newQuantity) {
@@ -137,47 +102,30 @@ const OutletArticleDetails = ({ navigation, route }) => {
         type: 'customWarn',
         text1: 'Quantity exceed',
       });
+    } else if (batchNo && !/^[a-zA-Z0-9]+$/.test(batchNo)) {
+      Toast.show({
+        type: 'customError',
+        text1: 'Batch number must be an alphanumeric',
+      });
     } else {
-      let grnItem = {};
-      if (po) {
-        // for po -> grn
-        grnItem = {
-          userId: user._id,
-          type: 'grn data',
-          movementType: '101',
-          movementIndicator: 'B',
-          storageLocation,
-          po,
-          poItem: Number(poItem).toString(),
-          material: material,
-          plant: receivingPlant,
-          quantity: Number(newQuantity),
-          netPrice,
-          uom: unit,
-          uomIso: unit,
-        };
-      } else {
-        // for sto/dn -> TPN
-        grnItem = {
-          userId: user._id,
-          type: 'grn data',
-          movementType: '101',
-          movementIndicator: 'B',
-          storageLocation,
-          po: sto,
-          poItem: Number(dnItem).toString(),
-          dn,
-          dnItem: Number(dnItem).toString(),
-          material: material,
-          plant: receivingPlant,
-          quantity: Number(newQuantity),
-          netPrice,
-          uom: unit,
-          uomIso: unit,
-        };
-      }
+      const grnItem = {
+        userId: user._id,
+        type: 'grn data',
+        movementType: '101',
+        movementIndicator: 'B',
+        storageLocation,
+        po: po,
+        poItem: Number(poItem).toString(),
+        material: material,
+        plant: receivingPlant,
+        quantity: Number(newQuantity),
+        netPrice,
+        uom: unit,
+        uomIso: unit,
+      };
 
       let shelvingObject = {
+        po: po,
         code: material,
         description: description,
         userId: user._id,
@@ -192,26 +140,65 @@ const OutletArticleDetails = ({ navigation, route }) => {
         mrp: Number(mrp)
       };
 
-      if (po) {
-        shelvingObject.po = po;
-      } else {
-        shelvingObject.sto = sto;
-      }
-
-      await postShelvingData(shelvingObject, grnItem);
+      try {
+        setIsButtonLoading(true);
+        await fetch(API_URL + 'api/product-shelving/ready', {
+          method: 'POST',
+          headers: {
+            authorization: token,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(shelvingObject),
+        })
+          .then(response => response.json())
+          .then(async data => {
+            if (data.status) {
+              Toast.show({
+                type: 'customSuccess',
+                text1: data.message,
+              });
+              await addTempData(token, grnItem);
+              //log user activity
+              await createActivity(
+                user._id,
+                'shelving_ready',
+                `${user.name} ready material ${material} with quantity of ${newQuantity} of PO ${po} for shelving`,
+              );
+              navigation.replace('DcPoDetails', { po });
+            } else {
+              Toast.show({
+                type: 'customError',
+                text1: data.message,
+              });
+            }
+          })
+          .catch(error => {
+            Toast.show({
+              type: 'customError',
+              text1: error.message,
+            });
+          });
+      } catch (error) {
+        Toast.show({
+          type: 'customError',
+          text1: error.message,
+        });
+      } finally {
+        setIsButtonLoading(false);
+      };
     }
   };
-
-  const shelfLife = calculateShelfLife(mfgDate?.date, expDate?.date);
 
   if (isLoading) {
     return (
       <View className="w-full h-screen justify-center px-3">
         <ActivityIndicator size="large" color="#EB4B50" />
-        <Text className="mt-4 text-gray-400 text-base text-center">Loading article details. Please wait......</Text>
+        <Text className="mt-4 text-gray-400 text-base text-center">Loading article. Please wait......</Text>
       </View>
     )
   }
+
+  const shelfLife = calculateShelfLife(mfgDate?.date, expDate?.date);
 
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">
@@ -223,7 +210,7 @@ const OutletArticleDetails = ({ navigation, route }) => {
                 <TouchableWithoutFeedback>
                   <View className="flex-row">
                     <Text className="text-lg text-sh font-medium capitalize">
-                      article details
+                      receiving article
                     </Text>
                     <Text className="text-lg text-sh font-bold capitalize">
                       {' ' + material}
@@ -385,4 +372,4 @@ const OutletArticleDetails = ({ navigation, route }) => {
   );
 };
 
-export default OutletArticleDetails;
+export default DcPoArticleDetails;

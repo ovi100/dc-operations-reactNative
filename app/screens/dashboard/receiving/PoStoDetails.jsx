@@ -1,27 +1,29 @@
 import { API_URL } from '@env';
+import { HeaderBackButton } from '@react-navigation/elements';
 import { useFocusEffect } from '@react-navigation/native';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useState } from 'react';
 import {
   ActivityIndicator, Alert, DeviceEventEmitter, FlatList,
   RefreshControl, SafeAreaView,
   ScrollView,
-  Text, TouchableHighlight,
+  Text,
+  TouchableHighlight,
   TouchableOpacity,
   TouchableWithoutFeedback,
   View
 } from 'react-native';
 import Toast from 'react-native-toast-message';
-import CustomToast from '../../../../../components/CustomToast';
-import Dialog from '../../../../../components/Dialog';
-import Modal from '../../../../../components/Modal';
-import { ButtonLg, ButtonLoading } from '../../../../../components/buttons';
-import useActivity from '../../../../../hooks/useActivity';
-import useBackHandler from '../../../../../hooks/useBackHandler';
-import { getStorage } from '../../../../../hooks/useStorage';
-import { deleteTempData } from '../../../../../utils/apiServices';
-import SunmiScanner from '../../../../../utils/sunmi/scanner';
+import CustomToast from '../../../../components/CustomToast';
+import Dialog from '../../../../components/Dialog';
+import Modal from '../../../../components/Modal';
+import { ButtonLg, ButtonLoading } from '../../../../components/buttons';
+import useActivity from '../../../../hooks/useActivity';
+import useBackHandler from '../../../../hooks/useBackHandler';
+import { getStorage } from '../../../../hooks/useStorage';
+import { deleteTempData } from '../../../../utils/apiServices';
+import SunmiScanner from '../../../../utils/sunmi/scanner';
 
-const OutletPoStoDetails = ({ navigation, route }) => {
+const PoStoDetails = ({ navigation, route }) => {
   const { po, dn, sto } = route.params;
   const { createActivity } = useActivity();
   const { startScan, stopScan } = SunmiScanner;
@@ -46,7 +48,18 @@ const OutletPoStoDetails = ({ navigation, route }) => {
   let grnSummery = {};
 
   // Custom hook to navigate screen
-  useBackHandler('OutletReceiving');
+  useBackHandler('Receiving');
+
+  useLayoutEffect(() => {
+    let screenOptions = {
+      headerTitleAlign: 'center',
+      headerTitle: po ? `PO ${po} Details` : `DN ${dn} Details`,
+      headerLeft: () => (
+        <HeaderBackButton onPress={() => navigation.replace('Receiving')} />
+      ),
+    };
+    navigation.setOptions(screenOptions);
+  }, [navigation.isFocused(), user.site]);
 
   useEffect(() => {
     const getAsyncStorage = async () => {
@@ -198,7 +211,7 @@ const OutletPoStoDetails = ({ navigation, route }) => {
   const getPoInfo = async () => {
     setIsLoading(true);
     await getPoDetails();
-    await getGRNFromDb();
+    await getTempData();
     setIsLoading(false);
   }
 
@@ -340,11 +353,11 @@ const OutletPoStoDetails = ({ navigation, route }) => {
   const getDnInfo = async () => {
     setIsLoading(true);
     await getDnDetails();
-    await getGRNFromDb();
+    await getTempData();
     setIsLoading(false);
   }
 
-  const getGRNFromDb = async () => {
+  const getTempData = async () => {
     const filterObject = {
       userId: user._id,
       po,
@@ -384,10 +397,10 @@ const OutletPoStoDetails = ({ navigation, route }) => {
     setRefreshing(true);
     if (po) {
       await getPoDetails();
-      await getGRNFromDb();
+      await getTempData();
     } else {
       await getDnDetails();
-      await getGRNFromDb();
+      await getTempData();
     }
     setRefreshing(false);
   };
@@ -395,7 +408,7 @@ const OutletPoStoDetails = ({ navigation, route }) => {
   const renderPoItem = ({ item, index }) => (
     <>
       {pressMode === 'true' ? (
-        <TouchableOpacity onPress={() => navigation.replace('OutletArticleDetails', item)}>
+        <TouchableOpacity onPress={() => navigation.replace('ArticleDetails', item)}>
           <View
             key={index}
             className="flex-row items-center border border-tb rounded-lg mt-2.5 p-4"
@@ -450,7 +463,7 @@ const OutletPoStoDetails = ({ navigation, route }) => {
     <>
       {pressMode === 'true' ? (
         <View key={index} className="flex-row items-center border border-tb rounded-lg mt-2.5 p-4">
-          <TouchableOpacity className="w-4/5 flex-row items-center" onPress={() => navigation.replace('OutletArticleDetails', item)}>
+          <TouchableOpacity className="w-4/5 flex-row items-center" onPress={() => navigation.replace('ArticleDetails', item)}>
             <View className="w-2/5">
               <Text className="text-black" numberOfLines={1}>
                 {item.material}
@@ -521,7 +534,7 @@ const OutletPoStoDetails = ({ navigation, route }) => {
             const article = articles.find(item => item.material === result.data.material);
 
             if (article && isValidBarcode) {
-              navigation.replace('OutletArticleDetails', article);
+              navigation.replace('ArticleDetails', article);
             } else {
               Toast.show({
                 type: 'customInfo',
@@ -577,7 +590,7 @@ const OutletPoStoDetails = ({ navigation, route }) => {
 
   const gotoReport = () => {
     setReportDialogVisible(false);
-    navigation.push('OutletArticleReport', reportArticle);
+    navigation.push('ArticleReport', reportArticle);
     setReportArticle({});
   }
 
@@ -659,7 +672,7 @@ const OutletPoStoDetails = ({ navigation, route }) => {
             );
             setIsButtonLoading(false);
             if (articles.length === 0) {
-              useBackHandler('OutletReceiving');
+              useBackHandler('Receiving');
             }
           } else {
             Toast.show({
@@ -695,14 +708,20 @@ const OutletPoStoDetails = ({ navigation, route }) => {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white pt-8">
+    <SafeAreaView className="flex-1 bg-white">
       <View className="flex-1 h-full px-4">
-        <View className="screen-header flex-row items-center justify-center mb-4">
-          <TouchableHighlight onPress={() => null}>
-            <Text className="text-lg text-sh font-semibold uppercase">
-              {po ? `po ${po}` : `dn ${dn}`}
+        <View className="label flex-row items-center justify-center">
+          {pressMode === 'true' ? (
+            <TouchableHighlight onPress={() => null}>
+              <Text className="text-xs text-white font-semibold uppercase">
+                {po ? `PO ${po}` : `DN ${dn}`}
+              </Text>
+            </TouchableHighlight>
+          ) : (
+            <Text className="text-xs text-white font-semibold uppercase">
+              {po ? `PO ${po}` : `DN ${dn}`}
             </Text>
-          </TouchableHighlight>
+          )}
         </View>
         <View className="content flex-1 justify-between pb-2">
           <View className="table h-[90%]">
@@ -728,7 +747,7 @@ const OutletPoStoDetails = ({ navigation, route }) => {
                 keyExtractor={item => item.material}
                 initialNumToRender={10}
                 onEndReached={handleEndReached}
-                ListFooterComponent={renderFooter}
+                ListFooterComponent={articles.length > 10 ? renderFooter : null}
                 ListFooterComponentStyle={{ paddingVertical: 15 }}
                 refreshControl={
                   <RefreshControl
@@ -844,4 +863,4 @@ const OutletPoStoDetails = ({ navigation, route }) => {
   );
 };
 
-export default OutletPoStoDetails;
+export default PoStoDetails;

@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import { HeaderBackButton } from '@react-navigation/elements';
+import React, { useEffect, useLayoutEffect, useState } from 'react';
 import {
   ActivityIndicator, Image, SafeAreaView,
   ScrollView, Text, TouchableOpacity, View
@@ -7,7 +8,6 @@ import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
 import { SitesIcon } from '../../../../constant/icons';
 import useAppContext from '../../../../hooks/useAppContext';
-import useBackHandler from '../../../../hooks/useBackHandler';
 import { getStorage, setStorage } from '../../../../hooks/useStorage';
 
 const ChangeSite = ({ navigation, route }) => {
@@ -17,8 +17,16 @@ const ChangeSite = ({ navigation, route }) => {
   const { user, setUser } = authInfo;
   let [sites, setSites] = useState([]);
 
-  // Custom hook to navigate screen
-  useBackHandler('Profile');
+  useLayoutEffect(() => {
+    let screenOptions = {
+      headerTitle: 'Change Site',
+      headerTitleAlign: 'center',
+      headerLeft: () => (
+        <HeaderBackButton onPress={() => navigation.goBack()} />
+      ),
+    };
+    navigation.setOptions(screenOptions);
+  }, [navigation.isFocused()]);
 
   useEffect(() => {
     const getUserInfo = async () => {
@@ -56,11 +64,6 @@ const ChangeSite = ({ navigation, route }) => {
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">
       <View className="flex-1">
-        <View className="screen-header mb-5 px-6">
-          <Text className="text-lg text-[#060239] text-center font-semibold capitalize">
-            choose site
-          </Text>
-        </View>
         <ScrollView>
           <View className="flex-row flex-wrap items-center px-3">
             {sites?.map(item => (

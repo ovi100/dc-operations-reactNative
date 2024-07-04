@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import { HeaderBackButton } from '@react-navigation/elements';
+import React, { useEffect, useLayoutEffect, useState } from 'react';
 import {
   ActivityIndicator, Alert,
   DeviceEventEmitter, FlatList, SafeAreaView,
@@ -7,6 +8,7 @@ import {
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
 import Scan from '../../../../components/animations/Scan';
+import { ButtonProfile } from '../../../../components/buttons';
 import useActivity from '../../../../hooks/useActivity';
 import useBackHandler from '../../../../hooks/useBackHandler';
 import { getStorage } from '../../../../hooks/useStorage';
@@ -16,6 +18,7 @@ const BinDetails = ({ navigation, route }) => {
   const { code, bins, description } = route.params;
   const [isLoading, setIsLoading] = useState(false);
   const [isAssigning, setIsAssigning] = useState(false);
+  const [pressMode, setPressMode] = useState(false);
   const tableHeader = ['Bin ID', 'Gondola ID'];
   const [user, setUser] = useState({});
   const [token, setToken] = useState('');
@@ -28,10 +31,39 @@ const BinDetails = ({ navigation, route }) => {
   // Custom hook to navigate screen
   useBackHandler('Shelving');
 
+  const screenHeader = () => (
+    <View className="screen-header bg-white flex-row items-center justify-between py-2 pr-3">
+      <HeaderBackButton onPress={() => navigation.replace('Shelving')} />
+      <View className="text items-center">
+        <View className="flex-row">
+          <Text className="text-base text-sh font-medium capitalize">
+            Bins for article
+          </Text>
+          <Text className="text-base text-sh font-bold capitalize">
+            {' ' + code}
+          </Text>
+        </View>
+        <Text className="text-sm text-sh text-center font-medium capitalize" numberOfLines={2}>
+          {description}
+        </Text>
+      </View>
+      <ButtonProfile onPress={() => navigation.push('Profile')} />
+    </View>
+  );
+
+  useLayoutEffect(() => {
+    let screenOptions = {
+      headerTitleAlign: 'center',
+      header: () => screenHeader(),
+    };
+    navigation.setOptions(screenOptions);
+  }, [navigation.isFocused(), user.site]);
+
   useEffect(() => {
     const getAsyncStorage = async () => {
       await getStorage('token', setToken);
       await getStorage('user', setUser, 'object');
+      await getStorage('pressMode', setPressMode);
     }
     getAsyncStorage();
   }, []);
@@ -195,34 +227,40 @@ const BinDetails = ({ navigation, route }) => {
     }
   }
 
-  console.log('Bins from route', bins);
+  // if (barcode && pressMode === 'true') {
+  //   Toast.show({
+  //     type: 'customWarn',
+  //     text1: 'Turn off the press mode',
+  //   });
+  // }
 
-  if (barcode !== '') {
+  const checkBin = async (code) => {
+    await fetch(API_URL + `checkBin/${code}`)
+      .then(res => res.json())
+      .then(result => {
+        if (result.status) {
+          Alert.alert('Are you sure?', `Assign article to bin ${code}`, [
+            {
+              text: 'Cancel',
+              onPress: () => null,
+              style: 'cancel',
+            },
+            { text: 'Confirm', onPress: () => assignToBin() },
+          ]);
+        } else {
+          Toast.show({
+            type: 'customError',
+            text1: result.message,
+          });
+        }
+      });
+  };
+
+  if (barcode) {
     const binItem = binsData.find(item => item.bin_id === barcode);
     if (binItem) {
       navigation.replace('ShelveArticle', { ...route.params, bins: { bin_id: binItem.bin_id, gondola_id: binItem.gondola_id } });
     } else {
-      const checkBin = async (code) => {
-        await fetch(API_URL + `checkBin/${code}`)
-          .then(res => res.json())
-          .then(result => {
-            if (result.status) {
-              Alert.alert('Are you sure?', `Assign article to bin ${barcode}`, [
-                {
-                  text: 'Cancel',
-                  onPress: () => null,
-                  style: 'cancel',
-                },
-                { text: 'Confirm', onPress: () => assignToBin() },
-              ]);
-            } else {
-              Toast.show({
-                type: 'customError',
-                text1: result.message,
-              });
-            }
-          });
-      };
       checkBin(barcode);
     }
     setBarcode('');
@@ -251,24 +289,8 @@ const BinDetails = ({ navigation, route }) => {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white pt-8">
+    <SafeAreaView className="flex-1 bg-white">
       <View className="flex-1 px-4">
-        <View className="screen-header flex-row items-center justify-center mb-4">
-          <View className="text">
-            <View className="flex-row">
-              <Text className="text-base text-sh font-medium capitalize">
-                Bins for article
-              </Text>
-              <Text className="text-base text-sh font-bold capitalize">
-                {' ' + code}
-              </Text>
-            </View>
-            <Text className="text-sm text-sh text-center font-medium capitalize">
-              {description}
-            </Text>
-          </View>
-        </View>
-
         <View className="content flex-1 justify-between py-5">
           {!isLoading && binsData.length > 0 ? (
             <View className="table h-full pb-2">

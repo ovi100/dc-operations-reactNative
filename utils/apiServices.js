@@ -1,7 +1,7 @@
 import { API_URL } from '@env';
 import { toast } from '.';
 
-const addToGRNInDb = async (token, grnItem) => {
+const addTempData = async (token, grnItem) => {
   try {
     await fetch(API_URL + 'api/tempData/upsert', {
       method: 'POST',
@@ -47,5 +47,5 @@ const deleteTempData = async (token, id) => {
   }
 };
 
-export { addToGRNInDb, deleteTempData };
+export { addTempData, deleteTempData };
 

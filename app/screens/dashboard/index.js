@@ -1,6 +1,6 @@
 import { API_URL } from '@env';
 import { Link } from '@react-navigation/native';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Image,
@@ -30,7 +30,17 @@ const Home = ({navigation}) => {
   const {user, logout} = authInfo;
   let [sites, setSites] = useState([]);
   let filteredLinks, siteType;
+
   console.log('CURRENT API URL', API_URL);
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerTitle: 'Home',
+      headerRight: () => (
+        <ButtonProfile onPress={() => navigation.push('Profile')} />
+      ),
+    });
+  }, [navigation.isFocused()]);
 
   useEffect(() => {
     const getAsyncStorage = async () => {
@@ -43,9 +53,9 @@ const Home = ({navigation}) => {
 
   const navLinks = [
     {
-      name: 'Receiving',
+      name: 'DcReceiving',
       icon: ReceivingIcon,
-      screen: 'Receiving',
+      screen: 'DcReceiving',
       role: 'receiver',
       permission: 'receiving-access',
       types: ['dc'],
@@ -53,7 +63,7 @@ const Home = ({navigation}) => {
     {
       name: 'Receiving',
       icon: ReceivingIcon,
-      screen: 'OutletReceiving',
+      screen: 'Receiving',
       role: 'receiver',
       permission: 'outlet-receiving-access',
       types: ['outlet', 'darkstore'],
@@ -179,12 +189,6 @@ const Home = ({navigation}) => {
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">
       <View className="flex-1">
-        <View className="screen-header flex-row items-center justify-between mb-5 px-6">
-          <Text className="text-lg text-[#060239] text-center font-semibold capitalize">
-            home
-          </Text>
-          <ButtonProfile onPress={() => navigation.push('Profile')} />
-        </View>
         <View className="flex-row flex-wrap items-center px-3">
           {filteredLinks.map(item => (
             <View

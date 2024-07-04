@@ -1,6 +1,6 @@
 import { API_URL } from '@env';
 import { useFocusEffect } from '@react-navigation/native';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -23,7 +23,7 @@ import { toast } from '../../../../utils';
 import { deleteTempData } from '../../../../utils/apiServices';
 import SunmiScanner from '../../../../utils/sunmi/scanner';
 
-const PurchaseOrder = ({ navigation, route }) => {
+const DcPoDetails = ({ navigation, route }) => {
   const { po } = route.params;
   const { createActivity } = useActivity();
   const { startScan, stopScan } = SunmiScanner;
@@ -45,7 +45,13 @@ const PurchaseOrder = ({ navigation, route }) => {
   let grnSummery = {};
 
   // Custom hook to navigate screen
-  useBackHandler('Receiving');
+  useBackHandler('DcReceiving');
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+
+    });
+  }, [navigation]);
 
   useEffect(() => {
     const getAsyncStorage = async () => {
@@ -189,7 +195,7 @@ const PurchaseOrder = ({ navigation, route }) => {
     }
   };
 
-  const getGRNFromDb = async () => {
+  const getTempData = async () => {
     const filterObject = {
       userId: user._id,
       po,
@@ -229,7 +235,7 @@ const PurchaseOrder = ({ navigation, route }) => {
     const start = performance.now();
     setIsLoading(true);
     await getPoDetails();
-    await getGRNFromDb();
+    await getTempData();
     setIsLoading(false);
     const end = performance.now();
     const time = (end - start) / 1000
@@ -240,7 +246,7 @@ const PurchaseOrder = ({ navigation, route }) => {
     const start = performance.now();
     setRefreshing(true);
     await getPoDetails();
-    await getGRNFromDb();
+    await getTempData();
     setRefreshing(false);
     const end = performance.now();
     const time = (end - start) / 1000
@@ -250,7 +256,7 @@ const PurchaseOrder = ({ navigation, route }) => {
   const renderItem = ({ item, index }) => (
     <>
       {pressMode === 'true' ? (
-        <TouchableOpacity onPress={() => navigation.replace('PoArticle', item)}>
+        <TouchableOpacity onPress={() => navigation.replace('DcPoArticleDetails', item)}>
           <View
             key={index}
             className="flex-row items-center border border-tb rounded-lg mt-2.5 p-4"
@@ -324,7 +330,7 @@ const PurchaseOrder = ({ navigation, route }) => {
             const article = articles.find(item => item.material === result.data.material);
 
             if (article && isValidBarcode) {
-              navigation.replace('PoArticle', article);
+              navigation.replace('DcPoArticleDetails', article);
             } else {
               Toast.show({
                 type: 'customInfo',
@@ -442,7 +448,7 @@ const PurchaseOrder = ({ navigation, route }) => {
             );
             setIsButtonLoading(false);
             if (articles.length === 0) {
-              useBackHandler('Receiving');
+              useBackHandler('DcReceiving');
             }
           } else {
             Toast.show({
@@ -602,4 +608,4 @@ const PurchaseOrder = ({ navigation, route }) => {
   );
 };
 
-export default PurchaseOrder;
+export default DcPoDetails;

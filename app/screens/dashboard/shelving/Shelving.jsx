@@ -1,6 +1,6 @@
 import { API_URL } from '@env';
 import { useFocusEffect } from '@react-navigation/native';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useState } from 'react';
 import {
   ActivityIndicator,
   DeviceEventEmitter,
@@ -29,6 +29,14 @@ const Shelving = ({ navigation }) => {
   let [articles, setArticles] = useState([]);
   const tableHeader = ['Article Info', 'BIN ID', 'Quantity'];
   const { startScan, stopScan } = SunmiScanner;
+
+  useLayoutEffect(() => {
+    let screenOptions = {
+      headerBackVisible: true,
+      headerTitleAlign: 'center',
+    };
+    navigation.setOptions(screenOptions);
+  }, [navigation.isFocused()]);
 
   useEffect(() => {
     const getAsyncStorage = async () => {
@@ -136,8 +144,6 @@ const Shelving = ({ navigation }) => {
     await getShelvingData();
     setRefreshing(false);
   };
-
-  // console.log(articles.findIndex(article => article.code === '2304461'));
 
   if (barcode && pressMode === 'true') {
     Toast.show({
@@ -277,24 +283,23 @@ const Shelving = ({ navigation }) => {
           </View>
         </View>
       ) : (
-        <SafeAreaView className="flex-1 bg-white pt-8">
+        <SafeAreaView className="flex-1 bg-white">
           <View className="flex-1 h-full px-4">
-            <View className="screen-header flex-row items-center justify-center mb-4">
+            <View className="screen-header flex-row items-center justify-center">
               {pressMode === 'true' ? (
                 <TouchableHighlight onPress={() => null}>
-                  <Text className="text-lg text-sh font-semibold capitalize">
+                  <Text className="text-xs text-white font-semibold capitalize">
                     Shelving
                   </Text>
                 </TouchableHighlight>
               ) : (
-                <Text className="text-lg text-sh font-semibold capitalize">
+                <Text className="text-xs text-white font-semibold capitalize">
                   Shelving
                 </Text>
               )}
             </View>
-
             <View className="content flex-1">
-              <View className="h-full pb-2">
+              <View className="table h-full pb-2">
                 <View className="flex-row justify-between bg-th mb-2 py-2 px-3">
                   {tableHeader.map(th => (
                     <Text
@@ -310,7 +315,7 @@ const Shelving = ({ navigation }) => {
                   keyExtractor={item => item._id}
                   initialNumToRender={10}
                   onEndReached={handleEndReached}
-                  ListFooterComponent={renderFooter}
+                  ListFooterComponent={articles.length > 10 ? renderFooter : null}
                   ListFooterComponentStyle={{ paddingVertical: 15 }}
                   refreshControl={
                     <RefreshControl

@@ -11,7 +11,7 @@ import useAppContext from '../../../../hooks/useAppContext';
 import { getStorage, setStorage } from '../../../../hooks/useStorage';
 
 const ChangeSite = ({ navigation, route }) => {
-  const params = route.params;
+  const { site, screen, data } = route.params;
   const [isLoading, setIsLoading] = useState(false);
   const { authInfo } = useAppContext();
   const { user, setUser } = authInfo;
@@ -46,7 +46,7 @@ const ChangeSite = ({ navigation, route }) => {
       text1: 'Site updated successfully',
     });
     setTimeout(() => {
-      navigation.replace('Profile');
+      navigation.replace('Profile', { screen, data });
     }, 1000);
   };
 
@@ -75,7 +75,7 @@ const ChangeSite = ({ navigation, route }) => {
                   <View className="icon">
                     <Image className="w-16 h-16" source={item.imgURL !== '' ? { uri: item.imgURL } : SitesIcon} />
                   </View>
-                  <Text className={`text ${params.site === item.code ? 'text-green-600 font-bold' : 'text-black'} mt-3`}>{item.code}</Text>
+                  <Text className={`text ${site === item.code ? 'text-green-600 font-bold' : 'text-black'} mt-3`}>{item.code}</Text>
                 </View>
               </TouchableOpacity>
             ))}

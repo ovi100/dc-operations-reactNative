@@ -42,17 +42,15 @@ const ArticleDetails = ({ navigation, route }) => {
   const screenHeader = () => (
     <View className="screen-header bg-white flex-row items-center justify-between py-2 pr-3">
       <HeaderBackButton onPress={() => navigation.replace('PoStoDetails', { po, dn, sto })} />
-      <View className="text items-center">
-        <TouchableWithoutFeedback>
-          <View className="flex-row">
-            <Text className="text-base text-sh font-medium capitalize">
-              article details
-            </Text>
-            <Text className="text-base text-sh font-bold capitalize">
-              {' ' + material}
-            </Text>
-          </View>
-        </TouchableWithoutFeedback>
+      <View className="text">
+        <View className="flex-row">
+          <Text className="text-base text-sh font-medium capitalize">
+            article details
+          </Text>
+          <Text className="text-base text-sh font-bold capitalize">
+            {' ' + material}
+          </Text>
+        </View>
         <Text className="text-sm text-sh text-right font-medium capitalize" numberOfLines={2}>
           {description}
         </Text>

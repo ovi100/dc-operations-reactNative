@@ -54,7 +54,7 @@ const ShelveArticle = ({ navigation, route }) => {
           {description}
         </Text>
       </View>
-      <ButtonProfile onPress={() => navigation.push('Profile')} />
+      <ButtonProfile onPress={() => navigation.replace('Profile', { screen: route.name, data: route.params })} />
     </View>
   );
 

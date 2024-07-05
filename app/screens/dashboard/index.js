@@ -53,7 +53,7 @@ const Home = ({navigation}) => {
 
   const navLinks = [
     {
-      name: 'DcReceiving',
+      name: 'Receiving',
       icon: ReceivingIcon,
       screen: 'DcReceiving',
       role: 'receiver',

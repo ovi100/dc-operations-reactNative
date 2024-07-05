@@ -1,4 +1,5 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import { HeaderBackButton } from '@react-navigation/elements';
+import React, { useCallback, useEffect, useLayoutEffect, useState } from 'react';
 import {
   ActivityIndicator, DeviceEventEmitter, FlatList, SafeAreaView,
   Text, TouchableHighlight, TouchableOpacity, View
@@ -6,6 +7,9 @@ import {
 import { getStorage } from '../../../../hooks/useStorage';
 import SunmiScanner from '../../../../utils/sunmi/scanner';
 import useBackHandler from '../../../../hooks/useBackHandler';
+import { ButtonProfile } from '../../../../components/buttons';
+import Toast from 'react-native-toast-message';
+import CustomToast from '../../../../components/CustomToast';
 
 const AuditBinList = ({ navigation, route }) => {
   const { bin, articles } = route.params;
@@ -14,8 +18,23 @@ const AuditBinList = ({ navigation, route }) => {
   const [barcode, setBarcode] = useState('');
   const tableHeader = ['Code', 'Description', 'Quantity'];
   const { startScan, stopScan } = SunmiScanner;
+
   // Custom hook to navigate screen
   useBackHandler('Audit');
+
+  useLayoutEffect(() => {
+    let screenOptions = {
+      headerTitleAlign: 'center',
+      headerTitle: `BIN ${bin}`,
+      headerLeft: () => (
+        <HeaderBackButton onPress={() => navigation.replace('Audit')} />
+      ),
+      headerRight: () => (
+        <ButtonProfile onPress={() => navigation.replace('Profile', { screen: route.name, data: route.params })} />
+      ),
+    };
+    navigation.setOptions(screenOptions);
+  }, [navigation.isFocused()]);
 
   useEffect(() => {
     const getAsyncStorage = async () => {
@@ -100,21 +119,34 @@ const AuditBinList = ({ navigation, route }) => {
     </>
   );
 
+  if (barcode && pressMode === 'true') {
+    Toast.show({
+      type: 'customWarn',
+      text1: 'Turn off the press mode',
+    });
+  }
+
+  if (barcode && pressMode !== 'true') {
+    const article = articles.find(article => article.material === barcode);
+    if (article) {
+      navigation.replace('AuditArticleDetails', { screen: 'AuditBinList', ...article, ...route.params });
+    } else {
+      Toast.show({
+        type: 'customError',
+        text1: 'Article not found',
+      });
+    }
+  }
+
   return (
-    <SafeAreaView className="flex-1 bg-white pt-8">
+    <SafeAreaView className="flex-1 bg-white">
       <View className="flex-1 h-full px-4">
-        <View className="screen-header flex-row items-center justify-center mb-4">
-          {pressMode === 'true' ? (
-            <TouchableHighlight onPress={() => null}>
-              <Text className="text-lg text-sh font-semibold uppercase">
-                bin {bin}
-              </Text>
-            </TouchableHighlight>
-          ) : (
-            <Text className="text-lg text-sh font-semibold uppercase">
+        <View className="screen-header">
+          <TouchableHighlight onPress={() => null}>
+            <Text className="text-xs text-white font-semibold uppercase">
               bin {bin}
             </Text>
-          )}
+          </TouchableHighlight>
         </View>
         <View className="content flex-1 justify-between pb-2">
           <View className="table h-[90%]">
@@ -137,6 +169,7 @@ const AuditBinList = ({ navigation, route }) => {
           </View>
         </View>
       </View>
+      <CustomToast />
     </SafeAreaView >
   )
 }

@@ -1,5 +1,4 @@
 import { API_URL } from '@env';
-import { HeaderBackButton } from '@react-navigation/elements';
 import { useEffect, useLayoutEffect, useState } from "react";
 import {
   Image,
@@ -18,6 +17,7 @@ import styles from "../../../../styles/button";
 import { toast, validateInput } from "../../../../utils";
 
 const ChangePassword = ({ navigation, route }) => {
+  const { id, screen, data } = route.params;
   const { authInfo } = useAppContext();
   const { setUser } = authInfo;
   const [inputType1, setInputType1] = useState(false);
@@ -33,9 +33,7 @@ const ChangePassword = ({ navigation, route }) => {
     let screenOptions = {
       headerTitle: 'Change Password',
       headerTitleAlign: 'center',
-      headerLeft: () => (
-        <HeaderBackButton onPress={() => navigation.goBack()} />
-      ),
+      headerBackVisible: true,
     };
     navigation.setOptions(screenOptions);
   }, [navigation.isFocused()]);
@@ -58,7 +56,7 @@ const ChangePassword = ({ navigation, route }) => {
     if (currentPassword && currentPassword) {
       setIsLoading(true);
       try {
-        await fetch(API_URL + 'api/user/' + route.params.id, {
+        await fetch(API_URL + 'api/user/' + id, {
           method: "PATCH",
           headers: {
             authorization: token,
@@ -79,7 +77,7 @@ const ChangePassword = ({ navigation, route }) => {
                 'password_changed',
                 `${user.name} changed the password`
               );
-              navigation.goBack();
+              navigation.replace('Profile', { screen, data });
             }
             setIsLoading(false);
           })

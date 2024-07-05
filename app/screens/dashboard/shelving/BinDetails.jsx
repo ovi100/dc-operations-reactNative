@@ -3,7 +3,7 @@ import React, { useEffect, useLayoutEffect, useState } from 'react';
 import {
   ActivityIndicator, Alert,
   DeviceEventEmitter, FlatList, SafeAreaView,
-  Text, View
+  Text, TouchableHighlight, View
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
@@ -47,7 +47,7 @@ const BinDetails = ({ navigation, route }) => {
           {description}
         </Text>
       </View>
-      <ButtonProfile onPress={() => navigation.push('Profile')} />
+      <ButtonProfile onPress={() => navigation.replace('Profile', { screen: route.name, data: route.params })} />
     </View>
   );
 
@@ -291,12 +291,19 @@ const BinDetails = ({ navigation, route }) => {
   return (
     <SafeAreaView className="flex-1 bg-white">
       <View className="flex-1 px-4">
-        <View className="content flex-1 justify-between py-5">
+        <View className="screen-header">
+          <TouchableHighlight onPress={() => null}>
+            <Text className="text-xs text-white text-center font-semibold capitalize">
+              {' ' + code}
+            </Text>
+          </TouchableHighlight>
+        </View>
+        <View className="content flex-1 justify-between">
           {!isLoading && binsData.length > 0 ? (
             <View className="table h-full pb-2">
               <View className="flex-row bg-th text-center mb-2 py-2">
                 {tableHeader.map(th => (
-                  <Text className="flex-1 text-white text-center font-bold" key={th}>
+                  <Text className="flex-1 text-white text-sm text-center font-bold" key={th}>
                     {th}
                   </Text>
                 ))}
@@ -309,11 +316,11 @@ const BinDetails = ({ navigation, route }) => {
             </View>
           ) : (
             <View className="h-full justify-center pb-2">
-              <Text className="text-xl font-bold text-center mb-5">
+              <Text className="text-lg font-bold text-center">
                 No bins found for this product
               </Text>
-              <Scan />
-              <Text className="text-xl font-bold text-center mt-5">
+              <Scan className="my-3" />
+              <Text className="text-lg font-bold text-center">
                 Please scan a bin barcode to assign the product
               </Text>
             </View>

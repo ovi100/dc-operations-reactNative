@@ -1,16 +1,45 @@
-import React, { useCallback, useState } from 'react';
+import { HeaderBackButton } from '@react-navigation/elements';
+import React, { useCallback, useLayoutEffect, useState } from 'react';
 import {
   ActivityIndicator, FlatList, SafeAreaView,
-  Text, TouchableOpacity, View
+  Text, TouchableHighlight, TouchableOpacity, View
 } from 'react-native';
 import useBackHandler from '../../../../hooks/useBackHandler';
+import { ButtonProfile } from '../../../../components/buttons';
 
 const AuditBatchList = ({ navigation, route }) => {
   const { material, description, bin, tracking } = route.params;
   const [flatListFooterVisible, setFlatListFooterVisible] = useState(true);
   const tableHeader = ['Exp Date', 'Batch No', 'Quantity'];
+
   // Custom hook to navigate screen
   useBackHandler('AuditArticleDetails', route.params);
+
+  const screenHeader = () => (
+    <View className="screen-header bg-white flex-row items-center justify-between py-2 pr-3">
+      <HeaderBackButton onPress={() => navigation.replace('AuditArticleDetails', route.params)} />
+      <View className="text">
+        <Text className="text-base text-sh text-center font-medium capitalize">
+          article{' ' + material}
+        </Text>
+        <Text className="text-sm text-sh text-center font-medium capitalize">
+          {description}
+        </Text>
+        <Text className="text-sm text-sh text-center font-medium">
+          {bin}
+        </Text>
+      </View>
+      <ButtonProfile onPress={() => navigation.replace('Profile', { screen: route.name, data: route.params })} />
+    </View>
+  );
+
+  useLayoutEffect(() => {
+    let screenOptions = {
+      headerTitleAlign: 'center',
+      header: () => screenHeader(),
+    };
+    navigation.setOptions(screenOptions);
+  }, [navigation.isFocused()]);
 
   const handleEndReached = useCallback(() => {
     setFlatListFooterVisible(false);
@@ -52,18 +81,14 @@ const AuditBatchList = ({ navigation, route }) => {
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-white pt-8">
+    <SafeAreaView className="flex-1 bg-white">
       <View className="flex-1 h-full px-4">
-        <View className="screen-header mb-4">
-          <Text className="text-lg text-sh text-center font-medium capitalize">
-            article{' ' + material}
-          </Text>
-          <Text className="text-base text-sh text-center font-medium capitalize">
-            {description}
-          </Text>
-          <Text className="text-base text-sh text-center font-medium">
-            {bin}
-          </Text>
+        <View className="screen-header">
+          <TouchableHighlight onPress={() => null}>
+            <Text className="text-xs text-white text-center font-medium capitalize">
+              article{' ' + material}
+            </Text>
+          </TouchableHighlight>
         </View>
         <View className="content flex-1 justify-between pb-2">
           <View className="table h-[90%]">

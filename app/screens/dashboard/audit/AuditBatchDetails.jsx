@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import { HeaderBackButton } from '@react-navigation/elements';
+import React, { useLayoutEffect, useState } from 'react';
 import {
   Image, KeyboardAvoidingView,
   SafeAreaView, ScrollView, Text, View
@@ -7,7 +8,7 @@ import CircularProgress from 'react-native-circular-progress-indicator';
 import { BatchIcon, BoxIcon, MrpIcon, StopWatchGreenIcon, StopWatchRedIcon } from '../../../../constant/icons';
 import { calculateShelfLife } from '../../../../utils';
 import useBackHandler from '../../../../hooks/useBackHandler';
-// import { ButtonLg, ButtonLoading } from '../../../../components/buttons';
+import { ButtonProfile } from '../../../../components/buttons';
 
 const AuditBatchDetails = ({ navigation, route }) => {
   const { material, description, bin, batch, expiryDate, mfgDate, mrp, quantity } = route.params;
@@ -17,8 +18,35 @@ const AuditBatchDetails = ({ navigation, route }) => {
   const [newExpDate, setNewExpDate] = useState({ date: new Date(expiryDate), text: '' });
   const [newBatch, setNewBatch] = useState(batch);
   const [newMrp, setNewMrp] = useState(mrp);
+
   // Custom hook to navigate screen
   useBackHandler('AuditBatchList', route.params);
+
+  const screenHeader = () => (
+    <View className="screen-header bg-white flex-row items-center justify-between py-2 pr-3">
+      <HeaderBackButton onPress={() => navigation.replace('AuditBatchList', route.params)} />
+      <View className="text">
+        <Text className="text-base text-sh text-center font-medium capitalize">
+          article{' ' + material}
+        </Text>
+        <Text className="text-sm text-sh text-center font-medium capitalize">
+          {description}
+        </Text>
+        <Text className="text-sm text-sh text-center font-medium">
+          {bin}
+        </Text>
+      </View>
+      <ButtonProfile onPress={() => navigation.replace('Profile', { screen: route.name, data: route.params })} />
+    </View>
+  );
+
+  useLayoutEffect(() => {
+    let screenOptions = {
+      headerTitleAlign: 'center',
+      header: () => screenHeader(),
+    };
+    navigation.setOptions(screenOptions);
+  }, [navigation.isFocused()]);
 
   // const updateBatch = () => {
   //   setIsButtonLoading(true);
@@ -31,21 +59,10 @@ const AuditBatchDetails = ({ navigation, route }) => {
   const shelfLife = calculateShelfLife(newMfgDate?.date, newExpDate?.date);
 
   return (
-    <SafeAreaView className="flex-1 bg-white pt-8">
-      <KeyboardAvoidingView className="flex-1" behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+    <SafeAreaView className="flex-1 bg-white">
+      <KeyboardAvoidingView className="flex-1 mt-3" behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <ScrollView>
           <View className="flex-1 h-full px-4">
-            <View className="screen-header mb-4">
-              <Text className="text-base text-sh text-center font-medium capitalize">
-                article{' ' + material}
-              </Text>
-              <Text className="text-sm text-sh text-center font-medium capitalize">
-                {description}
-              </Text>
-              <Text className="text-sm text-sh text-center font-medium">
-                {bin}
-              </Text>
-            </View>
             <View className="content flex-1 justify-between pb-2">
               <View className="input-boxes">
                 {/* Quantity Box */}

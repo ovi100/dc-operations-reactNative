@@ -1,8 +1,8 @@
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import React from 'react';
 import useAppContext from '../../hooks/useAppContext';
 // screens components
-import { ButtonProfile } from '../../components/buttons';
+import {ButtonProfile} from '../../components/buttons';
 import Home from '../screens/dashboard';
 import Audit from '../screens/dashboard/audit/Audit';
 import AuditArticleDetails from '../screens/dashboard/audit/AuditArticleDetails';
@@ -490,8 +490,6 @@ const AppStack = () => {
     },
   ];
 
-  // console.log(screens.length);
-
   return (
     <Stack.Navigator initialRouteName="SiteChoose">
       {user && typeof user.site !== 'string' && (
@@ -499,7 +497,6 @@ const AppStack = () => {
           <Stack.Screen name="SiteChoose" component={SiteChoose} />
         </Stack.Group>
       )}
-      {/* screenOptions={{headerShown: false}} */}
       <Stack.Group>
         {screens.map(screen => (
           <Stack.Screen
@@ -513,9 +510,9 @@ const AppStack = () => {
               headerTitleStyle: {
                 fontSize: 18,
               },
-              headerRight: () => (
-                <ButtonProfile onPress={() => navigation.push('Profile')} />
-              ),
+              // headerRight: (props) => (
+              //   <ButtonProfile onPress={() => navigation.push('Profile')} />
+              // ),
             })}
           />
         ))}

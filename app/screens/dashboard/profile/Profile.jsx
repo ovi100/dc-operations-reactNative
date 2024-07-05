@@ -23,7 +23,8 @@ import { getStorage, setStorage } from '../../../../hooks/useStorage';
 import { version } from '../../../../package.json';
 import styles from '../../../../styles/button';
 
-const Profile = ({ navigation }) => {
+const Profile = ({ navigation, route }) => {
+  const { screen, data } = route.params;
   const { width, height } = useWindowDimensions();
   const [isLoading, setIsLoading] = useState(false);
   const [isEnabled, setIsEnabled] = useState(false);
@@ -32,6 +33,8 @@ const Profile = ({ navigation }) => {
   const [sites, setSites] = useState([]);
   const { authInfo } = useAppContext();
   const { logout } = authInfo;
+
+  console.log(route);
 
   useEffect(() => {
     const getUserInfo = async () => {
@@ -47,8 +50,18 @@ const Profile = ({ navigation }) => {
     let screenOptions = {
       headerTitleAlign: 'center',
       headerLeft: () => (
-        <HeaderBackButton onPress={() => navigation.goBack()} />
+        <HeaderBackButton onPress={() => {
+          if (screen && data) {
+            navigation.replace(screen, data);
+          } else if (screen) {
+            navigation.replace(screen);
+          }
+          else {
+            navigation.goBack();
+          }
+        }} />
       ),
+      headerRight: () => null,
     };
     navigation.setOptions(screenOptions);
   }, [navigation.isFocused()]);
@@ -125,7 +138,7 @@ const Profile = ({ navigation }) => {
                 </View>
                 <View className="password-change border-b border-gray-200 flex-row items-center py-2.5">
                   <Image className="w-6 h-6 mr-3" source={PasswordIcon} />
-                  <TouchableWithoutFeedback onPress={() => navigation.push('ChangePassword', { id: user._id })}>
+                  <TouchableWithoutFeedback onPress={() => navigation.push('ChangePassword', { id: user._id, screen, data })}>
                     <Text className="text-center text-blue-600 text-base font-semibold capitalize">change password</Text>
                   </TouchableWithoutFeedback>
                 </View>
@@ -164,7 +177,7 @@ const Profile = ({ navigation }) => {
                 {sites !== null && sites.length > 1 && (
                   <View className="change-site border-b border-gray-200 flex-row items-center py-2.5">
                     <Image className="w-6 h-6 mr-3" source={SwapIcon} />
-                    <TouchableWithoutFeedback onPress={() => navigation.push('ChangeSite', user)}>
+                    <TouchableWithoutFeedback onPress={() => navigation.push('ChangeSite', { ...user, screen, data })}>
                       <Text className="text-center text-blue-600 text-base font-semibold capitalize">change site</Text>
                     </TouchableWithoutFeedback>
                   </View>

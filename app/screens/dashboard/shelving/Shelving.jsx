@@ -17,8 +17,9 @@ import CustomToast from '../../../../components/CustomToast';
 import ServerError from '../../../../components/animations/ServerError';
 import { getStorage } from '../../../../hooks/useStorage';
 import SunmiScanner from '../../../../utils/sunmi/scanner';
+import { ButtonProfile } from '../../../../components/buttons';
 
-const Shelving = ({ navigation }) => {
+const Shelving = ({ navigation, route }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [flatListFooterVisible, setFlatListFooterVisible] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -34,6 +35,9 @@ const Shelving = ({ navigation }) => {
     let screenOptions = {
       headerBackVisible: true,
       headerTitleAlign: 'center',
+      headerRight: () => (
+        <ButtonProfile onPress={() => navigation.replace('Profile', { screen: route.name, data: null })} />
+      ),
     };
     navigation.setOptions(screenOptions);
   }, [navigation.isFocused()]);
@@ -67,7 +71,7 @@ const Shelving = ({ navigation }) => {
     if (!flatListFooterVisible) return null;
 
     return (
-      <ActivityIndicator size="large" color="#000" />
+      <ActivityIndicator />
     );
   };
 
@@ -285,18 +289,12 @@ const Shelving = ({ navigation }) => {
       ) : (
         <SafeAreaView className="flex-1 bg-white">
           <View className="flex-1 h-full px-4">
-            <View className="screen-header flex-row items-center justify-center">
-              {pressMode === 'true' ? (
-                <TouchableHighlight onPress={() => null}>
-                  <Text className="text-xs text-white font-semibold capitalize">
-                    Shelving
-                  </Text>
-                </TouchableHighlight>
-              ) : (
+            <View className="screen-header">
+              <TouchableHighlight onPress={() => null}>
                 <Text className="text-xs text-white font-semibold capitalize">
                   Shelving
                 </Text>
-              )}
+              </TouchableHighlight>
             </View>
             <View className="content flex-1">
               <View className="table h-full pb-2">

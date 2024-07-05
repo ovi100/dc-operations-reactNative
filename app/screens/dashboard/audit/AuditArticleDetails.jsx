@@ -1,19 +1,20 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import { HeaderBackButton } from '@react-navigation/elements';
+import React, { useCallback, useEffect, useLayoutEffect, useState } from 'react';
 import {
-  ActivityIndicator, DeviceEventEmitter, FlatList, SafeAreaView, Text, TouchableHighlight, View
+  ActivityIndicator, DeviceEventEmitter, FlatList,
+  SafeAreaView, Text, TouchableHighlight, View
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
 import useBackHandler from '../../../../hooks/useBackHandler';
-import { getStorage } from '../../../../hooks/useStorage';
 import SunmiScanner from '../../../../utils/sunmi/scanner';
 import { mergeInventory } from './formatData';
+import { ButtonProfile } from '../../../../components/buttons';
 
 const AuditArticleDetails = ({ navigation, route }) => {
   const { screen, material, description, bin, quantity, tracking, articles } = route.params;
   const [article] = mergeInventory(articles);
   const bins = article?.bins ? article.bins : [{ bin, quantity }];
-  const [pressMode, setPressMode] = useState(false);
   const [flatListFooterVisible, setFlatListFooterVisible] = useState(true);
   const [barcode, setBarcode] = useState('');
   const tableHeader = ['Bin Number', 'Quantity'];
@@ -26,12 +27,34 @@ const AuditArticleDetails = ({ navigation, route }) => {
     useBackHandler('Audit');
   }
 
-  useEffect(() => {
-    const getAsyncStorage = async () => {
-      await getStorage('pressMode', setPressMode);
-    }
-    getAsyncStorage();
-  }, []);
+  const screenHeader = () => (
+    <View className="screen-header bg-white flex-row items-center justify-between py-2 pr-3">
+      <HeaderBackButton onPress={() => {
+        if (screen) {
+          navigation.replace(screen, route.params);
+        } else {
+          navigation.replace('Audit');
+        }
+      }} />
+      <View className="text">
+        <Text className="text-base text-sh text-center font-medium capitalize">
+          article{' ' + material}
+        </Text>
+        <Text className="text-sm text-sh text-right font-medium capitalize">
+          {article?.description ? article?.description : description}
+        </Text>
+      </View>
+      <ButtonProfile onPress={() => navigation.replace('Profile', { screen: route.name, data: route.params })} />
+    </View>
+  );
+
+  useLayoutEffect(() => {
+    let screenOptions = {
+      headerTitleAlign: 'center',
+      header: () => screenHeader(),
+    };
+    navigation.setOptions(screenOptions);
+  }, [navigation.isFocused()]);
 
   useEffect(() => {
     startScan();
@@ -97,27 +120,15 @@ const AuditArticleDetails = ({ navigation, route }) => {
   // console.log('Article route data', route.params);
 
   return (
-    <SafeAreaView className="flex-1 bg-white pt-8">
-      <View className="flex-1 px-4">
-        <View className="screen-header mb-4">
-          <View className="text items-center">
-            {pressMode === 'true' ? (
-              <TouchableHighlight onPress={() => null}>
-                <Text className="text-lg text-sh font-medium capitalize">
-                  article{' ' + material}
-                </Text>
-              </TouchableHighlight>
-            ) : (
-              <Text className="text-lg text-sh font-medium capitalize">
-                article{' ' + material}
-              </Text>
-            )}
-            <Text className="text-base text-sh text-right font-medium capitalize">
-              {article?.description ? article?.description : description}
+    <SafeAreaView className="flex-1 bg-white">
+      <View className="flex-1 mt-2 px-4">
+        <View className="screen-header">
+          <TouchableHighlight onPress={() => null}>
+            <Text className="text-xs text-white font-semibold uppercase">
+              article{' ' + material}
             </Text>
-          </View>
+          </TouchableHighlight>
         </View>
-
         <View className="content flex-1 justify-between pb-2">
           <View className="table h-[90%]">
             <View className="table-header flex-row bg-th text-center mb-2 px-4 py-2">

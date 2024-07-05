@@ -1,4 +1,5 @@
 import { API_URL } from '@env';
+import { HeaderBackButton } from '@react-navigation/elements';
 import React, { useEffect, useLayoutEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -16,20 +17,29 @@ import CustomToast from '../../../../components/CustomToast';
 import Scan from '../../../../components/animations/Scan';
 import { getStorage } from '../../../../hooks/useStorage';
 import SunmiScanner from '../../../../utils/sunmi/scanner';
+import { ButtonProfile } from '../../../../components/buttons';
+import useBackHandler from '../../../../hooks/useBackHandler';
 
-const Audit = ({ navigation }) => {
+const Audit = ({ navigation, route }) => {
   const [isLoading, setIsLoading] = useState(false);
-  const [pressMode, setPressMode] = useState(false);
   const [user, setUser] = useState({});
   const [token, setToken] = useState('');
   const [barcode, setBarcode] = useState('');
   const [search, setSearch] = useState('');
   const { startScan, stopScan } = SunmiScanner;
 
+  // Custom hook to navigate screen
+  useBackHandler('Home');
+
   useLayoutEffect(() => {
     let screenOptions = {
-      headerBackVisible: pressMode === 'true' ? false : true,
       headerTitleAlign: 'center',
+      headerLeft: () => (
+        <HeaderBackButton onPress={() => navigation.replace('Home')} />
+      ),
+      headerRight: () => (
+        <ButtonProfile onPress={() => navigation.replace('Profile', { screen: route.name, data: null })} />
+      ),
     };
     navigation.setOptions(screenOptions);
   }, [navigation.isFocused()]);
@@ -38,10 +48,9 @@ const Audit = ({ navigation }) => {
     const getAsyncStorage = async () => {
       await getStorage('token', setToken);
       await getStorage('user', setUser, 'object');
-      await getStorage('pressMode', setPressMode);
     }
     getAsyncStorage();
-  }, []);
+  }, [navigation.isFocused()]);
 
   useEffect(() => {
     startScan();
@@ -72,6 +81,8 @@ const Audit = ({ navigation }) => {
     } else {
       postData.filter.material = code;
     }
+
+    // console.log(postData)
 
     const postOptions = {
       method: 'POST',
@@ -137,7 +148,7 @@ const Audit = ({ navigation }) => {
           <TextInput
             className="bg-[#F5F6FA] text-black rounded-bl-lg rounded-tl-lg px-4"
             placeholder="Search by article code or bin number"
-            keyboardType="default"
+            keyboardType="phone-pad"
             placeholderTextColor="#CBC9D9"
             selectionColor="#CBC9D9"
             onChangeText={value => setSearch(value)}

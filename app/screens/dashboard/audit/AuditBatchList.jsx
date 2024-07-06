@@ -6,6 +6,7 @@ import {
 } from 'react-native';
 import useBackHandler from '../../../../hooks/useBackHandler';
 import { ButtonProfile } from '../../../../components/buttons';
+import FalseHeader from '../../../../components/FalseHeader';
 
 const AuditBatchList = ({ navigation, route }) => {
   const { material, description, bin, tracking } = route.params;
@@ -83,13 +84,7 @@ const AuditBatchList = ({ navigation, route }) => {
   return (
     <SafeAreaView className="flex-1 bg-white">
       <View className="flex-1 h-full px-4">
-        <View className="screen-header">
-          <TouchableHighlight onPress={() => null}>
-            <Text className="text-xs text-white text-center font-medium capitalize">
-              article{' ' + material}
-            </Text>
-          </TouchableHighlight>
-        </View>
+        <FalseHeader />
         <View className="content flex-1 justify-between pb-2">
           <View className="table h-[90%]">
             <View className="table-header flex-row items-center bg-th text-center mb-2 p-2">

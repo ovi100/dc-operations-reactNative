@@ -1,22 +1,36 @@
 import { API_URL } from '@env';
 import { useFocusEffect } from '@react-navigation/native';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
 import {
-  ActivityIndicator, FlatList, RefreshControl,
-  SafeAreaView, Text, TouchableOpacity, View
+  ActivityIndicator, FlatList, RefreshControl, SafeAreaView,
+  Text, TouchableHighlight, TouchableOpacity, View
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
 import ServerError from '../../../../components/animations/ServerError';
 import { getStorage } from '../../../../hooks/useStorage';
+import { ButtonProfile } from '../../../../components/buttons';
+import FalseHeader from '../../../../components/FalseHeader';
 
-const TaskAssign = ({ navigation }) => {
+const TaskAssign = ({ navigation, route }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [user, setUser] = useState({});
   const [token, setToken] = useState('');
   let [taskList, setTaskList] = useState([]);
   const tableHeader = ['STO ID', 'SKU', 'Outlet Code', 'Status'];
+
+  useLayoutEffect(() => {
+    let screenOptions = {
+      headerBackVisible: true,
+      headerTitle: 'Task Assign',
+      headerTitleAlign: 'center',
+      headerRight: () => (
+        <ButtonProfile onPress={() => navigation.replace('Profile', { screen: route.name, data: null })} />
+      ),
+    };
+    navigation.setOptions(screenOptions);
+  }, [navigation.isFocused()]);
 
   useEffect(() => {
     const getAsyncStorage = async () => {
@@ -141,14 +155,10 @@ const TaskAssign = ({ navigation }) => {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white pt-8">
+    <SafeAreaView className="flex-1 bg-white">
       <View className="flex-1 px-4">
-        <View className="screen-header flex-row items-center mb-4">
-          <Text className="flex-1 text-lg text-sh text-center font-semibold capitalize">
-            task assign
-          </Text>
-        </View>
-        <View className="content flex-1 py-5">
+        <FalseHeader />
+        <View className="content flex-1">
           <View className="table h-full pb-2">
             <View className="table-header flex-row bg-th text-center mb-2 py-2">
               {tableHeader.map(th => (

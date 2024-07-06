@@ -1,12 +1,15 @@
+import { HeaderBackButton } from '@react-navigation/elements';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
-  ActivityIndicator, DeviceEventEmitter, FlatList, KeyboardAvoidingView,
-  Platform, SafeAreaView, ScrollView, Text, TouchableHighlight, View
+  ActivityIndicator, DeviceEventEmitter, FlatList,
+  SafeAreaView, Text, TouchableHighlight, View
 } from 'react-native';
 import { mergeInventory } from './formatData';
 import useBackHandler from '../../../../hooks/useBackHandler';
 import SunmiScanner from '../../../../utils/sunmi/scanner';
 import { getStorage } from '../../../../hooks/useStorage';
+import { ButtonProfile } from '../../../../components/buttons';
+import FalseHeader from '../../../../components/FalseHeader';
 
 const AuditBinDetails = ({ navigation, route }) => {
   const { code, articles } = route.params;
@@ -15,11 +18,34 @@ const AuditBinDetails = ({ navigation, route }) => {
   const [pressMode, setPressMode] = useState(false);
   const [flatListFooterVisible, setFlatListFooterVisible] = useState(true);
   const [barcode, setBarcode] = useState('');
-  const tableHeader = ['Bin Number', 'Quantity'];
+  const tableHeader = ['Bin Number', 'Quantity', 'erewte'];
   const { startScan, stopScan } = SunmiScanner;
 
   // Custom hook to navigate screen
   useBackHandler('Audit');
+
+  const screenHeader = () => (
+    <View className="screen-header bg-white flex-row items-center justify-between py-2 pr-3">
+      <HeaderBackButton onPress={() => navigation.replace('Audit')} />
+      <View className="text">
+        <Text className="text-base text-sh text-center font-medium capitalize">
+          article{' ' + code}
+        </Text>
+        <Text className="text-sm text-sh text-right font-medium capitalize">
+          {article.description}
+        </Text>
+      </View>
+      <ButtonProfile onPress={() => navigation.replace('Profile', { screen: route.name, data: route.params })} />
+    </View>
+  );
+
+  useLayoutEffect(() => {
+    let screenOptions = {
+      headerTitleAlign: 'center',
+      header: () => screenHeader(),
+    };
+    navigation.setOptions(screenOptions);
+  }, [navigation.isFocused()]);
 
   useEffect(() => {
     const getAsyncStorage = async () => {
@@ -75,25 +101,7 @@ const AuditBinDetails = ({ navigation, route }) => {
   return (
     <SafeAreaView className="flex-1 bg-white pt-8">
       <View className="flex-1 px-4">
-        <View className="screen-header mb-4">
-          <View className="text items-center">
-            {pressMode === 'true' ? (
-              <TouchableHighlight onPress={() => null}>
-                <Text className="text-lg text-sh font-medium capitalize">
-                  article{' ' + code}
-                </Text>
-              </TouchableHighlight>
-            ) : (
-              <Text className="text-lg text-sh font-medium capitalize">
-                article{' ' + code}
-              </Text>
-            )}
-            <Text className="text-base text-sh text-right font-medium capitalize">
-              {article.description}
-            </Text>
-          </View>
-        </View>
-
+        <FalseHeader />
         <View className="content flex-1 justify-between pb-2">
           <View className="table h-[90%]">
             <View className="table-header flex-row bg-th text-center mb-2 px-4 py-2">

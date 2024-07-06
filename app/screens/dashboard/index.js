@@ -1,6 +1,6 @@
-import { API_URL } from '@env';
-import { Link } from '@react-navigation/native';
-import React, { useEffect, useLayoutEffect, useState } from 'react';
+import {API_URL} from '@env';
+import {Link} from '@react-navigation/native';
+import React, {useEffect, useLayoutEffect, useState} from 'react';
 import {
   ActivityIndicator,
   Image,
@@ -10,7 +10,7 @@ import {
   View,
 } from 'react-native';
 import NoAccess from '../../../components/animations/NoAccess';
-import { ButtonProfile } from '../../../components/buttons';
+import {ButtonProfile} from '../../../components/buttons';
 import {
   AuditIcon,
   DeliveryNoteIcon,
@@ -22,9 +22,9 @@ import {
   TaskAssignIcon,
 } from '../../../constant/icons';
 import useAppContext from '../../../hooks/useAppContext';
-import { getStorage } from '../../../hooks/useStorage';
+import {getStorage} from '../../../hooks/useStorage';
 
-const Home = ({navigation}) => {
+const Home = ({navigation, route}) => {
   const [isLoading, setIsLoading] = useState(false);
   const {authInfo} = useAppContext();
   const {user, logout} = authInfo;
@@ -37,7 +37,11 @@ const Home = ({navigation}) => {
     navigation.setOptions({
       headerTitle: 'Home',
       headerRight: () => (
-        <ButtonProfile onPress={() => navigation.push('Profile')} />
+        <ButtonProfile
+          onPress={() =>
+            navigation.push('Profile', {screen: route.name, data: null})
+          }
+        />
       ),
     });
   }, [navigation.isFocused()]);

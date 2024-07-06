@@ -10,6 +10,7 @@ import useBackHandler from '../../../../hooks/useBackHandler';
 import SunmiScanner from '../../../../utils/sunmi/scanner';
 import { mergeInventory } from './formatData';
 import { ButtonProfile } from '../../../../components/buttons';
+import FalseHeader from '../../../../components/FalseHeader';
 
 const AuditArticleDetails = ({ navigation, route }) => {
   const { screen, material, description, bin, quantity, tracking, articles } = route.params;
@@ -122,13 +123,7 @@ const AuditArticleDetails = ({ navigation, route }) => {
   return (
     <SafeAreaView className="flex-1 bg-white">
       <View className="flex-1 mt-2 px-4">
-        <View className="screen-header">
-          <TouchableHighlight onPress={() => null}>
-            <Text className="text-xs text-white font-semibold uppercase">
-              article{' ' + material}
-            </Text>
-          </TouchableHighlight>
-        </View>
+        <FalseHeader />
         <View className="content flex-1 justify-between pb-2">
           <View className="table h-[90%]">
             <View className="table-header flex-row bg-th text-center mb-2 px-4 py-2">

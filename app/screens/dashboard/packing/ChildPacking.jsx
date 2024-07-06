@@ -1,6 +1,7 @@
+import { HeaderBackButton } from '@react-navigation/elements';
 import CheckBox from '@react-native-community/checkbox';
 import { useFocusEffect } from '@react-navigation/native';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -15,12 +16,13 @@ import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
 import Dialog from '../../../../components/Dialog';
 import ServerError from '../../../../components/animations/ServerError';
-import { ButtonBack, ButtonLg, ButtonLoading } from '../../../../components/buttons';
+import { ButtonBack, ButtonLg, ButtonLoading, ButtonProfile } from '../../../../components/buttons';
 import { getStorage } from '../../../../hooks/useStorage';
 import { printChildPackingList } from './printPackInfo';
-import {API_URL} from '@env';
+import { API_URL } from '@env';
+import FalseHeader from '../../../../components/FalseHeader';
 
-const ChildPacking = ({ navigation }) => {
+const ChildPacking = ({ navigation, route }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isButtonLoading, setIsButtonLoading] = useState(false);
   const [dialogVisible, setDialogVisible] = useState(false);
@@ -31,6 +33,18 @@ const ChildPacking = ({ navigation }) => {
   let tableHeader = ['Code', 'Received Qnt', 'Packed Qnt'];
   const [user, setUser] = useState({});
   const [token, setToken] = useState('');
+
+  useLayoutEffect(() => {
+    let screenOptions = {
+      headerBackVisible: true,
+      headerTitle: 'Child Packing',
+      headerTitleAlign: 'center',
+      headerRight: () => (
+        <ButtonProfile onPress={() => navigation.replace('Profile', { screen: route.name, data: null })} />
+      ),
+    };
+    navigation.setOptions(screenOptions);
+  }, [navigation.isFocused()]);
 
   useEffect(() => {
     const getAsyncStorage = async () => {
@@ -319,14 +333,9 @@ const ChildPacking = ({ navigation }) => {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white pt-8">
+    <SafeAreaView className="flex-1 bg-white">
       <View className="flex-1 h-full px-4">
-        <View className="screen-header flex-row items-center mb-4">
-          <ButtonBack navigation={navigation} />
-          <Text className="flex-1 text-lg text-sh text-center font-semibold capitalize">
-            child packing
-          </Text>
-        </View>
+        <FalseHeader />
 
         <View className="content flex-1 justify-between pb-2">
           {/* Table data */}

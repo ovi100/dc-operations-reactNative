@@ -1,6 +1,6 @@
 import { API_URL } from '@env';
 import { useFocusEffect } from '@react-navigation/native';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList, Image, RefreshControl,
@@ -11,14 +11,27 @@ import CustomToast from '../../../../components/CustomToast';
 import ServerError from '../../../../components/animations/ServerError';
 import { StoNotPickedIcon, StoPickedIcon } from '../../../../constant/icons';
 import { getStorage } from '../../../../hooks/useStorage';
+import { ButtonProfile } from '../../../../components/buttons';
+import FalseHeader from '../../../../components/FalseHeader';
 
-const Picking = ({ navigation }) => {
+const Picking = ({ navigation, route }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [user, setUser] = useState({});
   const [token, setToken] = useState('');
   const [assignedData, setAssignedData] = useState([]);
   const tableHeader = ['STO', 'SKU', 'Outlet Code', 'Status'];
+
+  useLayoutEffect(() => {
+    let screenOptions = {
+      headerBackVisible: true,
+      headerTitleAlign: 'center',
+      headerRight: () => (
+        <ButtonProfile onPress={() => navigation.replace('Profile', { screen: route.name, data: null })} />
+      ),
+    };
+    navigation.setOptions(screenOptions);
+  }, [navigation.isFocused()]);
 
   useEffect(() => {
     const getAsyncStorage = async () => {
@@ -188,15 +201,11 @@ const Picking = ({ navigation }) => {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white pt-8">
+    <SafeAreaView className="flex-1 bg-white">
       <View className="flex-1 px-4">
-        <View className="screen-header flex-row items-center mb-4">
-          <Text className="text-lg flex-1 text-sh text-center font-semibold capitalize">
-            picking
-          </Text>
-        </View>
+        <FalseHeader />
 
-        <View className="tab-header flex-row items-center justify-between bg-gray-50 rounded-full p-1.5 mb-4">
+        <View className="tab-header flex-row items-center justify-between bg-gray-50 rounded-full p-1.5 mb-1">
           {tabInfo.map(item => (
             <TouchableOpacity
               key={item.id}
@@ -216,7 +225,7 @@ const Picking = ({ navigation }) => {
           ))}
         </View>
 
-        <View className="tab-content flex-1 justify-between py-5">
+        <View className="tab-content flex-1 justify-between py-2">
           {active.name === 'not picked' && (
             <>
               {notPicked.length > 0 ? (

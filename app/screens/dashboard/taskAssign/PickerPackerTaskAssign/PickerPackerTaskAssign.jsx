@@ -1,11 +1,12 @@
 import { API_URL } from '@env';
+import { HeaderBackButton } from '@react-navigation/elements';
 import { Picker } from '@react-native-picker/picker';
 import { useFocusEffect } from '@react-navigation/native';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
 import { SafeAreaView, Text, View } from 'react-native';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../../components/CustomToast';
-import { ButtonBack, ButtonLg } from '../../../../../components/buttons';
+import { ButtonBack, ButtonLg, ButtonProfile } from '../../../../../components/buttons';
 import useBackHandler from '../../../../../hooks/useBackHandler';
 import { getStorage } from '../../../../../hooks/useStorage';
 
@@ -18,6 +19,20 @@ const PickerPackerTaskAssign = ({ navigation, route }) => {
 
   // Custom hook to navigate screen
   useBackHandler('TaskAssign');
+
+  useLayoutEffect(() => {
+    let screenOptions = {
+      headerTitle: `STO ${sto}`,
+      headerTitleAlign: 'center',
+      headerLeft: () => (
+        <HeaderBackButton onPress={() => navigation.replace('TaskAssign')} />
+      ),
+      headerRight: () => (
+        <ButtonProfile onPress={() => navigation.replace('Profile', { screen: route.name, data: route.params })} />
+      ),
+    };
+    navigation.setOptions(screenOptions);
+  }, [navigation.isFocused()]);
 
   useEffect(() => {
     getStorage('token', setToken, 'string');
@@ -131,16 +146,9 @@ const PickerPackerTaskAssign = ({ navigation, route }) => {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-white pt-8">
+    <SafeAreaView className="flex-1 bg-white">
       <View className="flex-1 h-full px-4">
-        <View className="screen-header flex-row items-center mb-4">
-          <ButtonBack navigation={navigation} />
-          <View className="flex-1 flex-row justify-center">
-            <Text className="text-lg text-sh font-bold uppercase">sto:</Text>
-            <Text className="text-lg text-sh">{' ' + sto}</Text>
-          </View>
-        </View>
-        <View className="content flex-1 justify-between py-5">
+        <View className="content flex-1 justify-between py-2">
           <View className="picker-packer-assign">
             <View className="picker mb-4">
               <Text className="text-base text-sh font-semibold capitalize mb-2">

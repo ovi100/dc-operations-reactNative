@@ -1,6 +1,7 @@
 import { API_URL } from '@env';
+import { HeaderBackButton } from '@react-navigation/elements';
 import { useFocusEffect } from '@react-navigation/native';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useState } from 'react';
 import {
   ActivityIndicator,
   DeviceEventEmitter, FlatList,
@@ -18,6 +19,8 @@ import useBackHandler from '../../../../../hooks/useBackHandler';
 import { getStorage } from '../../../../../hooks/useStorage';
 import SunmiScanner from '../../../../../utils/sunmi/scanner';
 import { updateStoTracking } from '../processStoData';
+import { ButtonProfile } from '../../../../../components/buttons';
+import FalseHeader from '../../../../../components/FalseHeader';
 
 const PickingSto = ({ navigation, route }) => {
   const { sto, picker, pickerId, packer, packerId } = route.params;
@@ -34,6 +37,20 @@ const PickingSto = ({ navigation, route }) => {
 
   // Custom hook to navigate screen
   useBackHandler('Picking');
+
+  useLayoutEffect(() => {
+    let screenOptions = {
+      headerTitle: `Picking STO ${sto}`,
+      headerTitleAlign: 'center',
+      headerLeft: () => (
+        <HeaderBackButton onPress={() => navigation.replace('Picking')} />
+      ),
+      headerRight: () => (
+        <ButtonProfile onPress={() => navigation.replace('Profile', { screen: route.name, data: route.params })} />
+      ),
+    };
+    navigation.setOptions(screenOptions);
+  }, [navigation.isFocused()]);
 
   useEffect(() => {
     const getAsyncStorage = async () => {
@@ -240,8 +257,8 @@ const PickingSto = ({ navigation, route }) => {
         <TouchableOpacity onPress={() => goToStoArticleBins(item)}>
           <View
             key={index}
-            className="flex-row items-center justify-between border border-tb rounded-lg mt-2.5 p-3">
-            <View className="w-1/2">
+            className="flex-row items-center justify-between border border-tb rounded-lg mt-2.5 p-2">
+            <View className="article-info w-1/2">
               <View className="flex-row items-center">
                 <Text className="text-xs text-black mr-2" numberOfLines={1}>
                   {item.material}
@@ -254,12 +271,12 @@ const PickingSto = ({ navigation, route }) => {
                 {item.description}
               </Text>
             </View>
-            <View className="w-1/2">
+            <View className="bin-info w-1/2">
               {item.bins?.length > 0 ? (
                 <>
                   {item.bins.slice(0, 2).map(item => (
                     <Text
-                      className="text-black text-sm text-right mb-1 last:mb-0"
+                      className="text-black text-xs text-right mb-1 last:mb-0"
                       numberOfLines={2}
                       key={item.bin}
                     >
@@ -284,7 +301,7 @@ const PickingSto = ({ navigation, route }) => {
         <View
           key={index}
           className="flex-row items-center justify-between border border-tb rounded-lg mt-2.5 p-3">
-          <View className="w-1/2">
+          <View className="article-info w-1/2">
             <View className="flex-row items-center">
               <Text className="text-xs text-black mr-2" numberOfLines={1}>
                 {item.material}
@@ -297,7 +314,7 @@ const PickingSto = ({ navigation, route }) => {
               {item.description}
             </Text>
           </View>
-          <View className="w-1/2">
+          <View className="bin-info w-1/2">
             {item.bins?.length > 0 ? (
               <>
                 {item.bins.slice(0, 2).map(item => (
@@ -338,21 +355,9 @@ const PickingSto = ({ navigation, route }) => {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white pt-8">
+    <SafeAreaView className="flex-1 bg-white">
       <View className="flex-1 h-full px-2">
-        <View className="screen-header flex-row items-center justify-center mb-4">
-          {pressMode === 'true' ? (
-            <TouchableHighlight onPress={() => null}>
-              <Text className="text-lg text-sh font-semibold">
-                Picking STO  {sto}
-              </Text>
-            </TouchableHighlight>
-          ) : (
-            <Text className="text-lg text-sh font-semibold">
-              Picking STO  {sto}
-            </Text>
-          )}
-        </View>
+        <FalseHeader />
         <View className="content flex-1 justify-around mt-5 mb-6">
           <View className="table h-full pb-2">
             <View className="table-header flex-row justify-around bg-th mb-2 py-2 px-3">

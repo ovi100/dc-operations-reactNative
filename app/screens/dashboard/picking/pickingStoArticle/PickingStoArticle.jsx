@@ -1,14 +1,16 @@
 import { API_URL } from '@env';
-import { useEffect, useState } from 'react';
-import { Image, SafeAreaView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { HeaderBackButton } from '@react-navigation/elements';
+import { useEffect, useLayoutEffect, useState } from 'react';
+import { Image, SafeAreaView, Text, TextInput, View } from 'react-native';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../../components/CustomToast';
-import { ButtonLg, ButtonLoading } from '../../../../../components/buttons';
+import { ButtonLg, ButtonLoading, ButtonProfile } from '../../../../../components/buttons';
 import { ArrowLeftIcon, BoxIcon } from '../../../../../constant/icons';
 import useAppContext from '../../../../../hooks/useAppContext';
 import useBackHandler from '../../../../../hooks/useBackHandler';
 import { getStorage } from '../../../../../hooks/useStorage';
 import { updateArticleTracking } from '../processStoData';
+import FalseHeader from '../../../../../components/FalseHeader';
 
 const PickingStoArticle = ({ navigation, route }) => {
   const {
@@ -24,7 +26,33 @@ const PickingStoArticle = ({ navigation, route }) => {
   // Custom hook to navigate screen
   useBackHandler('PickingSto', { sto, picker, pickerId, packer, packerId });
 
-  console.log('params', route.params);
+  const screenHeader = () => (
+    <View className="screen-header bg-white flex-row items-center justify-between py-2 pr-3">
+      <HeaderBackButton onPress={() => navigation.replace('PickingSto', { sto, picker, pickerId, packer, packerId })} />
+      <View className="text">
+        <View className="flex-row">
+          <Text className="text-base text-sh font-medium capitalize">
+            picking article
+          </Text>
+          <Text className="text-base text-sh font-bold capitalize">
+            {' ' + material}
+          </Text>
+        </View>
+        <Text className="text-sm text-sh text-right font-medium capitalize" numberOfLines={2}>
+          {description}
+        </Text>
+      </View>
+      <ButtonProfile onPress={() => navigation.replace('Profile', { screen: route.name, data: route.params })} />
+    </View>
+  );
+
+  useLayoutEffect(() => {
+    let screenOptions = {
+      headerTitleAlign: 'center',
+      header: () => screenHeader(),
+    };
+    navigation.setOptions(screenOptions);
+  }, [navigation.isFocused()]);
 
   useEffect(() => {
     const getAsyncStorage = async () => {
@@ -132,64 +160,44 @@ const PickingStoArticle = ({ navigation, route }) => {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-white pt-14">
+    <SafeAreaView className="flex-1 bg-white">
       <View className="flex-1 px-4">
-        <View className="screen-header flex-row items-start justify-between mb-4">
-          <TouchableOpacity onPress={() => navigation.replace('PickingSto', { sto, picker, pickerId, packer, packerId })}>
-            <Image source={ArrowLeftIcon} />
-          </TouchableOpacity>
-          <View className="text">
-            <View className="flex-row justify-end">
-              <Text className="text-base text-sh font-medium capitalize">
-                picking article
-              </Text>
-              <Text className="text-base text-sh font-bold capitalize">
-                {' ' + material}
-              </Text>
+        <FalseHeader />
+        <View className="content flex-1 justify-between py-2">
+          {/* Quantity Box */}
+          <View className="quantity-box bg-[#FEFBFB] border border-[#F2EFEF] p-5">
+            <View className="box-header flex-row items-center justify-between">
+              <View className="text">
+                <Text className="text-base text-[#2E2C3B] font-medium capitalize">
+                  picked quantity
+                </Text>
+              </View>
+              <View className="quantity flex-row items-center gap-3">
+                <Image className="w-10 h-10" source={BoxIcon} />
+                <Text className="text-black font-bold">{quantity}</Text>
+              </View>
             </View>
-            <Text className="text-sm text-sh text-right font-medium capitalize my-1">
-              {description}
-            </Text>
-            <Text className="text-sm text-sh text-right font-medium">
-              {bins.bin}{' --> '}{bins.quantity}
-            </Text>
-          </View>
-        </View>
-
-        {/* Quantity Box */}
-        <View className="quantity-box bg-[#FEFBFB] border border-[#F2EFEF] p-5">
-          <View className="box-header flex-row items-center justify-between">
-            <View className="text">
-              <Text className="text-base text-[#2E2C3B] font-medium capitalize">
-                picked quantity
-              </Text>
-            </View>
-            <View className="quantity flex-row items-center gap-3">
-              <Image className="w-10 h-10" source={BoxIcon} />
-              <Text className="text-black font-bold">{quantity}</Text>
+            <View className="input-box mt-6">
+              <TextInput
+                className="bg-[#F5F6FA] border border-t-0 border-black/25 h-[50px] text-[#5D80C5] rounded-2xl mb-3 px-4"
+                placeholder="Type Picked Quantity"
+                placeholderTextColor="#5D80C5"
+                selectionColor="#5D80C5"
+                keyboardType="numeric"
+                // autoFocus={true}
+                // value={pickedQuantity.toString()}
+                onChangeText={value => {
+                  setPickedQuantity(value);
+                }}
+              />
             </View>
           </View>
-          <View className="input-box mt-6">
-            <TextInput
-              className="bg-[#F5F6FA] border border-t-0 border-black/25 h-[50px] text-[#5D80C5] rounded-2xl mb-3 px-4"
-              placeholder="Type Picked Quantity"
-              placeholderTextColor="#5D80C5"
-              selectionColor="#5D80C5"
-              keyboardType="numeric"
-              // autoFocus={true}
-              // value={pickedQuantity.toString()}
-              onChangeText={value => {
-                setPickedQuantity(value);
-              }}
-            />
+
+          <View className="button mt-3">
+            {isButtonLoading ? <ButtonLoading styles='bg-theme rounded-md p-5' /> :
+              <ButtonLg title="Mark as Picked" onPress={() => postPickedArticle()} />
+            }
           </View>
-        </View>
-
-        <View className="button mt-3">
-          {isButtonLoading ? <ButtonLoading styles='bg-theme rounded-md p-5' /> :
-            <ButtonLg title="Mark as Picked" onPress={() => postPickedArticle()} />
-          }
-
         </View>
       </View>
       <CustomToast />

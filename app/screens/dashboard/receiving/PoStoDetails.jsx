@@ -22,6 +22,7 @@ import useBackHandler from '../../../../hooks/useBackHandler';
 import { getStorage } from '../../../../hooks/useStorage';
 import { deleteTempData } from '../../../../utils/apiServices';
 import SunmiScanner from '../../../../utils/sunmi/scanner';
+import FalseHeader from '../../../../components/FalseHeader';
 
 const PoStoDetails = ({ navigation, route }) => {
   const { po, dn, sto } = route.params;
@@ -710,19 +711,7 @@ const PoStoDetails = ({ navigation, route }) => {
   return (
     <SafeAreaView className="flex-1 bg-white">
       <View className="flex-1 h-full px-4">
-        <View className="label flex-row items-center justify-center">
-          {pressMode === 'true' ? (
-            <TouchableHighlight onPress={() => null}>
-              <Text className="text-xs text-white font-semibold uppercase">
-                {po ? `PO ${po}` : `DN ${dn}`}
-              </Text>
-            </TouchableHighlight>
-          ) : (
-            <Text className="text-xs text-white font-semibold uppercase">
-              {po ? `PO ${po}` : `DN ${dn}`}
-            </Text>
-          )}
-        </View>
+        <FalseHeader />
         <View className="content flex-1 justify-between pb-2">
           <View className="table h-[90%]">
             <View className="table-header flex-row bg-th text-center mb-2 p-2">

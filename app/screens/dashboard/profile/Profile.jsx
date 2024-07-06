@@ -5,7 +5,7 @@ import {
   ActivityIndicator, Alert, Image, ScrollView, Switch,
   Text,
   TouchableWithoutFeedback, View,
-  useWindowDimensions
+  // useWindowDimensions
 } from 'react-native';
 import Dialog from '../../../../components/Dialog';
 import { ButtonLogin } from '../../../../components/buttons';
@@ -25,7 +25,7 @@ import styles from '../../../../styles/button';
 
 const Profile = ({ navigation, route }) => {
   const { screen, data } = route.params;
-  const { width, height } = useWindowDimensions();
+  // const { width, height } = useWindowDimensions();
   const [isLoading, setIsLoading] = useState(false);
   const [isEnabled, setIsEnabled] = useState(false);
   const [dialogVisible, setDialogVisible] = useState(false);
@@ -33,8 +33,6 @@ const Profile = ({ navigation, route }) => {
   const [sites, setSites] = useState([]);
   const { authInfo } = useAppContext();
   const { logout } = authInfo;
-
-  console.log(route);
 
   useEffect(() => {
     const getUserInfo = async () => {

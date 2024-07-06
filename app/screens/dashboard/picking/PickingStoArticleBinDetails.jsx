@@ -1,9 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import { HeaderBackButton } from '@react-navigation/elements';
+import React, { useEffect, useLayoutEffect, useState } from 'react';
 import { DeviceEventEmitter, FlatList, SafeAreaView, Text, View } from 'react-native';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
 import useBackHandler from '../../../../hooks/useBackHandler';
 import SunmiScanner from '../../../../utils/sunmi/scanner';
+import FalseHeader from '../../../../components/FalseHeader';
+import { ButtonProfile } from '../../../../components/buttons';
 
 const BinDetails = ({ navigation, route }) => {
   const { material, description, bins } = route.params;
@@ -13,6 +16,34 @@ const BinDetails = ({ navigation, route }) => {
 
   // Custom hook to navigate screen
   useBackHandler('PickingSto', route.params);
+
+  const screenHeader = () => (
+    <View className="screen-header bg-white flex-row items-center justify-between py-2 pr-3">
+      <HeaderBackButton onPress={() => navigation.replace('PickingSto', route.params)} />
+      <View className="text items-center">
+        <View className="flex-row">
+          <Text className="text-base text-sh font-medium capitalize">
+            Bins for article
+          </Text>
+          <Text className="text-base text-sh font-bold capitalize">
+            {' ' + material}
+          </Text>
+        </View>
+        <Text className="text-sm text-sh text-center font-medium capitalize" numberOfLines={2}>
+          {description}
+        </Text>
+      </View>
+      <ButtonProfile onPress={() => navigation.replace('Profile', { screen: route.name, data: route.params })} />
+    </View>
+  );
+
+  useLayoutEffect(() => {
+    let screenOptions = {
+      headerTitleAlign: 'center',
+      header: () => screenHeader(),
+    };
+    navigation.setOptions(screenOptions);
+  }, [navigation.isFocused()]);
 
   useEffect(() => {
     startScan();
@@ -57,25 +88,10 @@ const BinDetails = ({ navigation, route }) => {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white pt-8">
+    <SafeAreaView className="flex-1 bg-white">
       <View className="flex-1 px-4">
-        <View className="screen-header flex-row items-center justify-center mb-4">
-          <View className="text">
-            <View className="flex-row">
-              <Text className="text-base text-sh font-medium capitalize">
-                Bins for article
-              </Text>
-              <Text className="text-base text-sh font-bold capitalize">
-                {' ' + material}
-              </Text>
-            </View>
-            <Text className="text-sm text-sh text-center font-medium capitalize">
-              {description}
-            </Text>
-          </View>
-        </View>
-
-        <View className="content flex-1 justify-between py-5">
+        <FalseHeader />
+        <View className="content flex-1 justify-between py-2">
           {bins?.length > 0 ? (
             <View className="table h-full pb-2">
               <View className="flex-row justify-between bg-th text-center mb-2 py-2 px-4">

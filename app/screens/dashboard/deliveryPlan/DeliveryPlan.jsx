@@ -1,6 +1,6 @@
 import CheckBox from '@react-native-community/checkbox';
 import { useFocusEffect } from '@react-navigation/native';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -18,13 +18,14 @@ import CustomToast from '../../../../components/CustomToast';
 import Dialog from '../../../../components/Dialog';
 import Modal from '../../../../components/Modal';
 import ServerError from '../../../../components/animations/ServerError';
-import { ButtonBack, ButtonLg, ButtonLoading } from '../../../../components/buttons';
+import { ButtonBack, ButtonLg, ButtonLoading, ButtonProfile } from '../../../../components/buttons';
 import useActivity from '../../../../hooks/useActivity';
 import { getStorage, setStorage } from '../../../../hooks/useStorage';
 import { dateRange } from '../../../../utils';
-import {API_URL} from '@env';
+import { API_URL } from '@env';
+import FalseHeader from '../../../../components/FalseHeader';
 
-const DeliveryPlan = ({ navigation }) => {
+const DeliveryPlan = ({ navigation, route }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isButtonLoading, setIsButtonLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -43,6 +44,18 @@ const DeliveryPlan = ({ navigation }) => {
   const dateObject = dateRange(1);
   const { from, to } = dateObject;
   const { createActivity } = useActivity();
+
+  useLayoutEffect(() => {
+    let screenOptions = {
+      headerBackVisible: true,
+      headerTitle: 'Delivery Plan',
+      headerTitleAlign: 'center',
+      headerRight: () => (
+        <ButtonProfile onPress={() => navigation.replace('Profile', { screen: route.name, data: null })} />
+      ),
+    };
+    navigation.setOptions(screenOptions);
+  }, [navigation.isFocused()]);
 
   useEffect(() => {
     const getAsyncStorage = async () => {
@@ -317,12 +330,7 @@ const DeliveryPlan = ({ navigation }) => {
     <SafeAreaView className="flex-1 bg-white pt-8">
       {outlets ? (
         <View className="flex-1 h-full px-4">
-          <View className="screen-header flex-row items-center mb-4">
-            <ButtonBack navigation={navigation} />
-            <Text className="flex-1 text-lg text-sh text-center font-semibold capitalize">
-              delivery plan
-            </Text>
-          </View>
+          <FalseHeader />
 
           {/* Search filter */}
           <View className="search flex-row">

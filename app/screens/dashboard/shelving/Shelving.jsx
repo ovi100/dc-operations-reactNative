@@ -18,6 +18,7 @@ import ServerError from '../../../../components/animations/ServerError';
 import { getStorage } from '../../../../hooks/useStorage';
 import SunmiScanner from '../../../../utils/sunmi/scanner';
 import { ButtonProfile } from '../../../../components/buttons';
+import FalseHeader from '../../../../components/FalseHeader';
 
 const Shelving = ({ navigation, route }) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -261,7 +262,6 @@ const Shelving = ({ navigation, route }) => {
         </View>
       )}
     </>
-
   );
 
   if (isLoading && articles.length === 0) {
@@ -289,13 +289,7 @@ const Shelving = ({ navigation, route }) => {
       ) : (
         <SafeAreaView className="flex-1 bg-white">
           <View className="flex-1 h-full px-4">
-            <View className="screen-header">
-              <TouchableHighlight onPress={() => null}>
-                <Text className="text-xs text-white font-semibold capitalize">
-                  Shelving
-                </Text>
-              </TouchableHighlight>
-            </View>
+            <FalseHeader />
             <View className="content flex-1">
               <View className="table h-full pb-2">
                 <View className="flex-row justify-between bg-th mb-2 py-2 px-3">

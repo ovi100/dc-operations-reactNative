@@ -10,6 +10,7 @@ import useBackHandler from '../../../../hooks/useBackHandler';
 import { ButtonProfile } from '../../../../components/buttons';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
+import FalseHeader from '../../../../components/FalseHeader';
 
 const AuditBinList = ({ navigation, route }) => {
   const { bin, articles } = route.params;
@@ -141,13 +142,7 @@ const AuditBinList = ({ navigation, route }) => {
   return (
     <SafeAreaView className="flex-1 bg-white">
       <View className="flex-1 h-full px-4">
-        <View className="screen-header">
-          <TouchableHighlight onPress={() => null}>
-            <Text className="text-xs text-white font-semibold uppercase">
-              bin {bin}
-            </Text>
-          </TouchableHighlight>
-        </View>
+        <FalseHeader />
         <View className="content flex-1 justify-between pb-2">
           <View className="table h-[90%]">
             <View className="table-header flex-row bg-th text-center mb-2 p-2">

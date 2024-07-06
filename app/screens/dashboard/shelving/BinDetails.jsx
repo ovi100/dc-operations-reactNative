@@ -13,6 +13,7 @@ import useActivity from '../../../../hooks/useActivity';
 import useBackHandler from '../../../../hooks/useBackHandler';
 import { getStorage } from '../../../../hooks/useStorage';
 import SunmiScanner from '../../../../utils/sunmi/scanner';
+import FalseHeader from '../../../../components/FalseHeader';
 
 const BinDetails = ({ navigation, route }) => {
   const { code, bins, description } = route.params;
@@ -291,13 +292,7 @@ const BinDetails = ({ navigation, route }) => {
   return (
     <SafeAreaView className="flex-1 bg-white">
       <View className="flex-1 px-4">
-        <View className="screen-header">
-          <TouchableHighlight onPress={() => null}>
-            <Text className="text-xs text-white text-center font-semibold capitalize">
-              {' ' + code}
-            </Text>
-          </TouchableHighlight>
-        </View>
+        <FalseHeader />
         <View className="content flex-1 justify-between">
           {!isLoading && binsData.length > 0 ? (
             <View className="table h-full pb-2">

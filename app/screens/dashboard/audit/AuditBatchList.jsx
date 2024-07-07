@@ -2,11 +2,12 @@ import { HeaderBackButton } from '@react-navigation/elements';
 import React, { useCallback, useLayoutEffect, useState } from 'react';
 import {
   ActivityIndicator, FlatList, SafeAreaView,
-  Text, TouchableHighlight, TouchableOpacity, View
+  Text,
+  TouchableOpacity, View
 } from 'react-native';
-import useBackHandler from '../../../../hooks/useBackHandler';
-import { ButtonProfile } from '../../../../components/buttons';
 import FalseHeader from '../../../../components/FalseHeader';
+import { ButtonProfile } from '../../../../components/buttons';
+import useBackHandler from '../../../../hooks/useBackHandler';
 
 const AuditBatchList = ({ navigation, route }) => {
   const { material, description, bin, tracking } = route.params;
@@ -50,7 +51,7 @@ const AuditBatchList = ({ navigation, route }) => {
     if (!flatListFooterVisible) return null;
 
     return (
-      <ActivityIndicator size="large" color="#000" />
+      <ActivityIndicator />
     );
   };
 
@@ -101,7 +102,7 @@ const AuditBatchList = ({ navigation, route }) => {
               initialNumToRender={10}
               onEndReached={handleEndReached}
               ListFooterComponent={tracking?.length > 10 ? renderFooter : null}
-              ListFooterComponentStyle={{ paddingVertical: 15 }}
+              ListFooterComponentStyle={{ paddingVertical: 10 }}
             />
           </View>
         </View>

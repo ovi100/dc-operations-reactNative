@@ -251,7 +251,7 @@ const calculateShelfLife = (mfg, exp) => {
 
 const {width, height} = Dimensions.get('window');
 
-console.log(width, height);
+// console.log(width, height);
 
 export {
   calculateShelfLife,

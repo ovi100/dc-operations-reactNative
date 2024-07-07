@@ -1,4 +1,5 @@
 import { API_URL } from '@env';
+import { HeaderBackButton } from '@react-navigation/elements';
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useEffect, useLayoutEffect, useState } from 'react';
 import {
@@ -6,7 +7,7 @@ import {
   Alert,
   DeviceEventEmitter, FlatList,
   RefreshControl,
-  SafeAreaView, ScrollView, Text, TouchableHighlight,
+  SafeAreaView, ScrollView, Text,
   TouchableOpacity,
   TouchableWithoutFeedback,
   View
@@ -14,8 +15,9 @@ import {
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
 import Dialog from '../../../../components/Dialog';
+import FalseHeader from '../../../../components/FalseHeader';
 import Modal from '../../../../components/Modal';
-import { ButtonLg, ButtonLoading } from '../../../../components/buttons';
+import { ButtonLg, ButtonLoading, ButtonProfile } from '../../../../components/buttons';
 import useActivity from '../../../../hooks/useActivity';
 import useBackHandler from '../../../../hooks/useBackHandler';
 import { getStorage } from '../../../../hooks/useStorage';
@@ -48,10 +50,18 @@ const DcPoDetails = ({ navigation, route }) => {
   useBackHandler('DcReceiving');
 
   useLayoutEffect(() => {
-    navigation.setOptions({
-
-    });
-  }, [navigation]);
+    let screenOptions = {
+      headerTitleAlign: 'center',
+      headerTitle: `PO ${po} Details`,
+      headerLeft: () => (
+        <HeaderBackButton onPress={() => navigation.replace('DcReceiving')} />
+      ),
+      headerRight: () => (
+        <ButtonProfile onPress={() => navigation.replace('Profile', { screen: route.name, data: route.params })} />
+      ),
+    };
+    navigation.setOptions(screenOptions);
+  }, [navigation.isFocused()]);
 
   useEffect(() => {
     const getAsyncStorage = async () => {
@@ -82,7 +92,7 @@ const DcPoDetails = ({ navigation, route }) => {
     if (!flatListFooterVisible) return null;
 
     return (
-      <ActivityIndicator size="large" color="#000" />
+      <ActivityIndicator />
     );
   };
 
@@ -138,14 +148,6 @@ const DcPoDetails = ({ navigation, route }) => {
       }
 
       let shelvingItems = shelvingData.items;
-      if (shelvingItems.length > 0) {
-        shelvingItems = shelvingItems.map(item => {
-          return {
-            ...item,
-            receivedQuantity: item.receivedQuantity
-          }
-        });
-      }
 
       let poItems = poData.data.items;
       const historyItems = poData.data.historyTotal;
@@ -160,13 +162,13 @@ const DcPoDetails = ({ navigation, route }) => {
         if (matchedPhItem && matchedShItem) {
           return {
             ...poItem,
-            remainingQuantity: poItem.quantity - matchedShItem.receivedQuantity,
+            remainingQuantity: poItem.quantity - (matchedPhItem.grnQuantity - matchedShItem.receivedQuantity),
             grnQuantity: matchedPhItem.grnQuantity
           };
         } else if (matchedPhItem) {
           return {
             ...poItem,
-            remainingQuantity: poItem.quantity,
+            remainingQuantity: poItem.quantity - matchedPhItem.grnQuantity,
             grnQuantity: matchedPhItem.grnQuantity
           };
         } else if (matchedShItem) {
@@ -255,7 +257,7 @@ const DcPoDetails = ({ navigation, route }) => {
 
   const renderItem = ({ item, index }) => (
     <>
-      {pressMode === 'true' ? (
+      {pressMode === 'true' || (item.material.startsWith('24') && item.unit === 'KG') ? (
         <TouchableOpacity onPress={() => navigation.replace('DcPoArticleDetails', item)}>
           <View
             key={index}
@@ -327,9 +329,16 @@ const DcPoDetails = ({ navigation, route }) => {
         .then(result => {
           if (result.status) {
             const isValidBarcode = result.data.barcode.includes(barcode);
+            const isScannable = articles.some(
+              article => article.material === barcode && !(article.material.startsWith('24') && article.unit === 'KG')
+            );
             const article = articles.find(item => item.material === result.data.material);
-
-            if (article && isValidBarcode) {
+            if (!isScannable) {
+              Toast.show({
+                type: 'customInfo',
+                text1: 'Please receive this product by taping on the product',
+              });
+            } else if (isScannable && article && isValidBarcode) {
               navigation.replace('DcPoArticleDetails', article);
             } else {
               Toast.show({
@@ -476,7 +485,7 @@ const DcPoDetails = ({ navigation, route }) => {
 
   if (isLoading) {
     return (
-      <View className="w-full h-screen justify-center px-3">
+      <View className="w-full h-screen bg-white justify-center px-3">
         <ActivityIndicator size="large" color="#EB4B50" />
         <Text className="mt-4 text-gray-400 text-base text-center">Loading po articles. Please wait......</Text>
       </View>
@@ -484,21 +493,9 @@ const DcPoDetails = ({ navigation, route }) => {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white pt-8">
+    <SafeAreaView className="flex-1 bg-white">
       <View className="flex-1 h-full px-4">
-        <View className="screen-header flex-row items-center justify-center mb-4">
-          {pressMode === 'true' ? (
-            <TouchableHighlight onPress={() => null}>
-              <Text className="text-lg text-sh font-semibold uppercase">
-                po {po}
-              </Text>
-            </TouchableHighlight>
-          ) : (
-            <Text className="text-lg text-sh font-semibold uppercase">
-              po {po}
-            </Text>
-          )}
-        </View>
+        <FalseHeader />
         <View className="content flex-1 justify-between pb-2">
           <View className="table h-[90%]">
             <View className="table-header flex-row bg-th text-center mb-2 p-2">
@@ -520,7 +517,7 @@ const DcPoDetails = ({ navigation, route }) => {
                 initialNumToRender={10}
                 onEndReached={handleEndReached}
                 ListFooterComponent={renderFooter}
-                ListFooterComponentStyle={{ paddingVertical: 15 }}
+                ListFooterComponentStyle={{ paddingVertical: 10 }}
                 refreshControl={
                   <RefreshControl
                     colors={["#fff"]}

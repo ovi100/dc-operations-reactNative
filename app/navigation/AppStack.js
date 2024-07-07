@@ -1,8 +1,7 @@
-import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React from 'react';
 import useAppContext from '../../hooks/useAppContext';
 // screens components
-import {ButtonProfile} from '../../components/buttons';
 import Home from '../screens/dashboard';
 import Audit from '../screens/dashboard/audit/Audit';
 import AuditArticleDetails from '../screens/dashboard/audit/AuditArticleDetails';
@@ -510,9 +509,6 @@ const AppStack = () => {
               headerTitleStyle: {
                 fontSize: 18,
               },
-              // headerRight: (props) => (
-              //   <ButtonProfile onPress={() => navigation.push('Profile')} />
-              // ),
             })}
           />
         ))}

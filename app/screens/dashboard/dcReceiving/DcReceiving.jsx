@@ -1,5 +1,5 @@
 import { API_URL } from '@env';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useState } from 'react';
 import {
   ActivityIndicator,
   DeviceEventEmitter,
@@ -12,12 +12,14 @@ import {
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
+import FalseHeader from '../../../../components/FalseHeader';
 import Scan from '../../../../components/animations/Scan';
+import { ButtonProfile } from '../../../../components/buttons';
 import useActivity from '../../../../hooks/useActivity';
 import { getStorage } from '../../../../hooks/useStorage';
 import SunmiScanner from '../../../../utils/sunmi/scanner';
 
-const DcReceiving = ({ navigation }) => {
+const DcReceiving = ({ navigation, route }) => {
   const [isCheckingPo, setIsCheckingPo] = useState(false);
   const [pressMode, setPressMode] = useState(false);
   const [user, setUser] = useState({});
@@ -26,6 +28,18 @@ const DcReceiving = ({ navigation }) => {
   const [search, setSearch] = useState('');
   const { startScan, stopScan } = SunmiScanner;
   const { createActivity } = useActivity();
+
+  useLayoutEffect(() => {
+    let screenOptions = {
+      headerBackVisible: true,
+      headerTitle: 'DC Receiving',
+      headerTitleAlign: 'center',
+      headerRight: () => (
+        <ButtonProfile onPress={() => navigation.replace('Profile', { screen: route.name, data: null })} />
+      ),
+    };
+    navigation.setOptions(screenOptions);
+  }, [navigation.isFocused()]);
 
   useEffect(() => {
     const getAsyncStorage = async () => {
@@ -166,20 +180,8 @@ const DcReceiving = ({ navigation }) => {
   }
 
   return (
-    <KeyboardAvoidingView className="flex-1 bg-white pt-8 px-4" behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-      <View className="screen-header flex-row items-center justify-center mb-4">
-        {pressMode === 'true' ? (
-          <TouchableHighlight onPress={() => null}>
-            <Text className="text-lg text-sh font-semibold">
-              DC Receiving
-            </Text>
-          </TouchableHighlight>
-        ) : (
-          <Text className="text-lg text-sh font-semibold">
-            DC Receiving
-          </Text>
-        )}
-      </View>
+    <KeyboardAvoidingView className="flex-1 bg-white px-4" behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      <FalseHeader />
 
       {/* Search Box */}
       <View className="search flex-row">

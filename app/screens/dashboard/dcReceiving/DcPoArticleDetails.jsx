@@ -1,15 +1,17 @@
-import React, { useEffect, useState } from 'react';
+import { API_URL } from '@env';
+import { HeaderBackButton } from '@react-navigation/elements';
+import React, { useEffect, useLayoutEffect, useState } from 'react';
 import {
   ActivityIndicator, Image, KeyboardAvoidingView,
   Platform, SafeAreaView, ScrollView, Text, TextInput,
-  TouchableWithoutFeedback, View
+  View
 } from 'react-native';
-// import DatePicker from 'react-native-date-picker';
-import { API_URL } from '@env';
+import CircularProgress from 'react-native-circular-progress-indicator';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
-import { ButtonLg, ButtonLoading } from '../../../../components/buttons';
-import { BoxIcon } from '../../../../constant/icons';
+import FalseHeader from '../../../../components/FalseHeader';
+import { ButtonLg, ButtonLoading, ButtonProfile } from '../../../../components/buttons';
+import { BatchIcon, BoxIcon, MrpIcon, StopWatchGreenIcon, StopWatchRedIcon } from '../../../../constant/icons';
 import useActivity from '../../../../hooks/useActivity';
 import useAppContext from '../../../../hooks/useAppContext';
 import useBackHandler from '../../../../hooks/useBackHandler';
@@ -37,6 +39,29 @@ const DcPoArticleDetails = ({ navigation, route }) => {
 
   // Custom hook to navigate screen
   useBackHandler('DcPoDetails', { po });
+
+  const screenHeader = () => (
+    <View className="screen-header bg-white flex-row items-center justify-between py-2 pr-3">
+      <HeaderBackButton onPress={() => navigation.replace('DcPoDetails', { po })} />
+      <View className="text">
+        <Text className="text-base text-sh text-center font-medium capitalize">
+          article {' ' + material + ' '} details
+        </Text>
+        <Text className="text-sm text-sh text-center font-medium capitalize" numberOfLines={2}>
+          {description}
+        </Text>
+      </View>
+      <ButtonProfile onPress={() => navigation.replace('Profile', { screen: route.name, data: route.params })} />
+    </View>
+  );
+
+  useLayoutEffect(() => {
+    let screenOptions = {
+      headerTitleAlign: 'center',
+      header: () => screenHeader(),
+    };
+    navigation.setOptions(screenOptions);
+  }, [navigation.isFocused()]);
 
   useEffect(() => {
     const getAsyncStorage = async () => {
@@ -191,7 +216,7 @@ const DcPoArticleDetails = ({ navigation, route }) => {
 
   if (isLoading) {
     return (
-      <View className="w-full h-screen justify-center px-3">
+      <View className="w-full h-screen bg-white justify-center px-3">
         <ActivityIndicator size="large" color="#EB4B50" />
         <Text className="mt-4 text-gray-400 text-base text-center">Loading article. Please wait......</Text>
       </View>
@@ -201,42 +226,24 @@ const DcPoArticleDetails = ({ navigation, route }) => {
   const shelfLife = calculateShelfLife(mfgDate?.date, expDate?.date);
 
   return (
-    <SafeAreaView className="flex-1 bg-white pt-8">
+    <SafeAreaView className="flex-1 bg-white">
       <KeyboardAvoidingView className="flex-1" behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <ScrollView>
           <View className="flex-1 px-4">
-            <View className="screen-header mb-4">
-              <View className="text items-center">
-                <TouchableWithoutFeedback>
-                  <View className="flex-row">
-                    <Text className="text-lg text-sh font-medium capitalize">
-                      receiving article
-                    </Text>
-                    <Text className="text-lg text-sh font-bold capitalize">
-                      {' ' + material}
-                    </Text>
-                  </View>
-                </TouchableWithoutFeedback>
-                <Text className="text-base text-sh text-right font-medium capitalize">
-                  {description}
-                </Text>
-              </View>
-            </View>
+            <FalseHeader />
 
-            <View className="content h-[85vh] flex-1 justify-around">
-              <View className="input-boxes">
+            <View className="content h-[85vh] flex-1 justify-between">
+              <View className="input-boxes mt-2">
                 {/* Quantity Box */}
                 <View className="quantity-box bg-[#FEFBFB] border border-[#F2EFEF] rounded px-5 py-2">
                   <View className="box-header flex-row items-center justify-between">
-                    <View className="text">
+                    <View className="text flex-row items-center gap-3">
+                      <Image className="w-5 h-5" source={BoxIcon} />
                       <Text className="text-base text-[#2E2C3B] font-medium capitalize">
                         received quantity
                       </Text>
                     </View>
-                    <View className="quantity flex-row items-center gap-3">
-                      <Image className="w-5 h-5" source={BoxIcon} />
-                      <Text className="font-bold bg-blue-600 text-white rounded-full py-1 px-2">{remainingQuantity}</Text>
-                    </View>
+                    <Text className="font-bold bg-blue-600 text-white rounded-full py-1 px-2">{remainingQuantity}</Text>
                   </View>
                   <View className="input-box mt-2">
                     <TextInput
@@ -253,15 +260,14 @@ const DcPoArticleDetails = ({ navigation, route }) => {
                   </View>
                 </View>
 
-                <View className="w-full flex-row mt-3">
+                <View className="w-full batch-mrp flex-row mt-3">
                   {/* Product Batch */}
                   <View className="w-1/2 product-batch bg-[#FEFBFB] border border-[#F2EFEF] rounded px-3 py-2 mr-0.5">
-                    <View className="box-header flex-row items-center justify-between">
-                      <View>
-                        <Text className="text-base text-[#2E2C3B] font-medium capitalize">
-                          batch no.
-                        </Text>
-                      </View>
+                    <View className="box-header flex-row items-center gap-3">
+                      <Image className="w-5 h-5" source={BatchIcon} />
+                      <Text className="text-base text-[#2E2C3B] font-medium capitalize">
+                        batch no.
+                      </Text>
                     </View>
                     <View className="input-box mt-2">
                       <TextInput
@@ -278,12 +284,11 @@ const DcPoArticleDetails = ({ navigation, route }) => {
 
                   {/* Product MRP */}
                   <View className="w-1/2 product-mrp bg-[#FEFBFB] border border-[#F2EFEF] rounded px-3 py-2 ml-0.5">
-                    <View className="box-header flex-row items-center justify-between">
-                      <View>
-                        <Text className="text-base text-[#2E2C3B] font-medium">
-                          MRP Price
-                        </Text>
-                      </View>
+                    <View className="box-header flex-row items-center gap-3">
+                      <Image className="w-5 h-5" source={MrpIcon} />
+                      <Text className="text-base text-[#2E2C3B] font-medium">
+                        MRP Price
+                      </Text>
                     </View>
                     <View className="input-box mt-2">
                       <TextInput
@@ -298,20 +303,21 @@ const DcPoArticleDetails = ({ navigation, route }) => {
                     </View>
                   </View>
                 </View>
-                <View className="w-full flex-row mt-3">
+                <View className="w-full mfg-exp-date flex-row mt-3">
                   {/* Product Manufacturing Date */}
                   <View className="w-1/2 mfg-date bg-[#FEFBFB] border border-[#F2EFEF] rounded px-3 py-2 mr-0.5">
                     <View className="box-header">
-                      <View className="">
+                      <View className="flex-row items-center gap-3">
+                        <Image className="w-5 h-5" source={StopWatchGreenIcon} />
                         <Text className="text-base text-[#2E2C3B] font-medium">
                           MFG Date
                         </Text>
-                        {mfgDate?.text?.length === 8 && (
-                          <Text className="text-base text-[#2E2C3B] font-medium capitalize">
-                            {mfgDate?.date.toLocaleDateString('en-Uk', { dateStyle: 'medium' })}
-                          </Text>
-                        )}
                       </View>
+                      {mfgDate?.text?.length === 8 && (
+                        <Text className="text-base text-[#2E2C3B] font-medium capitalize">
+                          {mfgDate?.date.toLocaleDateString('en-Uk', { dateStyle: 'medium' })}
+                        </Text>
+                      )}
                     </View>
                     <View className="date-picker mt-2">
                       <TextInput
@@ -328,16 +334,17 @@ const DcPoArticleDetails = ({ navigation, route }) => {
                   {/* Product Expiry Date */}
                   <View className="w-1/2 exp-date bg-[#FEFBFB] border border-[#F2EFEF] rounded px-3 py-2 ml-0.5">
                     <View className="box-header">
-                      <View className="">
+                      <View className="flex-row items-center gap-3">
+                        <Image className="w-5 h-5" source={StopWatchRedIcon} />
                         <Text className="text-base text-[#2E2C3B] font-medium capitalize">
                           exp date
                         </Text>
-                        {expDate?.text?.length === 8 && (
-                          <Text className="text-base text-[#2E2C3B] font-medium capitalize">
-                            {expDate?.date.toLocaleDateString('en-Uk', { dateStyle: 'medium' })}
-                          </Text>
-                        )}
                       </View>
+                      {expDate?.text?.length === 8 && (
+                        <Text className="text-base text-[#2E2C3B] font-medium capitalize">
+                          {expDate?.date.toLocaleDateString('en-Uk', { dateStyle: 'medium' })}
+                        </Text>
+                      )}
                     </View>
                     <View className="date-picker mt-2">
                       <TextInput
@@ -353,8 +360,21 @@ const DcPoArticleDetails = ({ navigation, route }) => {
                 </View>
 
                 {(mfgDate?.text?.length === 8 && expDate?.text?.length === 8) && (
-                  <View className={`w-1/2 mx-auto ${shelfLife >= 50 ? 'bg-green-600' : shelfLife >= 10 ? 'bg-orange-500' : 'bg-red-600'} rounded-md mt-5 py-3`}>
-                    <Text className="text-lg text-white text-center font-bold capitalize">shelf life: {shelfLife + '%'}</Text>
+                  <View className="w-full bg-[#FEFBFB] border border-[#F2EFEF] rounded mt-3 py-2 flex-col items-center">
+                    <Text className="text-sm text-[#2E2C3B] text-center font-medium capitalize mb-2">
+                      shelf life
+                    </Text>
+                    <CircularProgress
+                      radius={30}
+                      value={shelfLife}
+                      progressValueColor={shelfLife >= 50 ? 'green' : shelfLife >= 11 ? 'orange' : 'red'}
+                      valueSuffix={'%'}
+                      duration={2000}
+                      strokeColorConfig={[
+                        { color: 'red', value: 10 },
+                        { color: 'orange', value: 49 },
+                        { color: 'green', value: 50 },
+                      ]} />
                   </View>
                 )}
               </View>

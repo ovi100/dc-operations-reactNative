@@ -2,14 +2,15 @@ import { HeaderBackButton } from '@react-navigation/elements';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator, DeviceEventEmitter, FlatList,
-  SafeAreaView, Text, TouchableHighlight, View
+  SafeAreaView, Text,
+  View
 } from 'react-native';
-import { mergeInventory } from './formatData';
-import useBackHandler from '../../../../hooks/useBackHandler';
-import SunmiScanner from '../../../../utils/sunmi/scanner';
-import { getStorage } from '../../../../hooks/useStorage';
-import { ButtonProfile } from '../../../../components/buttons';
 import FalseHeader from '../../../../components/FalseHeader';
+import { ButtonProfile } from '../../../../components/buttons';
+import useBackHandler from '../../../../hooks/useBackHandler';
+import { getStorage } from '../../../../hooks/useStorage';
+import SunmiScanner from '../../../../utils/sunmi/scanner';
+import { mergeInventory } from './formatData';
 
 const AuditBinDetails = ({ navigation, route }) => {
   const { code, articles } = route.params;
@@ -74,7 +75,7 @@ const AuditBinDetails = ({ navigation, route }) => {
     if (!flatListFooterVisible) return null;
 
     return (
-      <ActivityIndicator size="large" color="#000" />
+      <ActivityIndicator />
     );
   };
 
@@ -118,7 +119,7 @@ const AuditBinDetails = ({ navigation, route }) => {
               initialNumToRender={10}
               onEndReached={handleEndReached}
               ListFooterComponent={bins.length > 10 ? renderFooter : null}
-              ListFooterComponentStyle={{ paddingVertical: 15 }}
+              ListFooterComponentStyle={{ paddingVertical: 10 }}
             />
           </View>
         </View>

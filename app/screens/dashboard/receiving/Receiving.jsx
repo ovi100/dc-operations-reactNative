@@ -1,5 +1,4 @@
 import { API_URL } from '@env';
-import { HeaderBackButton } from '@react-navigation/elements';
 import React, { useEffect, useLayoutEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -40,13 +39,8 @@ const Receiving = ({ navigation, route }) => {
 
   useLayoutEffect(() => {
     let screenOptions = {
+      headerBackVisible: true,
       headerTitleAlign: 'center',
-      headerLeft: () => (
-        <HeaderBackButton onPress={() => navigation.goBack()} />
-      ),
-      // headerSearchBarOptions: {
-      //   onChangeText: (event) => setSearch(event.nativeEvent.text),
-      // },
     };
     if (user.site) {
       screenOptions.headerTitle = user?.site.startsWith('DS') ? 'Dark Store Receiving' : 'Outlet Receiving';

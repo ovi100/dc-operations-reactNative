@@ -20,10 +20,10 @@ const addTempData = async (token, grnItem) => {
         }
       })
       .catch(error => {
-        toast(data.message);
+        toast(error.message);
       });
   } catch (error) {
-    toast(data.message);
+    toast(error.message);
   }
 };
 

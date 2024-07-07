@@ -8,17 +8,16 @@ import {
   RefreshControl,
   SafeAreaView,
   Text,
-  TouchableHighlight,
   TouchableOpacity,
   View
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
+import FalseHeader from '../../../../components/FalseHeader';
 import ServerError from '../../../../components/animations/ServerError';
+import { ButtonProfile } from '../../../../components/buttons';
 import { getStorage } from '../../../../hooks/useStorage';
 import SunmiScanner from '../../../../utils/sunmi/scanner';
-import { ButtonProfile } from '../../../../components/buttons';
-import FalseHeader from '../../../../components/FalseHeader';
 
 const Shelving = ({ navigation, route }) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -308,7 +307,7 @@ const Shelving = ({ navigation, route }) => {
                   initialNumToRender={10}
                   onEndReached={handleEndReached}
                   ListFooterComponent={articles.length > 10 ? renderFooter : null}
-                  ListFooterComponentStyle={{ paddingVertical: 15 }}
+                  ListFooterComponentStyle={{ paddingVertical: 10 }}
                   refreshControl={
                     <RefreshControl
                       colors={["#fff"]}

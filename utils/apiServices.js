@@ -12,16 +12,8 @@ const addTempData = async (token, grnItem) => {
       body: JSON.stringify(grnItem),
     })
       .then(response => response.json())
-      .then(data => {
-        if (data.status) {
-          toast(data.message);
-        } else {
-          toast(data.message);
-        }
-      })
-      .catch(error => {
-        toast(error.message);
-      });
+      .then(data => toast(data.message))
+      .catch(error => toast(error.message));
   } catch (error) {
     toast(error.message);
   }
@@ -36,12 +28,8 @@ const deleteTempData = async (token, id) => {
       },
     })
       .then(response => response.json())
-      .then(data => {
-        toast(data.message);
-      })
-      .catch(error => {
-        toast(error.message);
-      });
+      .then(data => toast(data.message))
+      .catch(error => toast(error.message));
   } catch (error) {
     toast(error.message);
   }

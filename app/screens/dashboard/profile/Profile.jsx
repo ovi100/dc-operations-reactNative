@@ -5,7 +5,6 @@ import {
   ActivityIndicator, Alert, Image, ScrollView, Switch,
   Text,
   TouchableWithoutFeedback, View,
-  // useWindowDimensions
 } from 'react-native';
 import Dialog from '../../../../components/Dialog';
 import { ButtonLogin } from '../../../../components/buttons';
@@ -108,7 +107,7 @@ const Profile = ({ navigation, route }) => {
       ) : (
         <View className="h-full bg-white px-4">
           <ScrollView className="">
-            <View className="content h-[88vh] flex-col justify-between">
+            <View className="content h-full flex-col justify-between">
               <View className="top">
                 <View className="profile-image mx-auto mb-4">
                   <Image
@@ -181,7 +180,7 @@ const Profile = ({ navigation, route }) => {
                   </View>
                 )}
               </View>
-              <View className="footer">
+              <View className="footer mt-5">
                 <View className="version-info w-full">
                   <Text className="text-gray-400 text-center font-bold capitalize">
                     shwapno operations app

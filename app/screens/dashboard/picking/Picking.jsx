@@ -8,11 +8,11 @@ import {
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
+import FalseHeader from '../../../../components/FalseHeader';
 import ServerError from '../../../../components/animations/ServerError';
+import { ButtonProfile } from '../../../../components/buttons';
 import { StoNotPickedIcon, StoPickedIcon } from '../../../../constant/icons';
 import { getStorage } from '../../../../hooks/useStorage';
-import { ButtonProfile } from '../../../../components/buttons';
-import FalseHeader from '../../../../components/FalseHeader';
 
 const Picking = ({ navigation, route }) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -44,9 +44,8 @@ const Picking = ({ navigation, route }) => {
   const getStoData = async () => {
     const filterBy = {
       filter: {
-        supplyingPlant: user.site,
-        picker: { $ne: null },
-        packer: { $ne: null },
+        supplyingPlant: { $regex: user.site, $options: "i" },
+        pickerId: user._id,
       },
       query: {
         pageSize: 500,
@@ -154,7 +153,8 @@ const Picking = ({ navigation, route }) => {
     </TouchableOpacity>
   );
 
-  const checkStatus = ['picker packer assigned', 'inbound picking'];
+  const checkStatus = ['picker assigned', 'picker packer assigned', 'inbound picking'];
+  console.log('data', assignedData);
 
   const notPicked = assignedData.filter(item => checkStatus.some(status => status === item.status));
   const picked = assignedData.filter(item => item.status === 'inbound picked' || item.status === 'inbound picking');

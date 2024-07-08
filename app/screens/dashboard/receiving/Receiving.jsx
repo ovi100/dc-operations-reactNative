@@ -12,7 +12,9 @@ import {
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
+import FalseHeader from '../../../../components/FalseHeader';
 import Scan from '../../../../components/animations/Scan';
+import { ButtonProfile } from '../../../../components/buttons';
 import useActivity from '../../../../hooks/useActivity';
 import { getStorage } from '../../../../hooks/useStorage';
 import SunmiScanner from '../../../../utils/sunmi/scanner';
@@ -41,6 +43,9 @@ const Receiving = ({ navigation, route }) => {
     let screenOptions = {
       headerBackVisible: true,
       headerTitleAlign: 'center',
+      headerRight: () => (
+        <ButtonProfile onPress={() => navigation.replace('Profile', { screen: route.name, data: null })} />
+      ),
     };
     if (user.site) {
       screenOptions.headerTitle = user?.site.startsWith('DS') ? 'Dark Store Receiving' : 'Outlet Receiving';
@@ -77,6 +82,7 @@ const Receiving = ({ navigation, route }) => {
         })
           .then(response => response.json())
           .then(async result => {
+            console.log('released response', result)
             if (result.status) {
               const data = result.data;
               if (data.poReleasedStatus) {
@@ -90,6 +96,7 @@ const Receiving = ({ navigation, route }) => {
                 })
                   .then(response => response.json())
                   .then(async poDetails => {
+                    console.log('po details response', poDetails)
                     if (poDetails.status) {
                       const poData = poDetails.data;
                       // const companyCode = poData.companyCode;
@@ -109,7 +116,7 @@ const Receiving = ({ navigation, route }) => {
                       });
                       if (poDetails.message.trim() === 'MIS Logged Off the PC where BAPI is Hosted') {
                         //log user activity
-                        await createActivity(user._id, 'error', result.message.trim());
+                        await createActivity(user._id, 'error', poDetails.message.trim());
                       }
                     }
                   })
@@ -306,7 +313,7 @@ const Receiving = ({ navigation, route }) => {
 
   if (!user.site) {
     return (
-      <View className="w-full h-screen justify-center px-3">
+      <View className="w-full h-screen bg-white justify-center px-3">
         <ActivityIndicator size="large" color="#EB4B50" />
         <Text className="mt-4 text-gray-400 text-base text-center">Loading user info. Please wait......</Text>
       </View>
@@ -315,6 +322,7 @@ const Receiving = ({ navigation, route }) => {
 
   return (
     <KeyboardAvoidingView className="flex-1 bg-white pt-8 px-4" behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      <FalseHeader />
       {/* Search Box */}
       <View className="search flex-row">
         <View className="input-box w-4/5">

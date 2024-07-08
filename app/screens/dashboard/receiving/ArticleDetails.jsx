@@ -16,7 +16,7 @@ import useActivity from '../../../../hooks/useActivity';
 import useAppContext from '../../../../hooks/useAppContext';
 import useBackHandler from '../../../../hooks/useBackHandler';
 import { getStorage } from '../../../../hooks/useStorage';
-import { calculateShelfLife } from '../../../../utils';
+import { calculateShelfLife, handleDate } from '../../../../utils';
 import { addTempData } from '../../../../utils/apiServices';
 
 const ArticleDetails = ({ navigation, route }) => {
@@ -95,8 +95,8 @@ const ArticleDetails = ({ navigation, route }) => {
   }, [material, user.site]);
 
   const postShelvingData = async (postData, grnItem) => {
-    setIsButtonLoading(true);
     try {
+      setIsButtonLoading(true);
       await fetch(API_URL + 'api/product-shelving/ready', {
         method: 'POST',
         headers: {
@@ -202,7 +202,7 @@ const ArticleDetails = ({ navigation, route }) => {
 
       let shelvingObject = {
         code: material,
-        description: description,
+        description: description ? description : 'NA',
         userId: user._id,
         site: receivingPlant,
         quantity,

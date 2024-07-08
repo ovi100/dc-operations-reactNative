@@ -7,20 +7,19 @@ import {
   DeviceEventEmitter, FlatList,
   SafeAreaView,
   Text,
-  TouchableHighlight,
   TouchableOpacity,
   TouchableWithoutFeedback, View
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../../components/CustomToast';
+import FalseHeader from '../../../../../components/FalseHeader';
 import ServerError from '../../../../../components/animations/ServerError';
+import { ButtonProfile } from '../../../../../components/buttons';
 import useAppContext from '../../../../../hooks/useAppContext';
 import useBackHandler from '../../../../../hooks/useBackHandler';
 import { getStorage } from '../../../../../hooks/useStorage';
 import SunmiScanner from '../../../../../utils/sunmi/scanner';
 import { updateStoTracking } from '../processStoData';
-import { ButtonProfile } from '../../../../../components/buttons';
-import FalseHeader from '../../../../../components/FalseHeader';
 
 const PickingSto = ({ navigation, route }) => {
   const { sto, picker, pickerId, packer, packerId } = route.params;
@@ -190,6 +189,8 @@ const PickingSto = ({ navigation, route }) => {
     postStoTracking();
   }
 
+  // console.log(articles)
+
   const goToStoArticleBins = async (article) => {
     navigation.replace('PickingStoArticleBinDetails', { ...article, picker, pickerId, packer, packerId });
   };
@@ -276,7 +277,7 @@ const PickingSto = ({ navigation, route }) => {
                 <>
                   {item.bins.slice(0, 2).map(item => (
                     <Text
-                      className="text-black text-xs text-right mb-1 last:mb-0"
+                      className="text-black text-xs text-center mb-1 last:mb-0"
                       numberOfLines={2}
                       key={item.bin}
                     >
@@ -319,7 +320,7 @@ const PickingSto = ({ navigation, route }) => {
               <>
                 {item.bins.slice(0, 2).map(item => (
                   <Text
-                    className="text-black text-sm text-right mb-1 last:mb-0"
+                    className="text-black text-xs text-center mb-1 last:mb-0"
                     numberOfLines={2}
                     key={item.bin}
                   >
@@ -336,7 +337,7 @@ const PickingSto = ({ navigation, route }) => {
                   </TouchableWithoutFeedback>
                 )}
               </>
-            ) : (<Text className="text-black text-sm text-center">No bin has been assigned</Text>)}
+            ) : (<Text className="text-black text-xs text-center">No bin has been assigned</Text>)}
           </View>
         </View>
       )}

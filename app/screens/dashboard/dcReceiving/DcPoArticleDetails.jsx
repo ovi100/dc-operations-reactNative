@@ -27,7 +27,7 @@ const DcPoArticleDetails = ({ navigation, route }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isButtonLoading, setIsButtonLoading] = useState(false);
   const [bins, setBins] = useState([]);
-  const [newQuantity, setNewQuantity] = useState(0); //update_upol
+  const [newQuantity, setNewQuantity] = useState(0);
   const [mfgDate, setMfgDate] = useState(new Date());
   const [expDate, setExpDate] = useState(new Date());
   const [batchNo, setBatchNo] = useState(null);
@@ -152,7 +152,7 @@ const DcPoArticleDetails = ({ navigation, route }) => {
       let shelvingObject = {
         po: po,
         code: material,
-        description: description,
+        description: description ? description : 'NA',
         userId: user._id,
         site: receivingPlant,
         quantity,

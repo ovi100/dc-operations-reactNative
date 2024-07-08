@@ -1,6 +1,6 @@
-import {API_URL} from '@env';
-import {Link} from '@react-navigation/native';
-import React, {useEffect, useLayoutEffect, useState} from 'react';
+import { API_URL } from '@env';
+import { Link } from '@react-navigation/native';
+import React, { useEffect, useLayoutEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Image,
@@ -10,7 +10,7 @@ import {
   View,
 } from 'react-native';
 import NoAccess from '../../../components/animations/NoAccess';
-import {ButtonProfile} from '../../../components/buttons';
+import { ButtonProfile } from '../../../components/buttons';
 import {
   AuditIcon,
   DeliveryNoteIcon,
@@ -22,7 +22,7 @@ import {
   TaskAssignIcon,
 } from '../../../constant/icons';
 import useAppContext from '../../../hooks/useAppContext';
-import {getStorage} from '../../../hooks/useStorage';
+import { getStorage } from '../../../hooks/useStorage';
 
 const Home = ({navigation, route}) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -150,7 +150,7 @@ const Home = ({navigation, route}) => {
 
   if (isLoading && !user) {
     return (
-      <View className="w-full h-screen justify-center px-3">
+      <View className="w-full h-screen bg-white justify-center px-3">
         <ActivityIndicator size="large" color="#EB4B50" />
         <Text className="mt-4 text-gray-400 text-base text-center">
           Checking user permission. Please wait......
@@ -206,7 +206,7 @@ const Home = ({navigation, route}) => {
                       source={item.icon}
                     />
                   </View>
-                  <Text className="text text-black mt-3">{item.name}</Text>
+                  <Text className="text text-black mt-3" numberOfLines={2}>{item.name}</Text>
                 </View>
               </Link>
             </View>

@@ -106,7 +106,7 @@ const DcReceiving = ({ navigation, route }) => {
                     });
                     if (poDetails.message.trim() === 'MIS Logged Off the PC where BAPI is Hosted') {
                       //log user activity
-                      await createActivity(user._id, 'error', result.message.trim());
+                      await createActivity(user._id, 'error', poDetails.message.trim());
                     }
                   }
                 })

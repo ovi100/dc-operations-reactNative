@@ -30,6 +30,7 @@ const DcPoDetails = ({ navigation, route }) => {
   const { createActivity } = useActivity();
   const { startScan, stopScan } = SunmiScanner;
   const [isLoading, setIsLoading] = useState(false);
+  const [isChecking, setIsChecking] = useState(false);
   const [flatListFooterVisible, setFlatListFooterVisible] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [isButtonLoading, setIsButtonLoading] = useState(false);
@@ -83,6 +84,13 @@ const DcPoDetails = ({ navigation, route }) => {
       DeviceEventEmitter.removeAllListeners('ScanDataReceived');
     };
   }, []);
+
+  useEffect(() => {
+    if (barcode && pressMode !== 'true') {
+      checkBarcode(barcode);
+      // checkBarcode(token, barcode, articles, 'DcPoArticleDetails', setBarcode, setIsChecking);
+    }
+  }, [barcode, pressMode]);
 
   const handleEndReached = useCallback(() => {
     setFlatListFooterVisible(false);
@@ -318,6 +326,7 @@ const DcPoDetails = ({ navigation, route }) => {
 
   const checkBarcode = async (barcode) => {
     try {
+      setIsChecking(true);
       await fetch('https://api.shwapno.net/shelvesu/api/barcodes/barcode/' + barcode, {
         method: 'GET',
         headers: {
@@ -333,10 +342,10 @@ const DcPoDetails = ({ navigation, route }) => {
               article => article.material === barcode && !(article.material.startsWith('24') && article.unit === 'KG')
             );
             const article = articles.find(item => item.material === result.data.material);
-            if (!isScannable) {
+            if (!isScannable && article) {
               Toast.show({
                 type: 'customInfo',
-                text1: 'Please receive this product by taping on the product',
+                text1: `Please receive ${barcode} by taping on the product`,
               });
             } else if (isScannable && article && isValidBarcode) {
               navigation.replace('DcPoArticleDetails', article);
@@ -366,12 +375,9 @@ const DcPoDetails = ({ navigation, route }) => {
       });
     } finally {
       setBarcode('');
+      setIsChecking(false);
     }
   };
-
-  if (barcode && pressMode !== 'true') {
-    checkBarcode(barcode);
-  }
 
   if (grnItems.length) {
     grnSummery = grnItems.reduce((acc, curr, i) => {
@@ -509,6 +515,11 @@ const DcPoDetails = ({ navigation, route }) => {
               <Text className="text-black text-lg text-center font-bold mt-5">
                 No articles left to receive
               </Text>
+            ) : isChecking ? (
+              <View className="w-full h-[85vh] justify-center bg-white px-3">
+                <ActivityIndicator size="large" color="#EB4B50" />
+                <Text className="mt-4 text-gray-400 text-base text-center">Checking barcode. Please wait......</Text>
+              </View>
             ) : (
               <FlatList
                 data={articles}

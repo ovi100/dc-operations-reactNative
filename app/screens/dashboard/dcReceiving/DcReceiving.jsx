@@ -1,4 +1,5 @@
 import { API_URL } from '@env';
+import { HeaderBackButton } from '@react-navigation/elements';
 import React, { useEffect, useLayoutEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -16,6 +17,7 @@ import FalseHeader from '../../../../components/FalseHeader';
 import Scan from '../../../../components/animations/Scan';
 import { ButtonProfile } from '../../../../components/buttons';
 import useActivity from '../../../../hooks/useActivity';
+import useBackHandler from '../../../../hooks/useBackHandler';
 import { getStorage } from '../../../../hooks/useStorage';
 import SunmiScanner from '../../../../utils/sunmi/scanner';
 
@@ -29,11 +31,16 @@ const DcReceiving = ({ navigation, route }) => {
   const { startScan, stopScan } = SunmiScanner;
   const { createActivity } = useActivity();
 
+  // Custom hook to navigate screen
+  useBackHandler('Home');
+
   useLayoutEffect(() => {
     let screenOptions = {
-      headerBackVisible: true,
       headerTitle: 'DC Receiving',
       headerTitleAlign: 'center',
+      headerLeft: () => (
+        <HeaderBackButton onPress={() => navigation.replace('Home')} />
+      ),
       headerRight: () => (
         <ButtonProfile onPress={() => navigation.replace('Profile', { screen: route.name, data: null })} />
       ),

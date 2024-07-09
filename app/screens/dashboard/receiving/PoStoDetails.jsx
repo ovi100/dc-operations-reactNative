@@ -28,6 +28,7 @@ const PoStoDetails = ({ navigation, route }) => {
   const { createActivity } = useActivity();
   const { startScan, stopScan } = SunmiScanner;
   const [isLoading, setIsLoading] = useState(false);
+  const [isChecking, setIsChecking] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [flatListFooterVisible, setFlatListFooterVisible] = useState(true);
   const [isButtonLoading, setIsButtonLoading] = useState(false);
@@ -109,6 +110,12 @@ const PoStoDetails = ({ navigation, route }) => {
       }
     }, [token, po, dn, user.site]),
   );
+
+  useEffect(() => {
+    if (barcode && pressMode !== 'true') {
+      checkBarcode(barcode);
+    }
+  }, [barcode, pressMode]);
 
   const getPoDetails = async () => {
     const getOptions = {
@@ -515,6 +522,7 @@ const PoStoDetails = ({ navigation, route }) => {
 
   const checkBarcode = async (barcode) => {
     try {
+      setIsChecking(true);
       await fetch('https://api.shwapno.net/shelvesu/api/barcodes/barcode/' + barcode, {
         method: 'GET',
         headers: {
@@ -530,11 +538,10 @@ const PoStoDetails = ({ navigation, route }) => {
               article => article.material === barcode && !(article.material.startsWith('24') && article.unit === 'KG')
             );
             const article = articles.find(item => item.material === result.data.material);
-
-            if (!isScannable) {
+            if (!isScannable && article) {
               Toast.show({
                 type: 'customInfo',
-                text1: 'Please receive this product by taping on the product',
+                text1: `Please receive ${barcode} by taping on the product`,
               });
             } else if (isScannable && article && isValidBarcode) {
               navigation.replace('ArticleDetails', article);
@@ -564,12 +571,9 @@ const PoStoDetails = ({ navigation, route }) => {
       });
     } finally {
       setBarcode('');
+      setIsChecking(false);
     }
   };
-
-  if (barcode && pressMode !== 'true') {
-    checkBarcode(barcode);
-  }
 
   if (grnItems.length) {
     grnSummery = grnItems.reduce((acc, curr, i) => {
@@ -718,7 +722,7 @@ const PoStoDetails = ({ navigation, route }) => {
           <View className="table h-[90%]">
             <View className="table-header flex-row bg-th text-center mb-2 p-2">
               {tableHeader.map(th => (
-                <Text className={`${th === 'Article Info' ? 'w-2/5' : 'w-1/5'} text-white text-center font-bold`} key={th}>
+                <Text className={`${th === 'Action' ? 'w-1/5' : 'w-2/5'} text-white text-center font-bold`} key={th}>
                   {th}
                 </Text>
               ))}
@@ -731,6 +735,11 @@ const PoStoDetails = ({ navigation, route }) => {
               <Text className="text-black text-lg text-center font-bold mt-5">
                 No articles left to receive
               </Text>
+            ) : isChecking ? (
+              <View className="w-full h-[85vh] bg-white justify-center px-3">
+                <ActivityIndicator size="large" color="#EB4B50" />
+                <Text className="mt-4 text-gray-400 text-base text-center">Checking barcode. Please wait......</Text>
+              </View>
             ) : (
               <FlatList
                 data={articles}

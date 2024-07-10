@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Image,
   KeyboardAvoidingView,
@@ -17,18 +17,36 @@ import {
   EyeVisibleIcon
 } from '../../constant/icons';
 import useAppContext from '../../hooks/useAppContext';
-import { version } from '../../package.json';
 import styles from '../../styles/button';
 import { validateInput } from '../../utils';
+import CodePush from 'react-native-code-push';
 
 const Login = ({ navigation }) => {
   const { authInfo } = useAppContext();
   const { login } = authInfo;
+  const [version, setVersion] = useState(null);
   const [toggleInput, setToggleInput] = useState(false);
   const [userId, setUserId] = useState('');
   const [userIdError, setUserIdError] = useState(null);
   const [password, setPassword] = useState('');
   const [passwordError, setPasswordError] = useState(null);
+
+  useEffect(() => {
+    CodePush.getUpdateMetadata(CodePush.UpdateState.RUNNING)
+      .then(metadata => {
+        if (metadata) {
+          const label = metadata.label;
+          const versionText = 'v' + Number(label.split('v')[1] / 10);
+          setVersion(versionText);
+        }
+      })
+      .catch(error => {
+        Toast.show({
+          type: 'customError',
+          text1: error.message,
+        });
+      });
+  }, []);
 
   const toggleType = () => {
     setToggleInput(current => !current);
@@ -132,7 +150,7 @@ const Login = ({ navigation }) => {
             shwapno operations app
           </Text>
           <Text className="text-gray-400 text-center font-bold capitalize">
-            v {version}
+            {version}
           </Text>
         </View>
       </View>

@@ -1,6 +1,7 @@
-import { API_URL } from '@env';
+import {API_URL} from '@env';
 import Toast from 'react-native-toast-message';
-import { toast } from '.';
+import {toast} from '.';
+import {setStorage} from '../hooks/useStorage';
 
 const checkBarcode = async (
   token,
@@ -99,12 +100,37 @@ const deleteTempData = async (token, id) => {
       },
     })
       .then(response => response.json())
-      .then(data => toast(data.message))
+      .then(data => {
+        toast(data.message);
+        setStorage();
+      })
       .catch(error => toast(error.message));
   } catch (error) {
     toast(error.message);
   }
 };
 
-export { addTempData, checkBarcode, deleteTempData };
+const updateAppVersion = async (token, id, version) => {
+  const updateObject = {appVersion: version};
+  console.log('update object', updateObject);
+  try {
+    await fetch(API_URL + `api/user/${id}`, {
+      method: 'PATCH',
+      headers: {
+        authorization: token,
+      },
+      body: JSON.stringify(updateObject),
+    })
+      .then(response => response.json())
+      .then(result => {
+        console.log('user updated response', result);
+        setStorage('token', token);
+        setStorage('user', result.user);
+      })
+      .catch(error => toast(error.message));
+  } catch (error) {
+    toast(error.message);
+  }
+};
 
+export {addTempData, checkBarcode, deleteTempData, updateAppVersion};

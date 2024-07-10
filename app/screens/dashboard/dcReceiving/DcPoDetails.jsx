@@ -339,13 +339,13 @@ const DcPoDetails = ({ navigation, route }) => {
           if (result.status) {
             const isValidBarcode = result.data.barcode.includes(barcode);
             const isScannable = articles.some(
-              article => article.material === barcode && !(article.material.startsWith('24') && article.unit === 'KG')
+              article => isValidBarcode && !(article.material.startsWith('24') && article.unit === 'KG')
             );
             const article = articles.find(item => item.material === result.data.material);
             if (!isScannable && article) {
               Toast.show({
                 type: 'customInfo',
-                text1: `Please receive ${barcode} by taping on the product`,
+                text1: `Please receive ${article.material} by taping on the product`,
               });
             } else if (isScannable && article && isValidBarcode) {
               navigation.replace('DcPoArticleDetails', article);
@@ -395,9 +395,9 @@ const DcPoDetails = ({ navigation, route }) => {
     );
 
     const updateGRNData = () => {
-      const storageLocation = user.storage_location.find(item => item.name === 'receiving').code;
+      const code = user.storage_location.find(item => item.name === 'receiving').code;
       grnItems = grnItems.map(item => {
-        return { ...item, storageLocation }
+        return { ...item, storageLocation: code }
       });
       setDialogVisible(true);
     };

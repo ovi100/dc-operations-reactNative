@@ -59,7 +59,7 @@ const PoStoDetails = ({ navigation, route }) => {
         <HeaderBackButton onPress={() => navigation.replace('Receiving')} />
       ),
       headerRight: () => (
-        <ButtonProfile onPress={() => navigation.replace('Profile', { screen: route.name, data: null })} />
+        <ButtonProfile onPress={() => navigation.replace('Profile', { screen: route.name, data: route.params })} />
       ),
     };
     navigation.setOptions(screenOptions);
@@ -535,13 +535,13 @@ const PoStoDetails = ({ navigation, route }) => {
           if (result.status) {
             const isValidBarcode = result.data.barcode.includes(barcode);
             const isScannable = articles.some(
-              article => article.material === barcode && !(article.material.startsWith('24') && article.unit === 'KG')
+              article => isValidBarcode && !(article.material.startsWith('24') && article.unit === 'KG')
             );
             const article = articles.find(item => item.material === result.data.material);
             if (!isScannable && article) {
               Toast.show({
                 type: 'customInfo',
-                text1: `Please receive ${barcode} by taping on the product`,
+                text1: `Please receive ${article.material} by taping on the product`,
               });
             } else if (isScannable && article && isValidBarcode) {
               navigation.replace('ArticleDetails', article);
@@ -607,9 +607,9 @@ const PoStoDetails = ({ navigation, route }) => {
     );
 
     const updateGRNData = () => {
-      const storageLocation = user.storage_location.find(item => item.name === 'receiving').code;
+      const code = user.storage_location.find(item => item.name === 'receiving').code;
       grnItems = grnItems.map(item => {
-        return { ...item, storageLocation }
+        return { ...item, storageLocation: code }
       });
       setDialogVisible(true);
     };
@@ -722,7 +722,7 @@ const PoStoDetails = ({ navigation, route }) => {
           <View className="table h-[90%]">
             <View className="table-header flex-row bg-th text-center mb-2 p-2">
               {tableHeader.map(th => (
-                <Text className={`${th === 'Action' ? 'w-1/5' : 'w-2/5'} text-white text-center font-bold`} key={th}>
+                <Text className={`${th === 'Action' || th !== 'Article Info' ? 'w-1/5' : 'w-2/5'} text-white text-center font-bold`} key={th}>
                   {th}
                 </Text>
               ))}

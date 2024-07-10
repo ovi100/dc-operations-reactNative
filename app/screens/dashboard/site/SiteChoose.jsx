@@ -29,7 +29,7 @@ const SiteChoose = ({ navigation }) => {
         .then(response => response.json())
         .then(result => {
           if (result.status) {
-            setSites(result.sites);
+            setSites(result.sites.sort((a, b) => a.code.localeCompare(b.code)));
             setIsLoading(false);
           } else {
             Toast.show({

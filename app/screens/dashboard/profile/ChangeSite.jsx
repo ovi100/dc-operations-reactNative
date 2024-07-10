@@ -50,9 +50,11 @@ const ChangeSite = ({ navigation, route }) => {
     }, 1000);
   };
 
+  const sortedSites = sites.sort((a, b) => a.code.localeCompare(b.code));
+
   if (isLoading) {
     return (
-      <View className="w-full h-screen justify-center px-3">
+      <View className="w-full h-screen bg-white justify-center px-3">
         <ActivityIndicator size="large" color="#EB4B50" />
         <Text className="mt-4 text-gray-400 text-base text-center">
           Loading user sites. Please wait......
@@ -66,7 +68,7 @@ const ChangeSite = ({ navigation, route }) => {
       <View className="flex-1">
         <ScrollView>
           <View className="flex-row flex-wrap items-center px-3">
-            {sites?.map(item => (
+            {sortedSites?.map(item => (
               <TouchableOpacity
                 className="site-box items-center w-1/3 mt-8"
                 onPress={() => updateUser(item)}

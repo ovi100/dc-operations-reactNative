@@ -1,15 +1,35 @@
-import { API_URL } from '@env';
-import { useEffect, useState } from 'react';
+import {API_URL} from '@env';
+import {useEffect, useState} from 'react';
 import Toast from 'react-native-toast-message';
 import useActivity from './useActivity';
-import { getStorage, removeAll, setStorage } from './useStorage';
+import {getStorage, removeAll, setStorage} from './useStorage';
+import CodePush from 'react-native-code-push';
+import {updateAppVersion} from '../utils/apiServices';
 
 const useAuth = () => {
   const [isLoading, setIsLoading] = useState(true);
+  const [version, setVersion] = useState(null);
   const [user, setUser] = useState(null);
   const [userSites, setUserSites] = useState([]);
   const [token, setToken] = useState(null);
   const {createActivity} = useActivity();
+
+  useEffect(() => {
+    CodePush.getUpdateMetadata(CodePush.UpdateState.RUNNING)
+      .then(metadata => {
+        if (metadata) {
+          const label = metadata.label;
+          const versionText = 'v' + Number(label.split('v')[1] / 10);
+          setVersion(versionText);
+        }
+      })
+      .catch(error => {
+        Toast.show({
+          type: 'customError',
+          text1: error.message,
+        });
+      });
+  }, []);
 
   useEffect(() => {
     isLoggedIn();
@@ -40,13 +60,13 @@ const useAuth = () => {
         setUser(data.user);
         setToken(data.token);
         setUserSites(data.site);
-        setStorage('token', data.token);
-        setStorage('user', data.user);
+        //update user app version
+        await updateAppVersion(data.token, data.user._id, version);
         // activity
         await createActivity(
           data.user._id,
           'login',
-          `${data.user.name} logged in`,
+          `${data.user.name} logged in with version ${version.toUpperCase()}`,
         );
       } else {
         Toast.show({
@@ -104,6 +124,7 @@ const useAuth = () => {
     userSites,
     setUserSites,
     token,
+    version,
   };
 
   return authInfo;

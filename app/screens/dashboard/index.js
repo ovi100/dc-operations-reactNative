@@ -33,8 +33,6 @@ const Home = ({navigation, route}) => {
 
   console.log('CURRENT API URL', API_URL);
 
-  console.log('user from home screen', user);
-
   useLayoutEffect(() => {
     navigation.setOptions({
       headerTitle: 'Home',

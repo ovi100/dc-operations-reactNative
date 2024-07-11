@@ -15,10 +15,10 @@ import {
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
 import Scan from '../../../../components/animations/Scan';
-import { getStorage } from '../../../../hooks/useStorage';
-import SunmiScanner from '../../../../utils/sunmi/scanner';
 import { ButtonProfile } from '../../../../components/buttons';
 import useBackHandler from '../../../../hooks/useBackHandler';
+import { getStorage } from '../../../../hooks/useStorage';
+import SunmiScanner from '../../../../utils/sunmi/scanner';
 
 const Audit = ({ navigation, route }) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -148,7 +148,6 @@ const Audit = ({ navigation, route }) => {
           <TextInput
             className="bg-[#F5F6FA] text-black rounded-bl-lg rounded-tl-lg px-4"
             placeholder="Search by article code or bin number"
-            keyboardType="phone-pad"
             placeholderTextColor="#CBC9D9"
             selectionColor="#CBC9D9"
             onChangeText={value => setSearch(value)}

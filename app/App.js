@@ -6,6 +6,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import OurGlass from '../components/animations/OurGlass';
 import Modal from '../components/Modal';
 import AppProvider from '../contexts/AppContext';
+import useAppContext from '../hooks/useAppContext';
 import { toast } from '../utils';
 import AppNavigation from './navigation/AppNavigation';
 
@@ -14,6 +15,7 @@ const codePushOptions = {
 };
 
 const App = () => {
+  const {authInfo} = useAppContext();
   const [modalVisible, setModalVisible] = useState(false);
   const [message, setMessage] = useState(null);
   const [version, setVersion] = useState(null);
@@ -69,6 +71,7 @@ const App = () => {
         break;
       case CodePush.SyncStatus.UNKNOWN_ERROR:
         setMessage('An error occurred during the update');
+        CodePush.rollback();
         break;
       default:
         setModalVisible(false);

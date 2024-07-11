@@ -113,7 +113,7 @@ const Receiving = ({ navigation, route }) => {
                       } else {
                         Toast.show({
                           type: 'customError',
-                          text1: 'Not authorized to receive PO',
+                          text1: `User site ${user.site} and DN site ${poItem.receivingPlant} isn't same.`,
                         });
                       }
                     } else {
@@ -233,7 +233,7 @@ const Receiving = ({ navigation, route }) => {
             } else {
               Toast.show({
                 type: 'customError',
-                text1: 'Not authorized to receive DN',
+                text1: `User site ${user.site} and DN site ${data.receivingPlant} isn't same.`,
               });
             }
 

@@ -66,8 +66,6 @@ const SiteChoose = ({ navigation }) => {
     setStorage('userSites', sites);
   }, [sites]);
 
-  // console.log('user from site choose', user);
-
   const updateUser = async (siteObj) => {
     let newUser = { ...user, site: siteObj.code, storage_location: siteObj.storage_location };
     setUser(newUser);

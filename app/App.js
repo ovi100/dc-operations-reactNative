@@ -1,13 +1,13 @@
-import React, {useEffect, useState} from 'react';
-import {Text, View} from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Text, View } from 'react-native';
 import CodePush from 'react-native-code-push';
 import 'react-native-gesture-handler';
-import {GestureHandlerRootView} from 'react-native-gesture-handler';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import OurGlass from '../components/animations/OurGlass';
 import Modal from '../components/Modal';
 import AppProvider from '../contexts/AppContext';
+import { toast } from '../utils';
 import AppNavigation from './navigation/AppNavigation';
-import {toast} from '../utils';
-import OurGlass from '../components/animations/OurGlass';
 
 const codePushOptions = {
   checkFrequency: CodePush.CheckFrequency.MANUAL,
@@ -20,6 +20,10 @@ const App = () => {
   const [progress, setProgress] = useState(null);
 
   useEffect(() => {
+    if (message === 'Checking for updates') {
+      setModalVisible(false);
+      setMessage(null);
+    }
     CodePush.getUpdateMetadata(CodePush.UpdateState.RUNNING)
       .then(metadata => {
         if (metadata) {
@@ -95,7 +99,7 @@ const App = () => {
             isOpen={modalVisible}
             modalHeader={
               message === 'Checking for updates'
-                ? 'Checking for update'
+                ? 'Checking for updates'
                 : message === 'App is up to date'
                 ? 'App is up to date'
                 : 'Live update in progress'
@@ -114,7 +118,7 @@ const App = () => {
                 </Text>
               </>
             )}
-            {progress && (
+            {message === 'Downloading updates' && (
               <>
                 <Text className="text-base text-black text-center font-semibold mt-3">
                   Applying the live update ensures you will get the latest
@@ -122,7 +126,7 @@ const App = () => {
                 </Text>
                 <Text className="text-base text-black text-center font-semibold mb-3">
                   {message}
-                  {percent ? `(${percent}%)` : null}
+                  {percent && `(${percent}%)`}
                 </Text>
                 <View className="relative flex-row items-center gap-3">
                   <View className="progress relative bg-gray-300 w-full h-1.5 rounded-full mt-4">

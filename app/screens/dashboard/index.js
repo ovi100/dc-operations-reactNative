@@ -33,6 +33,8 @@ const Home = ({navigation, route}) => {
 
   console.log('CURRENT API URL', API_URL);
 
+  console.log('user from home screen', user);
+
   useLayoutEffect(() => {
     navigation.setOptions({
       headerTitle: 'Home',
@@ -130,7 +132,7 @@ const Home = ({navigation, route}) => {
     },
   ];
 
-  if (user.site && sites.length > 0) {
+  if (user?.site && sites.length > 0) {
     siteType = sites.find(site => site.code === user.site).type;
   }
 
@@ -206,7 +208,9 @@ const Home = ({navigation, route}) => {
                       source={item.icon}
                     />
                   </View>
-                  <Text className="text text-black mt-3" numberOfLines={2}>{item.name}</Text>
+                  <Text className="text text-black mt-3" numberOfLines={2}>
+                    {item.name}
+                  </Text>
                 </View>
               </Link>
             </View>

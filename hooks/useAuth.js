@@ -1,10 +1,9 @@
-import {API_URL} from '@env';
-import {useEffect, useState} from 'react';
+import { API_URL } from '@env';
+import { useEffect, useState } from 'react';
+import CodePush from 'react-native-code-push';
 import Toast from 'react-native-toast-message';
 import useActivity from './useActivity';
-import {getStorage, removeAll, setStorage} from './useStorage';
-import CodePush from 'react-native-code-push';
-import {updateAppVersion} from '../utils/apiServices';
+import { getStorage, removeAll, setStorage } from './useStorage';
 
 const useAuth = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -57,11 +56,32 @@ const useAuth = () => {
       const data = await response.json();
 
       if (data.status) {
-        setUser(data.user);
-        setToken(data.token);
-        setUserSites(data.site);
         //update user app version
-        await updateAppVersion(data.token, data.user._id, version);
+        await fetch(API_URL + `api/user/${data.user._id}`, {
+          method: 'PATCH',
+          headers: {
+            authorization: data.token,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({appVersion: version}),
+        })
+          .then(response => response.json())
+          .then(result => {
+            setUser({...data.user, appVersion: result.user.appVersion});
+            setToken(data.token);
+            setUserSites(data.user.site);
+            setStorage('token', data.token);
+            setStorage('user', {
+              ...data.user,
+              appVersion: result.user.appVersion,
+            });
+          })
+          .catch(error => {
+            Toast.show({
+              type: 'customError',
+              text1: error.message,
+            });
+          });
         // activity
         await createActivity(
           data.user._id,
@@ -74,13 +94,13 @@ const useAuth = () => {
           text1: data.message,
         });
       }
-      setIsLoading(false);
     } catch (error) {
-      setIsLoading(false);
       Toast.show({
         type: 'customError',
         text1: error.message,
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 

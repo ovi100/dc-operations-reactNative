@@ -491,7 +491,7 @@ const AppStack = () => {
 
   return (
     <Stack.Navigator initialRouteName="SiteChoose">
-      {user && typeof user.site !== 'string' && (
+      {user?.name && Array.isArray(user?.site) && (
         <Stack.Group screenOptions={{headerShown: false}}>
           <Stack.Screen name="SiteChoose" component={SiteChoose} />
         </Stack.Group>

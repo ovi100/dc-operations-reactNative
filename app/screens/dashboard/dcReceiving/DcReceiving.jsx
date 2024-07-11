@@ -103,7 +103,7 @@ const DcReceiving = ({ navigation, route }) => {
                     } else {
                       Toast.show({
                         type: 'customError',
-                        text1: 'Not authorized to receive PO',
+                        text1: `User site ${user.site} and PO site ${poItem.receivingPlant} isn't same.`,
                       });
                     }
                   } else {

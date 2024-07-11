@@ -23,7 +23,6 @@ import SunmiScanner from '../../../../utils/sunmi/scanner';
 
 const DcReceiving = ({ navigation, route }) => {
   const [isCheckingPo, setIsCheckingPo] = useState(false);
-  const [pressMode, setPressMode] = useState(false);
   const [user, setUser] = useState({});
   const [token, setToken] = useState('');
   const [barcode, setBarcode] = useState('');
@@ -52,7 +51,6 @@ const DcReceiving = ({ navigation, route }) => {
     const getAsyncStorage = async () => {
       await getStorage('token', setToken);
       await getStorage('user', setUser, 'object');
-      await getStorage('pressMode', setPressMode);
     }
     getAsyncStorage();
   }, []);
@@ -96,7 +94,6 @@ const DcReceiving = ({ navigation, route }) => {
                 .then(async poDetails => {
                   if (poDetails.status) {
                     const poData = poDetails.data;
-                    // const companyCode = poData.companyCode;
                     const poItem = poData.items[0];
                     if (poItem.receivingPlant === user.site) {
                       navigation.replace('DcPoDetails', { po });
@@ -189,7 +186,6 @@ const DcReceiving = ({ navigation, route }) => {
   return (
     <KeyboardAvoidingView className="flex-1 bg-white px-4" behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <FalseHeader />
-
       {/* Search Box */}
       <View className="search flex-row">
         <View className="input-box w-4/5">

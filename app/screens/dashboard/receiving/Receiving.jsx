@@ -23,7 +23,6 @@ import SunmiScanner from '../../../../utils/sunmi/scanner';
 
 const Receiving = ({ navigation, route }) => {
   const [isChecking, setIsChecking] = useState(false);
-  const [pressMode, setPressMode] = useState(false);
   const [user, setUser] = useState({});
   const [token, setToken] = useState('');
   const [barcode, setBarcode] = useState('');
@@ -55,7 +54,6 @@ const Receiving = ({ navigation, route }) => {
     const getAsyncStorage = async () => {
       await getStorage('user', setUser, 'object');
       await getStorage('token', setToken);
-      await getStorage('pressMode', setPressMode);
     }
     getAsyncStorage();
   }, []);
@@ -106,7 +104,6 @@ const Receiving = ({ navigation, route }) => {
                     console.log('po details response', poDetails)
                     if (poDetails.status) {
                       const poData = poDetails.data;
-                      // const companyCode = poData.companyCode;
                       const poItem = poData.items[0];
                       if (poItem.receivingPlant === user.site) {
                         navigation.replace('PoStoDetails', { po });

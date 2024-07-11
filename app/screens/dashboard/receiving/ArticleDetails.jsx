@@ -378,7 +378,7 @@ const ArticleDetails = ({ navigation, route }) => {
                       value={shelfLife}
                       progressValueColor={shelfLife >= 50 ? 'green' : shelfLife >= 11 ? 'orange' : 'red'}
                       valueSuffix={'%'}
-                      duration={2000}
+                      duration={1500}
                       strokeColorConfig={[
                         { color: 'red', value: 10 },
                         { color: 'orange', value: 49 },

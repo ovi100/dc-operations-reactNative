@@ -23,11 +23,11 @@ const handleDate = (value, type) => {
   day = input.slice(0, 2);
   month = input.slice(2, 4);
   year = input.slice(4);
-  const mfgDateCheck = new Date(
-    Number('20' + year),
-    Number(month) - 1,
-    Number(day),
-  );
+  // const mfgDateCheck = new Date(
+  //   Number('20' + year),
+  //   Number(month) - 1,
+  //   Number(day),
+  // );
   const expDateCheck =
     new Date(Number('20' + year), Number(month) - 1, Number(day)) < new Date();
 

@@ -192,7 +192,7 @@ const PickingSto = ({ navigation, route }) => {
   // console.log(articles)
 
   const goToStoArticleBins = async (article) => {
-    navigation.replace('PickingStoArticleBinDetails', { ...article, picker, pickerId, packer, packerId });
+    navigation.replace('PickingArticleBinDetails', { ...article, picker, pickerId, packer, packerId });
   };
 
   if (barcode && pressMode === 'true') {

@@ -13,6 +13,8 @@ const useAuth = () => {
   const [token, setToken] = useState(null);
   const {createActivity} = useActivity();
 
+  console.log('CURRENT API URL', API_URL);
+
   useEffect(() => {
     CodePush.getUpdateMetadata(CodePush.UpdateState.RUNNING)
       .then(metadata => {

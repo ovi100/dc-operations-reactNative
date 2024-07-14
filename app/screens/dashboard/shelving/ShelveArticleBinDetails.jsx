@@ -3,19 +3,20 @@ import React, { useEffect, useLayoutEffect, useState } from 'react';
 import {
   ActivityIndicator, Alert,
   DeviceEventEmitter, FlatList, SafeAreaView,
-  Text, TouchableHighlight, View
+  Text,
+  View
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
+import FalseHeader from '../../../../components/FalseHeader';
 import Scan from '../../../../components/animations/Scan';
 import { ButtonProfile } from '../../../../components/buttons';
 import useActivity from '../../../../hooks/useActivity';
 import useBackHandler from '../../../../hooks/useBackHandler';
 import { getStorage } from '../../../../hooks/useStorage';
 import SunmiScanner from '../../../../utils/sunmi/scanner';
-import FalseHeader from '../../../../components/FalseHeader';
 
-const BinDetails = ({ navigation, route }) => {
+const ShelveArticleBinDetails = ({ navigation, route }) => {
   const { code, bins, description } = route.params;
   const [isLoading, setIsLoading] = useState(false);
   const [isAssigning, setIsAssigning] = useState(false);
@@ -330,4 +331,4 @@ const BinDetails = ({ navigation, route }) => {
   );
 };
 
-export default BinDetails;
+export default ShelveArticleBinDetails;

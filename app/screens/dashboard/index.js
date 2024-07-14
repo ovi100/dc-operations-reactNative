@@ -1,4 +1,3 @@
-import { API_URL } from '@env';
 import { Link } from '@react-navigation/native';
 import React, { useEffect, useLayoutEffect, useState } from 'react';
 import {
@@ -30,8 +29,6 @@ const Home = ({navigation, route}) => {
   const {user, logout} = authInfo;
   let [sites, setSites] = useState([]);
   let filteredLinks, siteType;
-
-  console.log('CURRENT API URL', API_URL);
 
   useLayoutEffect(() => {
     navigation.setOptions({

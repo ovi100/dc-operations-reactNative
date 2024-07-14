@@ -18,21 +18,22 @@ import ChildPacking from '../screens/dashboard/packing/ChildPacking';
 import MasterPacking from '../screens/dashboard/packing/MasterPacking';
 import QualityCheck from '../screens/dashboard/packing/qualityCheck/QualityCheck';
 import Picking from '../screens/dashboard/picking/Picking';
-import PickingStoArticleBinDetails from '../screens/dashboard/picking/PickingStoArticleBinDetails';
-import PickedSto from '../screens/dashboard/picking/pickedSTO/PickedSto';
-import PickingSto from '../screens/dashboard/picking/pickingSTO/PickingSto';
-import PickingStoArticle from '../screens/dashboard/picking/pickingStoArticle/PickingStoArticle';
+import PickingArticleBinDetails from '../screens/dashboard/picking/PickingArticleBinDetails';
+import PickingArticleDetails from '../screens/dashboard/picking/PickingArticleDetails';
+import PickedSto from '../screens/dashboard/picking/pickedSto/PickedSto';
+import PickingSto from '../screens/dashboard/picking/pickingSto/PickingSto';
 import ChangePassword from '../screens/dashboard/profile/ChangePassword';
 import ChangeSite from '../screens/dashboard/profile/ChangeSite';
 import Profile from '../screens/dashboard/profile/Profile';
+import UpdateProfileInfo from '../screens/dashboard/profile/UpdateProfileInfo';
 import ArticleDetails from '../screens/dashboard/receiving/ArticleDetails';
 import ArticleReport from '../screens/dashboard/receiving/ArticleReport';
 import PoStoDetails from '../screens/dashboard/receiving/PoStoDetails';
 import Receiving from '../screens/dashboard/receiving/Receiving';
 import Return from '../screens/dashboard/return/Return';
 import ReturnDetails from '../screens/dashboard/return/returnDetails/ReturnDetails';
-import BinDetails from '../screens/dashboard/shelving/BinDetails';
-import ShelveArticle from '../screens/dashboard/shelving/ShelveArticle';
+import ShelveArticleBinDetails from '../screens/dashboard/shelving/ShelveArticleBinDetails';
+import ShelveArticleDetails from '../screens/dashboard/shelving/ShelveArticleDetails';
 import Shelving from '../screens/dashboard/shelving/Shelving';
 import SiteChoose from '../screens/dashboard/site/SiteChoose';
 import PickerPackerTaskAssign from '../screens/dashboard/taskAssign/PickerPackerTaskAssign/PickerPackerTaskAssign';
@@ -176,6 +177,19 @@ const AppStack = () => {
       },
     },
     {
+      id: 'update-profile-info',
+      name: 'UpdateProfileInfo',
+      component: UpdateProfileInfo,
+      icon: null,
+      settings: {
+        title: 'Update Info',
+        showHeader: true,
+        showBackButton: true,
+        showIcon: false,
+        textAlign: 'center',
+      },
+    },
+    {
       id: 'dc-receiving',
       name: 'DcReceiving',
       component: DcReceiving,
@@ -280,9 +294,9 @@ const AppStack = () => {
       },
     },
     {
-      id: 'bin-details',
-      name: 'BinDetails',
-      component: BinDetails,
+      id: 'shelve-article-bin-details',
+      name: 'ShelveArticleBinDetails',
+      component: ShelveArticleBinDetails,
       icon: null,
       settings: {
         title: '',
@@ -293,9 +307,9 @@ const AppStack = () => {
       },
     },
     {
-      id: 'shelve-article',
-      name: 'ShelveArticle',
-      component: ShelveArticle,
+      id: 'shelve-article-details',
+      name: 'ShelveArticleDetails',
+      component: ShelveArticleDetails,
       icon: null,
       settings: {
         title: '',
@@ -385,8 +399,8 @@ const AppStack = () => {
     },
     {
       id: 'picking-sto-article',
-      name: 'PickingStoArticle',
-      component: PickingStoArticle,
+      name: 'PickingArticleDetails',
+      component: PickingArticleDetails,
       icon: null,
       settings: {
         title: '',
@@ -398,8 +412,8 @@ const AppStack = () => {
     },
     {
       id: 'picking-sto-article-bins',
-      name: 'PickingStoArticleBinDetails',
-      component: PickingStoArticleBinDetails,
+      name: 'PickingArticleBinDetails',
+      component: PickingArticleBinDetails,
       icon: null,
       settings: {
         title: '',

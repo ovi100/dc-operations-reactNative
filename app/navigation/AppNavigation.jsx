@@ -1,6 +1,7 @@
 import { NavigationContainer } from '@react-navigation/native';
-import React, { useEffect } from 'react';
-import { ActivityIndicator, Alert, BackHandler, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, BackHandler, View } from 'react-native';
+import Dialog from '../../components/Dialog';
 import useAppContext from '../../hooks/useAppContext';
 import AppStack from './AppStack';
 import AuthStack from './AuthStack';
@@ -8,17 +9,11 @@ import AuthStack from './AuthStack';
 const AppNavigation = () => {
   const { authInfo } = useAppContext();
   const { isLoading, user } = authInfo;
+  const [dialogVisible, setDialogVisible] = useState(false);
 
   useEffect(() => {
     const backAction = () => {
-      Alert.alert('Hold on!', 'Are you sure you want to exit the app?', [
-        {
-          text: 'Cancel',
-          onPress: () => null,
-          style: 'cancel',
-        },
-        { text: 'YES', onPress: () => BackHandler.exitApp() },
-      ]);
+      setDialogVisible(true);
       return true;
     };
 
@@ -32,7 +27,7 @@ const AppNavigation = () => {
 
   if (isLoading) {
     return (
-      <View className="flex-1 justify-center items-center">
+      <View className="bg-white flex-1 justify-center items-center">
         <ActivityIndicator />
       </View>
     );
@@ -40,6 +35,15 @@ const AppNavigation = () => {
   return (
     <NavigationContainer>
       {user !== null ? <AppStack /> : <AuthStack />}
+      <Dialog
+        isOpen={dialogVisible}
+        modalHeader="Are you sure?"
+        modalSubHeader="Do you want to exit the app?"
+        onClose={() => setDialogVisible(false)}
+        onSubmit={() => BackHandler.exitApp()}
+        leftButtonText="cancel"
+        rightButtonText="exit app"
+      />
     </NavigationContainer>
   );
 };

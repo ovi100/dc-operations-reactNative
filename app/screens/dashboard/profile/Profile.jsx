@@ -3,13 +3,13 @@ import { HeaderBackButton } from '@react-navigation/elements';
 import React, { useEffect, useLayoutEffect, useState } from 'react';
 import {
   ActivityIndicator, Alert, Image, ScrollView, Switch,
-  Text,
-  TouchableWithoutFeedback, View,
+  Text, TouchableWithoutFeedback, View,
 } from 'react-native';
 import Dialog from '../../../../components/Dialog';
 import { ButtonLogin } from '../../../../components/buttons';
 import {
   AvatarImage,
+  BadgeIcon,
   EmailIcon,
   IdIcon,
   PasswordIcon,
@@ -19,7 +19,6 @@ import {
 } from '../../../../constant/icons';
 import useAppContext from '../../../../hooks/useAppContext';
 import { getStorage, setStorage } from '../../../../hooks/useStorage';
-import { version } from '../../../../package.json';
 import styles from '../../../../styles/button';
 
 const Profile = ({ navigation, route }) => {
@@ -127,15 +126,25 @@ const Profile = ({ navigation, route }) => {
                     {user.email}
                   </Text>
                 </View>
-                <View className="role border-b border-gray-200 flex-row items-center py-2.5">
+                <View className="staff-id border-b border-gray-200 flex-row items-center py-2.5">
                   <Image className="w-6 h-6 mr-3" source={IdIcon} />
+                  <Text className="text-base text-gray-400 font-medium">
+                    {user.staffId ? user.staff : (
+                      <TouchableWithoutFeedback onPress={() => navigation.push('UpdateProfileInfo', { ...user, screen })}>
+                        <Text className="text-center text-blue-600 text-base font-semibold capitalize">add staff id</Text>
+                      </TouchableWithoutFeedback>
+                    )}
+                  </Text>
+                </View>
+                <View className="role border-b border-gray-200 flex-row items-center py-2.5">
+                  <Image className="w-6 h-6 mr-3" source={BadgeIcon} />
                   <Text className="text-base text-gray-400 font-medium capitalize">
                     {user.role}
                   </Text>
                 </View>
                 <View className="password-change border-b border-gray-200 flex-row items-center py-2.5">
                   <Image className="w-6 h-6 mr-3" source={PasswordIcon} />
-                  <TouchableWithoutFeedback onPress={() => navigation.push('ChangePassword', { id: user._id, screen, data })}>
+                  <TouchableWithoutFeedback onPress={() => navigation.push('ChangePassword', { id: user._id, screen })}>
                     <Text className="text-center text-blue-600 text-base font-semibold capitalize">change password</Text>
                   </TouchableWithoutFeedback>
                 </View>

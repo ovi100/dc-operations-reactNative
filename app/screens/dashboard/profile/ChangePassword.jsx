@@ -17,7 +17,7 @@ import styles from "../../../../styles/button";
 import { toast, validateInput } from "../../../../utils";
 
 const ChangePassword = ({ navigation, route }) => {
-  const { id, screen, data } = route.params;
+  const { id, screen } = route.params;
   const { authInfo } = useAppContext();
   const { setUser } = authInfo;
   const [inputType1, setInputType1] = useState(false);

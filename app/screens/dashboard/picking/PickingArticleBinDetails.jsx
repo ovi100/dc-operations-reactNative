@@ -3,12 +3,12 @@ import React, { useEffect, useLayoutEffect, useState } from 'react';
 import { DeviceEventEmitter, FlatList, SafeAreaView, Text, View } from 'react-native';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
-import useBackHandler from '../../../../hooks/useBackHandler';
-import SunmiScanner from '../../../../utils/sunmi/scanner';
 import FalseHeader from '../../../../components/FalseHeader';
 import { ButtonProfile } from '../../../../components/buttons';
+import useBackHandler from '../../../../hooks/useBackHandler';
+import SunmiScanner from '../../../../utils/sunmi/scanner';
 
-const BinDetails = ({ navigation, route }) => {
+const PickingArticleBinDetails = ({ navigation, route }) => {
   const { material, description, bins } = route.params;
   const tableHeader = ['Bin ID', 'Quantity'];
   const [barcode, setBarcode] = useState('');
@@ -77,7 +77,7 @@ const BinDetails = ({ navigation, route }) => {
   if (barcode) {
     const binItem = bins.find(item => item.bin === barcode);
     if (binItem) {
-      navigation.replace('PickingStoArticle', { ...route.params, bins: binItem });
+      navigation.replace('PickingArticleDetails', { ...route.params, bins: binItem });
     } else {
       Toast.show({
         type: 'customError',
@@ -122,4 +122,4 @@ const BinDetails = ({ navigation, route }) => {
   );
 };
 
-export default BinDetails;
+export default PickingArticleBinDetails;

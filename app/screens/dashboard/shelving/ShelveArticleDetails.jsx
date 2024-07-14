@@ -16,7 +16,7 @@ import useActivity from '../../../../hooks/useActivity';
 import useBackHandler from '../../../../hooks/useBackHandler';
 import { getStorage } from '../../../../hooks/useStorage';
 
-const ShelveArticle = ({ navigation, route }) => {
+const ShelveArticleDetails = ({ navigation, route }) => {
   const { _id, batch, bins, code, description, mrp, mfgDate, expiryDate, receivedQuantity } = route.params;
   const [isLoading, setIsLoading] = useState(false);
   const [isButtonLoading, setIsButtonLoading] = useState(false);
@@ -284,4 +284,4 @@ const ShelveArticle = ({ navigation, route }) => {
   );
 };
 
-export default ShelveArticle;
+export default ShelveArticleDetails;

@@ -154,7 +154,6 @@ const Picking = ({ navigation, route }) => {
   );
 
   const checkStatus = ['picker assigned', 'picker packer assigned', 'inbound picking'];
-  console.log('data', assignedData);
 
   const notPicked = assignedData.filter(item => checkStatus.some(status => status === item.status));
   const picked = assignedData.filter(item => item.status === 'inbound picked' || item.status === 'inbound picking');
@@ -178,7 +177,7 @@ const Picking = ({ navigation, route }) => {
 
   if (isLoading && assignedData.length === 0) {
     return (
-      <View className="w-full h-screen justify-center px-3">
+      <View className="bg-white w-full h-screen justify-center px-3">
         <ActivityIndicator size="large" color="#EB4B50" />
         <Text className="mt-4 text-gray-400 text-base text-center">
           Loading picking list. Please wait......

@@ -3,16 +3,16 @@ import { HeaderBackButton } from '@react-navigation/elements';
 import { useEffect, useLayoutEffect, useState } from 'react';
 import { Image, SafeAreaView, Text, TextInput, View } from 'react-native';
 import Toast from 'react-native-toast-message';
-import CustomToast from '../../../../../components/CustomToast';
-import { ButtonLg, ButtonLoading, ButtonProfile } from '../../../../../components/buttons';
-import { ArrowLeftIcon, BoxIcon } from '../../../../../constant/icons';
-import useAppContext from '../../../../../hooks/useAppContext';
-import useBackHandler from '../../../../../hooks/useBackHandler';
-import { getStorage } from '../../../../../hooks/useStorage';
-import { updateArticleTracking } from '../processStoData';
-import FalseHeader from '../../../../../components/FalseHeader';
+import CustomToast from '../../../../components/CustomToast';
+import FalseHeader from '../../../../components/FalseHeader';
+import { ButtonLg, ButtonLoading, ButtonProfile } from '../../../../components/buttons';
+import { BoxIcon } from '../../../../constant/icons';
+import useAppContext from '../../../../hooks/useAppContext';
+import useBackHandler from '../../../../hooks/useBackHandler';
+import { getStorage } from '../../../../hooks/useStorage';
+import { updateArticleTracking } from './processStoData';
 
-const PickingStoArticle = ({ navigation, route }) => {
+const PickingArticleDetails = ({ navigation, route }) => {
   const {
     sto, material, description, quantity, bins,
     receivingPlant, picker, pickerId, packer, packerId
@@ -205,4 +205,4 @@ const PickingStoArticle = ({ navigation, route }) => {
   );
 };
 
-export default PickingStoArticle;
+export default PickingArticleDetails;

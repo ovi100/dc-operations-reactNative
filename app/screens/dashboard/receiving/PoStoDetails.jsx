@@ -47,6 +47,7 @@ const PoStoDetails = ({ navigation, route }) => {
   const [reportText, setReportText] = useState('');
   const tableHeader = po ? ['Article Info', 'PO Qty', 'GRN Qty', 'REM Qty'] : ['Article Info', 'Quantity', 'Action'];
   let grnSummery = {};
+  const specialCodes = ['2304145', '2304146', '2304147', '2304149', '2304150', '2304422', '2600241'];
 
   // Custom hook to navigate screen
   useBackHandler('Receiving');
@@ -409,11 +410,12 @@ const PoStoDetails = ({ navigation, route }) => {
 
   const renderPoItem = ({ item, index }) => (
     <>
-      {pressMode === 'true' || (item.material.startsWith('24') && item.unit === 'KG') ? (
+      {pressMode === 'true' || (item.material.startsWith('24') && item.unit === 'KG') || specialCodes.includes(item.material) ? (
         <TouchableOpacity onPress={() => navigation.replace('ArticleDetails', item)}>
           <View
             key={index}
-            className="flex-row items-center border border-tb rounded-lg mt-2.5 p-4"
+            className={`${(item.material.startsWith('24') && item.unit === 'KG') || specialCodes.includes(item.material) ?
+              'border-green-500' : 'border-tb'} flex-row items-center border rounded-lg mt-2.5 p-4`}
           >
             <View className="w-2/5">
               <Text className="text-black" numberOfLines={1}>
@@ -463,8 +465,9 @@ const PoStoDetails = ({ navigation, route }) => {
 
   const renderDnItem = ({ item, index }) => (
     <>
-      {pressMode === 'true' || (item.material.startsWith('24') && item.unit === 'KG') ? (
-        <View key={index} className="flex-row items-center border border-tb rounded-lg mt-2.5 p-4">
+      {pressMode === 'true' || (item.material.startsWith('24') && item.unit === 'KG') || specialCodes.includes(item.material) ? (
+        <View key={index} className={`${(item.material.startsWith('24') && item.unit === 'KG') || specialCodes.includes(item.material) ?
+          'border-green-500' : 'border-tb'} flex-row items-center border rounded-lg mt-2.5 p-4`}>
           <TouchableOpacity className="w-4/5 flex-row items-center" onPress={() => navigation.replace('ArticleDetails', item)}>
             <View className="w-2/5">
               <Text className="text-black" numberOfLines={1}>
@@ -534,9 +537,11 @@ const PoStoDetails = ({ navigation, route }) => {
         .then(result => {
           if (result.status) {
             const isValidBarcode = result.data.barcode.includes(barcode);
-            const isScannable = articles.some(
-              article => isValidBarcode && !(article.material.startsWith('24') && article.unit === 'KG')
-            );
+            const isScannable = articles.some(article => {
+              const isLooseCommodity = article.material.startsWith('24') && article.unit === 'KG';
+              const isCustomArticle = specialCodes.includes(article.material);
+              return isValidBarcode && (!isLooseCommodity || isCustomArticle);
+            });
             const article = articles.find(item => item.material === result.data.material);
             if (!isScannable && article) {
               Toast.show({
@@ -548,7 +553,7 @@ const PoStoDetails = ({ navigation, route }) => {
             } else {
               Toast.show({
                 type: 'customInfo',
-                text1: 'Article not found!',
+                text1: 'Article not found in the PO',
               });
             }
           } else {

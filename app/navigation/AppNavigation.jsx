@@ -8,7 +8,7 @@ import AuthStack from './AuthStack';
 
 const AppNavigation = () => {
   const { authInfo } = useAppContext();
-  const { isLoading, user } = authInfo;
+  const { isLoading, user, logout } = authInfo;
   const [dialogVisible, setDialogVisible] = useState(false);
 
   useEffect(() => {
@@ -32,6 +32,7 @@ const AppNavigation = () => {
       </View>
     );
   }
+
   return (
     <NavigationContainer>
       {user !== null ? <AppStack /> : <AuthStack />}

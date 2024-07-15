@@ -162,7 +162,8 @@ const DcPoArticleDetails = ({ navigation, route }) => {
         mfgDate: mfgDate?.date,
         expiryDate: expDate?.date,
         batch: batchNo,
-        mrp: Number(mrp)
+        mrp: Number(mrp),
+        unit
       };
 
       try {

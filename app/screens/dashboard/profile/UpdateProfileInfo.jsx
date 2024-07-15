@@ -10,7 +10,7 @@ import { ButtonLoading, ButtonLogin } from "../../../../components/buttons";
 import CustomToast from '../../../../components/CustomToast';
 import useActivity from "../../../../hooks/useActivity";
 import useAppContext from "../../../../hooks/useAppContext";
-import { getStorage } from "../../../../hooks/useStorage";
+import { getStorage, setStorage } from "../../../../hooks/useStorage";
 import styles from "../../../../styles/button";
 import { validateInput } from "../../../../utils";
 
@@ -88,50 +88,50 @@ const UpdateProfileInfo = ({ navigation, route }) => {
 
       console.log('Updated user', newUser);
 
-      // try {
-      //   setIsLoading(true);
-      //   await fetch(API_URL + 'api/user/' + _id, {
-      //     method: "PATCH",
-      //     headers: {
-      //       authorization: token,
-      //       "Content-Type": "application/json",
-      //     },
-      //     body: JSON.stringify(newUser),
-      //   })
-      //     .then((response) => response.json())
-      //     .then(async data => {
-      //       console.log('user update response', data);
-      //       if (data.status) {
-      //         Toast.show({
-      //           type: 'customSuccess',
-      //           text1: data.message,
-      //         });
-      //         const user = data.user;
-      //         setUser({ ...user, site });
-      //         setStorage("user", { ...user, site });
-      //         //log user activity
-      //         await createActivity(
-      //           user._id,
-      //           'user_update',
-      //           `${updateName} updated info`
-      //         );
-      //         navigation.replace('Profile', { screen, data });
-      //       }
-      //     })
-      //     .catch((error) => {
-      //       Toast.show({
-      //         type: 'customError',
-      //         text1: error.message,
-      //       });
-      //     });
-      // } catch (error) {
-      //   Toast.show({
-      //     type: 'customError',
-      //     text1: error.message,
-      //   });
-      // } finally {
-      //   setIsLoading(false);
-      // }
+      try {
+        setIsLoading(true);
+        await fetch(API_URL + 'api/user/' + _id, {
+          method: "PATCH",
+          headers: {
+            authorization: token,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(newUser),
+        })
+          .then((response) => response.json())
+          .then(async data => {
+            console.log('user update response', data);
+            if (data.status) {
+              Toast.show({
+                type: 'customSuccess',
+                text1: data.message,
+              });
+              const user = data.user;
+              setUser({ ...user, site });
+              setStorage("user", { ...user, site });
+              //log user activity
+              await createActivity(
+                user._id,
+                'user_update',
+                `${updateName} updated info`
+              );
+              navigation.replace('Profile', { screen, data });
+            }
+          })
+          .catch((error) => {
+            Toast.show({
+              type: 'customError',
+              text1: error.message,
+            });
+          });
+      } catch (error) {
+        Toast.show({
+          type: 'customError',
+          text1: error.message,
+        });
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -167,7 +167,7 @@ const UpdateProfileInfo = ({ navigation, route }) => {
               selectionColor="#bcbcbc"
               keyboardType="updateEmail-address"
               value={updateEmail ? updateEmail : ''}
-              editable={email ? false : true}
+              editable={email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? false : true}
               onChangeText={value => {
                 setEmail(value);
                 setEmailError(validateInput('email', value));
@@ -182,7 +182,7 @@ const UpdateProfileInfo = ({ navigation, route }) => {
               selectionColor="#bcbcbc"
               keyboardType="number-pad"
               value={updateStaffId ? updateStaffId : ''}
-              editable={staffId ? false : true}
+              editable={staffId && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(staffId) ? false : true}
               onChangeText={value => {
                 setStaffId(value);
                 setStaffIdError(validateInput('staff id', value));

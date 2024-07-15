@@ -171,7 +171,7 @@ const DcPoDetails = ({ navigation, route }) => {
         if (matchedPhItem && matchedShItem) {
           return {
             ...poItem,
-            remainingQuantity: poItem.quantity - (matchedPhItem.grnQuantity - matchedShItem.receivedQuantity),
+            remainingQuantity: matchedPhItem.grnQuantity === matchedShItem.receivedQuantity ? poItem.quantity - matchedPhItem.grnQuantity : poItem.quantity - matchedShItem.receivedQuantity,
             grnQuantity: matchedPhItem.grnQuantity
           };
         } else if (matchedPhItem) {
@@ -195,7 +195,7 @@ const DcPoDetails = ({ navigation, route }) => {
         }
       });
 
-      poItems = poItems.filter(item => item.quantity !== item.grnQuantity);
+      poItems = poItems.filter(item => item.remainingQuantity !== 0);
 
       setArticles(poItems);
     } catch (error) {

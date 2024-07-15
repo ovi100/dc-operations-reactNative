@@ -1,13 +1,12 @@
 import { API_URL } from '@env';
 import { useEffect, useState } from 'react';
-import CodePush from 'react-native-code-push';
 import Toast from 'react-native-toast-message';
+import { version } from '../package.json';
 import useActivity from './useActivity';
 import { getStorage, removeAll, setStorage } from './useStorage';
 
 const useAuth = () => {
   const [isLoading, setIsLoading] = useState(true);
-  const [version, setVersion] = useState(null);
   const [user, setUser] = useState(null);
   const [userSites, setUserSites] = useState([]);
   const [token, setToken] = useState(null);
@@ -16,29 +15,12 @@ const useAuth = () => {
   console.log('CURRENT API URL', API_URL);
 
   useEffect(() => {
-    CodePush.getUpdateMetadata(CodePush.UpdateState.RUNNING)
-      .then(metadata => {
-        if (metadata) {
-          const label = metadata.label;
-          const versionText = 'v' + Number(label.split('v')[1] / 10);
-          setVersion(versionText);
-        }
-      })
-      .catch(error => {
-        Toast.show({
-          type: 'customError',
-          text1: error.message,
-        });
-      });
-  }, []);
-
-  useEffect(() => {
     isLoggedIn();
   }, []);
 
   const login = async (userId, password) => {
-    setIsLoading(true);
     try {
+      setIsLoading(true);
       const response = await fetch(API_URL + 'api/user/login', {
         method: 'POST',
         headers: {

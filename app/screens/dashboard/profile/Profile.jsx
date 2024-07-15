@@ -19,6 +19,7 @@ import {
 } from '../../../../constant/icons';
 import useAppContext from '../../../../hooks/useAppContext';
 import { getStorage, setStorage } from '../../../../hooks/useStorage';
+import { version } from '../../../../package.json';
 import styles from '../../../../styles/button';
 
 const Profile = ({ navigation, route }) => {
@@ -126,7 +127,7 @@ const Profile = ({ navigation, route }) => {
                     {user.email}
                   </Text>
                 </View>
-                <View className="staff-id border-b border-gray-200 flex-row items-center py-2.5">
+                <View className="update-info border-b border-gray-200 flex-row items-center py-2.5">
                   <Image className="w-6 h-6 mr-3" source={IdIcon} />
                   <Text className="text-base text-gray-400 font-medium">
                     {user.staffId ? user.staff : (
@@ -195,7 +196,7 @@ const Profile = ({ navigation, route }) => {
                     shwapno operations app
                   </Text>
                   <Text className="text-gray-400 text-center font-bold capitalize">
-                    {user.appVersion}
+                    DV{version}
                   </Text>
                 </View>
                 <View className="mt-5">

@@ -32,8 +32,8 @@ import PoStoDetails from '../screens/dashboard/receiving/PoStoDetails';
 import Receiving from '../screens/dashboard/receiving/Receiving';
 import Return from '../screens/dashboard/return/Return';
 import ReturnDetails from '../screens/dashboard/return/returnDetails/ReturnDetails';
-import ShelveArticleBinDetails from '../screens/dashboard/shelving/ShelveArticleBinDetails';
 import ShelveArticleDetails from '../screens/dashboard/shelving/ShelveArticleDetails';
+import ShelveBinList from '../screens/dashboard/shelving/ShelveBinList';
 import Shelving from '../screens/dashboard/shelving/Shelving';
 import SiteChoose from '../screens/dashboard/site/SiteChoose';
 import PickerPackerTaskAssign from '../screens/dashboard/taskAssign/PickerPackerTaskAssign/PickerPackerTaskAssign';
@@ -295,8 +295,8 @@ const AppStack = () => {
     },
     {
       id: 'shelve-article-bin-details',
-      name: 'ShelveArticleBinDetails',
-      component: ShelveArticleBinDetails,
+      name: 'ShelveBinList',
+      component: ShelveBinList,
       icon: null,
       settings: {
         title: '',

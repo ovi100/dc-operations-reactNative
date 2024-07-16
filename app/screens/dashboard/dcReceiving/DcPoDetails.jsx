@@ -403,6 +403,7 @@ const DcPoDetails = ({ navigation, route }) => {
       grnItems = grnItems.map(item => {
         return { ...item, storageLocation: code }
       });
+      setGrnItems(grnItems);
       setDialogVisible(true);
     };
 

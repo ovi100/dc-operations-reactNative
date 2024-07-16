@@ -24,6 +24,7 @@ const ShelveArticleDetails = ({ navigation, route }) => {
   const [user, setUser] = useState({});
   const [token, setToken] = useState('');
   const { createActivity } = useActivity();
+  const tableHeader = ['BIN ID', 'Batch No', 'Expiry Date'];
 
   // Custom hook to navigate screen
   useBackHandler('Shelving');
@@ -216,32 +217,28 @@ const ShelveArticleDetails = ({ navigation, route }) => {
       <KeyboardAvoidingView className="flex-1 justify-between pb-2" behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <View>
           <View className="table mt-3 mb-4">
-            <View className="flex-row bg-th text-center mb-2 py-2">
-              <Text className="flex-1 text-white text-center font-bold">
-                Bin ID
-              </Text>
-              <Text className="flex-1 text-white text-center font-bold">
-                Batch No
-              </Text>
-              <Text className="flex-1 text-white text-center font-bold">
-                Expiry Date
-              </Text>
+            <View className="flex-row items-center bg-th text-center mb-2 py-2">
+              {tableHeader.map(th => (
+                <Text className="w-1/3 text-white text-sm text-center font-bold" key={th}>
+                  {th}
+                </Text>
+              ))}
             </View>
-            <View className="flex-row justify-between border border-tb rounded-lg mt-2.5 p-4">
+            <View className="flex-row items-center border border-tb rounded-lg mt-2.5 p-4">
               <Text
-                className="text-black text-center"
-                numberOfLines={1}>
+                className="w-1/3 text-sm text-black text-center"
+                numberOfLines={2}>
                 {bins.bin_id}
               </Text>
               <Text
-                className="text-black text-center"
+                className="w-1/3 text-sm text-black text-center"
                 numberOfLines={1}>
-                {batch}
+                {batch ? batch : 'Not available'}
               </Text>
               <Text
-                className="text-black text-center"
+                className="w-1/3 text-sm text-black text-center"
                 numberOfLines={1}>
-                {expiryDate && new Date(expiryDate).toLocaleDateString('en-Uk', { dateStyle: 'medium' })}
+                {expiryDate ? new Date(expiryDate).toLocaleDateString('en-Uk', { dateStyle: 'medium' }) : 'Not available'}
               </Text>
             </View>
           </View>

@@ -1,13 +1,14 @@
 import { HeaderBackButton } from '@react-navigation/elements';
 import React, { useEffect, useLayoutEffect, useState } from 'react';
 import {
-  ActivityIndicator, Alert,
+  ActivityIndicator,
   DeviceEventEmitter, FlatList, SafeAreaView,
   Text,
   View
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
+import Dialog from '../../../../components/Dialog';
 import FalseHeader from '../../../../components/FalseHeader';
 import Scan from '../../../../components/animations/Scan';
 import { ButtonProfile } from '../../../../components/buttons';
@@ -16,11 +17,12 @@ import useBackHandler from '../../../../hooks/useBackHandler';
 import { getStorage } from '../../../../hooks/useStorage';
 import SunmiScanner from '../../../../utils/sunmi/scanner';
 
-const ShelveArticleBinDetails = ({ navigation, route }) => {
+const ShelveBinList = ({ navigation, route }) => {
   const { code, bins, description } = route.params;
   const [isLoading, setIsLoading] = useState(false);
+  const [isChecking, setIsChecking] = useState(false);
+  const [dialogVisible, setDialogVisible] = useState(false);
   const [isAssigning, setIsAssigning] = useState(false);
-  const [pressMode, setPressMode] = useState(false);
   const tableHeader = ['Bin ID', 'Gondola ID'];
   const [user, setUser] = useState({});
   const [token, setToken] = useState('');
@@ -62,10 +64,10 @@ const ShelveArticleBinDetails = ({ navigation, route }) => {
   }, [navigation.isFocused(), user.site]);
 
   useEffect(() => {
+    setBarcode('');
     const getAsyncStorage = async () => {
       await getStorage('token', setToken);
       await getStorage('user', setUser, 'object');
-      await getStorage('pressMode', setPressMode);
     }
     getAsyncStorage();
   }, []);
@@ -124,7 +126,6 @@ const ShelveArticleBinDetails = ({ navigation, route }) => {
   useEffect(() => {
     startScan();
     DeviceEventEmitter.addListener('ScanDataReceived', data => {
-      console.log(data.code)
       setBarcode(data.code);
     });
 
@@ -134,15 +135,26 @@ const ShelveArticleBinDetails = ({ navigation, route }) => {
     };
   }, [navigation.isFocused()]);
 
-  const renderItem = ({ item, index }) => (
-    <View className="flex-row border border-tb rounded-lg mt-2.5 p-4" key={index}>
+  useEffect(() => {
+    if (barcode) {
+      const binItem = binsData.find(item => item.bin_id === barcode);
+      if (binItem) {
+        navigation.replace('ShelveArticleDetails', { ...route.params, bins: { bin_id: binItem.bin_id, gondola_id: binItem.gondola_id } });
+      } else {
+        checkBin(barcode);
+      }
+    }
+  }, [barcode]);
+
+  const renderItem = ({ item }) => (
+    <View className="flex-row items-center border border-tb rounded-lg mt-2.5 p-4" key={item.bin_id}>
       <Text
-        className="flex-1 text-black text-center"
+        className="w-1/2 text-black text-center"
         numberOfLines={1}>
         {item.bin_id}
       </Text>
       <Text
-        className="flex-1 text-black text-center"
+        className="w-1/2 text-black text-center"
         numberOfLines={1}>
         {item.gondola_id}
       </Text>
@@ -186,7 +198,7 @@ const ShelveArticleBinDetails = ({ navigation, route }) => {
               .then(res => res.json())
               .then(result => {
                 if (result.status) {
-                  navigation.replace('ShelveArticle', { ...route.params, bins: { bin_id: result.bin.bin_ID, gondola_id: result.bin.gondola_ID } })
+                  navigation.replace('ShelveArticleDetails', { ...route.params, bins: { bin_id: result.bin.bin_ID, gondola_id: result.bin.gondola_ID } })
                 } else {
                   Toast.show({
                     type: 'customError',
@@ -229,48 +241,34 @@ const ShelveArticleBinDetails = ({ navigation, route }) => {
     }
   }
 
-  // if (barcode && pressMode === 'true') {
-  //   Toast.show({
-  //     type: 'customWarn',
-  //     text1: 'Turn off the press mode',
-  //   });
-  // }
-
   const checkBin = async (code) => {
-    await fetch(API_URL + `checkBin/${code}`)
-      .then(res => res.json())
-      .then(result => {
-        if (result.status) {
-          Alert.alert('Are you sure?', `Assign article to bin ${code}`, [
-            {
-              text: 'Cancel',
-              onPress: () => null,
-              style: 'cancel',
-            },
-            { text: 'Confirm', onPress: () => assignToBin() },
-          ]);
-        } else {
-          Toast.show({
-            type: 'customError',
-            text1: result.message,
-          });
-        }
+    try {
+      setIsChecking(true);
+      await fetch(API_URL + `checkBin/${code}`)
+        .then(res => res.json())
+        .then(result => {
+          if (result.status) {
+            setDialogVisible(true);
+          } else {
+            Toast.show({
+              type: 'customError',
+              text1: result.message,
+            });
+          }
+        });
+    } catch (error) {
+      Toast.show({
+        type: 'customError',
+        text1: error.message,
       });
-  };
-
-  if (barcode) {
-    const binItem = binsData.find(item => item.bin_id === barcode);
-    if (binItem) {
-      navigation.replace('ShelveArticle', { ...route.params, bins: { bin_id: binItem.bin_id, gondola_id: binItem.gondola_id } });
-    } else {
-      checkBin(barcode);
+    } finally {
+      setIsChecking(false);
     }
-    setBarcode('');
-  }
+  };
 
   if (isLoading) {
     return (
-      <View className="w-full h-screen justify-center px-3">
+      <View className="w-full h-screen bg-white justify-center px-3">
         <ActivityIndicator size="large" color="#EB4B50" />
         <Text className="mt-4 text-gray-400 text-base text-center">
           Loading bins data. Please wait.....
@@ -281,14 +279,16 @@ const ShelveArticleBinDetails = ({ navigation, route }) => {
 
   if (isAssigning) {
     return (
-      <View className="w-full h-screen justify-center px-3">
+      <View className="w-full h-screen bg-white justify-center px-3">
         <ActivityIndicator size="large" color="#EB4B50" />
         <Text className="mt-4 text-gray-400 text-base text-center">
-          Assigning to bin. Please wait.....
+          Assigning to new bin. Please wait.....
         </Text>
       </View>
     )
   }
+
+  console.log(barcode)
 
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -297,18 +297,24 @@ const ShelveArticleBinDetails = ({ navigation, route }) => {
         <View className="content flex-1 justify-between">
           {!isLoading && binsData.length > 0 ? (
             <View className="table h-full pb-2">
-              <View className="flex-row bg-th text-center mb-2 py-2">
+              <View className="flex-row items-center bg-th text-center mb-2 py-2">
                 {tableHeader.map(th => (
-                  <Text className="flex-1 text-white text-sm text-center font-bold" key={th}>
+                  <Text className="w-1/2 text-white text-sm text-center font-bold" key={th}>
                     {th}
                   </Text>
                 ))}
               </View>
-              <FlatList
-                data={binsData}
-                renderItem={renderItem}
-                keyExtractor={item => item.bin_ID}
-              />
+              {isChecking ? (
+                <View className="w-full h-[85vh] justify-center bg-white px-3">
+                  <ActivityIndicator size="large" color="#EB4B50" />
+                  <Text className="mt-4 text-gray-400 text-base text-center">Checking barcode. Please wait......</Text>
+                </View>
+              ) : (
+                <FlatList
+                  data={binsData}
+                  renderItem={renderItem}
+                  keyExtractor={item => item.bin_ID}
+                />)}
             </View>
           ) : (
             <View className="h-full justify-center pb-2">
@@ -323,12 +329,19 @@ const ShelveArticleBinDetails = ({ navigation, route }) => {
           )
           }
         </View>
-
-
       </View>
       <CustomToast />
+      <Dialog
+        isOpen={dialogVisible}
+        modalHeader="Are you sure?"
+        modalSubHeader={`Assign article to bin ${barcode}`}
+        onClose={() => setDialogVisible(false)}
+        onSubmit={() => assignToBin()}
+        leftButtonText="cancel"
+        rightButtonText="confirm"
+      />
     </SafeAreaView>
   );
 };
 
-export default ShelveArticleBinDetails;
+export default ShelveBinList;

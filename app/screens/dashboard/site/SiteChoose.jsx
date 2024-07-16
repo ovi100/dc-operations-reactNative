@@ -93,7 +93,7 @@ const SiteChoose = ({ navigation }) => {
 
   if (isLoading) {
     return (
-      <View className="w-full h-screen justify-center px-3">
+      <View className="w-full h-screen bg-white justify-center px-3">
         <ActivityIndicator size="large" color="#EB4B50" />
         <Text className="mt-4 text-gray-400 text-base text-center">
           Loading user sites. Please wait......

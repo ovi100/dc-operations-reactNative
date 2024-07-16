@@ -2,7 +2,9 @@ import { HeaderBackButton } from '@react-navigation/elements';
 import React, { useEffect, useLayoutEffect, useState } from 'react';
 import {
   ActivityIndicator, Image, SafeAreaView,
-  ScrollView, Text, TouchableOpacity, View
+  ScrollView, Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
@@ -13,6 +15,7 @@ import { getStorage, setStorage } from '../../../../hooks/useStorage';
 const ChangeSite = ({ navigation, route }) => {
   const { site, screen, data } = route.params;
   const [isLoading, setIsLoading] = useState(false);
+  const [search, setSearch] = useState('');
   const { authInfo } = useAppContext();
   const { user, setUser } = authInfo;
   let [sites, setSites] = useState([]);
@@ -24,6 +27,11 @@ const ChangeSite = ({ navigation, route }) => {
       headerLeft: () => (
         <HeaderBackButton onPress={() => navigation.goBack()} />
       ),
+      headerSearchBarOptions: {
+        autoCapitalize: 'words',
+        headerIconColor: 'black',
+        onChangeText: (event) => setSearch(event.nativeEvent.text)
+      }
     };
     navigation.setOptions(screenOptions);
   }, [navigation.isFocused()]);
@@ -50,7 +58,11 @@ const ChangeSite = ({ navigation, route }) => {
     }, 1000);
   };
 
-  const sortedSites = sites.sort((a, b) => a.code.localeCompare(b.code));
+  sites = sites.sort((a, b) => a.code.localeCompare(b.code));
+
+  if (search !== '') {
+    sites = sites.filter(item => item.code.toLowerCase().includes(search.toLowerCase()));
+  }
 
   if (isLoading) {
     return (
@@ -64,22 +76,38 @@ const ChangeSite = ({ navigation, route }) => {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white pt-8">
+    <SafeAreaView className="flex-1 bg-white">
       <View className="flex-1">
         <ScrollView>
           <View className="flex-row flex-wrap items-center px-3">
-            {sortedSites?.map(item => (
-              <TouchableOpacity
-                className="site-box items-center w-1/3 mt-8"
-                onPress={() => updateUser(item)}
-                key={item.code}>
-                <View className="flex-col items-center">
-                  <View className="icon">
-                    <Image className="w-16 h-16" source={item.imgURL !== '' ? { uri: item.imgURL } : SitesIcon} />
-                  </View>
-                  <Text className={`text ${site === item.code ? 'text-green-600 font-bold' : 'text-black'} mt-3`}>{item.code}</Text>
-                </View>
-              </TouchableOpacity>
+            {sites?.map(item => (
+              <View className="site-box w-1/3 items-center mt-8" key={item.code}>
+                {site === item.code ? (
+                  <TouchableOpacity
+                    className=""
+                    onPress={() => null}
+                  >
+                    <View className="flex-col items-center">
+                      <View className="icon">
+                        <Image className="w-16 h-16" source={item.imgURL !== '' ? { uri: item.imgURL } : SitesIcon} />
+                      </View>
+                      <Text className={`text ${site === item.code ? 'text-green-600 font-bold' : 'text-black'} mt-3`}>{item.code}</Text>
+                    </View>
+                  </TouchableOpacity>
+                ) : (
+                  <TouchableOpacity
+                    className=""
+                    onPress={() => updateUser(item)}
+                  >
+                    <View className="flex-col items-center">
+                      <View className="icon">
+                        <Image className="w-16 h-16" source={item.imgURL !== '' ? { uri: item.imgURL } : SitesIcon} />
+                      </View>
+                      <Text className={`text ${site === item.code ? 'text-green-600 font-bold' : 'text-black'} mt-3`}>{item.code}</Text>
+                    </View>
+                  </TouchableOpacity>
+                )}
+              </View>
             ))}
           </View>
         </ScrollView>

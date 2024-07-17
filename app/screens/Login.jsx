@@ -20,6 +20,7 @@ import useAppContext from '../../hooks/useAppContext';
 import { version } from '../../package.json';
 import styles from '../../styles/button';
 import { validateInput } from '../../utils';
+import Toast from 'react-native-toast-message';
 
 const Login = ({ navigation }) => {
   const { authInfo } = useAppContext();

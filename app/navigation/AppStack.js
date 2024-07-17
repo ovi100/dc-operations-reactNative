@@ -1,4 +1,4 @@
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import React from 'react';
 import useAppContext from '../../hooks/useAppContext';
 // screens components
@@ -506,8 +506,19 @@ const AppStack = () => {
   return (
     <Stack.Navigator initialRouteName="SiteChoose">
       {user?.name && Array.isArray(user?.site) && (
-        <Stack.Group screenOptions={{headerShown: false}}>
-          <Stack.Screen name="SiteChoose" component={SiteChoose} />
+        <Stack.Group>
+          <Stack.Screen
+            name="SiteChoose"
+            component={SiteChoose}
+            options={{
+              headerShown: true,
+              headerShadowVisible: false,
+              headerBackVisible: false,
+              headerTitleStyle: {
+                fontSize: 18,
+              },
+            }}
+          />
         </Stack.Group>
       )}
       <Stack.Group>
@@ -516,14 +527,14 @@ const AppStack = () => {
             key={screen.id}
             name={screen.name}
             component={screen.component}
-            options={({navigation, route}) => ({
+            options={{
               headerShown: true,
               headerShadowVisible: false,
               headerBackVisible: false,
               headerTitleStyle: {
                 fontSize: 18,
               },
-            })}
+            }}
           />
         ))}
       </Stack.Group>

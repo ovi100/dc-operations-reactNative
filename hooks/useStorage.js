@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { toast } from '../utils';
+import {toast} from '../utils';
 
 const setStorage = async (key, value) => {
   try {
@@ -60,5 +60,4 @@ const removeAll = async () => {
   }
 };
 
-export { getAll, getStorage, removeAll, removeItem, setStorage };
-
+export {getAll, getStorage, removeAll, removeItem, setStorage};

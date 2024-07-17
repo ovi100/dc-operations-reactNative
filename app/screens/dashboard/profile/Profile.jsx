@@ -21,6 +21,7 @@ import useAppContext from '../../../../hooks/useAppContext';
 import { getStorage, setStorage } from '../../../../hooks/useStorage';
 import { version } from '../../../../package.json';
 import styles from '../../../../styles/button';
+import { toast } from '../../../../utils';
 
 const Profile = ({ navigation, route }) => {
   const { screen, data } = route.params;
@@ -73,7 +74,7 @@ const Profile = ({ navigation, route }) => {
           setIsEnabled(true);
         }
       } catch (e) {
-        Alert.alert(e);
+        toast(e.message);
       }
     };
     getPressMode();

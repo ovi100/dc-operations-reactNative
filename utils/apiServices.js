@@ -100,10 +100,7 @@ const deleteTempData = async (token, id) => {
       },
     })
       .then(response => response.json())
-      .then(data => {
-        toast(data.message);
-        setStorage();
-      })
+      .then(data => toast(data.message))
       .catch(error => toast(error.message));
   } catch (error) {
     toast(error.message);
@@ -123,7 +120,6 @@ const updateAppVersion = async (token, id, version) => {
     })
       .then(response => response.json())
       .then(result => {
-        console.log('user updated response', result);
         setStorage('token', token);
         setStorage('user', result.user);
       })

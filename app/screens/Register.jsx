@@ -153,6 +153,11 @@ const Register = ({ navigation }) => {
               setEmailError(validateInput('email', value));
             }}
           />
+          {emailError && (
+            <Text className="absolute right-2 top-3 text-red-500 mt-1">
+              {emailError}
+            </Text>
+          )}
         </View>
         <View className="staff-id relative mb-4">
           <TextInput
@@ -166,6 +171,11 @@ const Register = ({ navigation }) => {
               setStaffIdError(validateInput('staff id', value));
             }}
           />
+          {staffIdError && (
+            <Text className="absolute right-2 top-3 text-red-500 mt-1">
+              {staffIdError}
+            </Text>
+          )}
         </View>
         <View className="password relative mb-4">
           <TextInput

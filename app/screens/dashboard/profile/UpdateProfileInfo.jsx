@@ -107,8 +107,9 @@ const UpdateProfileInfo = ({ navigation, route }) => {
                 text1: data.message,
               });
               const user = data.user;
-              setUser({ ...user, site });
-              setStorage("user", { ...user, site });
+              const newUser = { ...user, site };
+              setUser(newUser);
+              setStorage("user", newUser);
               //log user activity
               await createActivity(
                 user._id,

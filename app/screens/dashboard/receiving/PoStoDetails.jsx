@@ -606,7 +606,7 @@ const PoStoDetails = ({ navigation, route }) => {
     setReportArticle({});
   }
 
-  const postGRNData = () => {
+  const checkStorageLocation = () => {
     const isSameStorageLocation = user.storage_location.some(
       item => item.name === 'receiving' && item.code === storageLocation
     );
@@ -677,22 +677,21 @@ const PoStoDetails = ({ navigation, route }) => {
               text1: result.message,
             });
             await deleteTempData(token, tempDataId);
-            onRefresh();
             await createActivity(
               user._id,
               'grn_request',
               `${user.name} send request for grn with document ${po ? po : dn}`,
             );
-            setIsButtonLoading(false);
             if (articles.length === 0) {
-              useBackHandler('Receiving');
+              navigation.replace('Receiving');
+            } else {
+              onRefresh();
             }
           } else {
             Toast.show({
               type: 'customError',
               text1: result.message,
             });
-            setIsButtonLoading(false);
           }
         })
         .catch(error => {
@@ -700,15 +699,15 @@ const PoStoDetails = ({ navigation, route }) => {
             type: 'customError',
             text1: error.message,
           });
-          setIsButtonLoading(false);
         });
     } catch (error) {
       Toast.show({
         type: 'customError',
         text1: error.message,
       });
+    } finally {
       setIsButtonLoading(false);
-    }
+    };
   }
 
   if (isLoading) {
@@ -728,7 +727,7 @@ const PoStoDetails = ({ navigation, route }) => {
           <View className="table h-[90%]">
             <View className="table-header flex-row bg-th text-center mb-2 p-2">
               {tableHeader.map(th => (
-                <Text className={`${th === 'Action' || th !== 'Article Info' ? 'w-1/5' : 'w-2/5'} text-white text-center font-bold`} key={th}>
+                <Text className={`${th === 'Article Info' || th === 'Quantity' ? 'w-2/5' : 'w-1/5'} text-white text-center font-bold`} key={th}>
                   {th}
                 </Text>
               ))}
@@ -833,7 +832,7 @@ const PoStoDetails = ({ navigation, route }) => {
                   </View>
                 </View>
                 <View className="button w-1/3 mx-auto mt-5">
-                  <TouchableWithoutFeedback onPress={() => postGRNData()}>
+                  <TouchableWithoutFeedback onPress={() => checkStorageLocation()}>
                     <Text className="bg-blue-600 text-white text-lg text-center rounded p-2 capitalize">confirm</Text>
                   </TouchableWithoutFeedback>
                 </View>

@@ -89,7 +89,6 @@ const DcPoDetails = ({ navigation, route }) => {
   useEffect(() => {
     if (barcode && pressMode !== 'true') {
       checkBarcode(barcode);
-      // checkBarcode(token, barcode, articles, 'DcPoArticleDetails', setBarcode, setIsChecking);
     }
   }, [barcode, pressMode]);
 
@@ -393,7 +392,7 @@ const DcPoDetails = ({ navigation, route }) => {
     );
   }
 
-  const postGRNData = () => {
+  const checkStorageLocation = () => {
     const isSameStorageLocation = user.storage_location.some(
       item => item.name === 'receiving' && item.code === storageLocation
     );
@@ -459,23 +458,22 @@ const DcPoDetails = ({ navigation, route }) => {
               text1: result.message,
             });
             await deleteTempData(token, tempDataId);
-            onRefresh();
             //log user activity
             await createActivity(
               user._id,
               'grn_request',
               `${user.name} send request for grn with document ${po}`,
             );
-            setIsButtonLoading(false);
             if (articles.length === 0) {
-              useBackHandler('DcReceiving');
+              navigation.replace('DcReceiving');
+            } else {
+              onRefresh();
             }
           } else {
             Toast.show({
               type: 'customError',
               text1: result.message,
             });
-            setIsButtonLoading(false);
           }
         })
         .catch(error => {
@@ -483,15 +481,15 @@ const DcPoDetails = ({ navigation, route }) => {
             type: 'customError',
             text1: error.message,
           });
-          setIsButtonLoading(false);
         });
     } catch (error) {
       Toast.show({
         type: 'customError',
         text1: error.message,
       });
+    } finally {
       setIsButtonLoading(false);
-    }
+    };
   }
 
   if (isLoading) {
@@ -594,7 +592,7 @@ const DcPoDetails = ({ navigation, route }) => {
                   </View>
                 </View>
                 <View className="button w-1/3 mx-auto mt-5">
-                  <TouchableWithoutFeedback onPress={() => postGRNData()}>
+                  <TouchableWithoutFeedback onPress={() => checkStorageLocation()}>
                     <Text className="bg-blue-600 text-white text-lg text-center rounded p-2 capitalize">confirm</Text>
                   </TouchableWithoutFeedback>
                 </View>

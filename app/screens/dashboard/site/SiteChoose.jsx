@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useState } from 'react';
 import {
   ActivityIndicator, Image, SafeAreaView, ScrollView, Text,
   TouchableOpacity, TouchableWithoutFeedback, View
@@ -13,8 +13,20 @@ const SiteChoose = ({ navigation }) => {
   const { authInfo } = useAppContext();
   const { user, setUser, setUserSites, token, logout } = authInfo;
   const [isLoading, setIsLoading] = useState(false);
+  const [search, setSearch] = useState('');
   let [sites, setSites] = useState([]);
   let singleSite = '';
+
+  useLayoutEffect(() => {
+    let screenOptions = {
+      headerSearchBarOptions: {
+        autoCapitalize: 'words',
+        headerIconColor: 'black',
+        onChangeText: (event) => setSearch(event.nativeEvent.text)
+      }
+    };
+    navigation.setOptions(screenOptions);
+  }, [navigation.isFocused()]);
 
   const getSites = async () => {
     try {
@@ -65,6 +77,10 @@ const SiteChoose = ({ navigation }) => {
     setUserSites(sites);
     setStorage('userSites', sites);
   }, [sites]);
+
+  if (search !== '') {
+    sites = sites.filter(item => item.code.toLowerCase().includes(search.toLowerCase()));
+  }
 
   const updateUser = async (siteObj) => {
     let newUser = { ...user, site: siteObj.code, storage_location: siteObj.storage_location };
@@ -131,13 +147,8 @@ const SiteChoose = ({ navigation }) => {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white pt-8">
+    <SafeAreaView className="flex-1 bg-white">
       <View className="flex-1">
-        <View className="screen-header mb-5 px-6">
-          <Text className="text-lg text-[#060239] text-center font-semibold capitalize">
-            choose site
-          </Text>
-        </View>
         <ScrollView>
           <View className="flex-row flex-wrap items-center px-3">
             {sites?.map(item => (

@@ -11,6 +11,7 @@ import ClosedBoxIcon from './closed-box-icon.png';
 import DeleteIcon from './delete-icon.png';
 import DeliveryNoteIcon from './delivery-note-icon.png';
 import DeliveryPlanIcon from './delivery-plan-icon.png';
+import EditIcon from './edit.png';
 import EmailIcon from './email-icon.png';
 import EmptyBoxIcon from './empty-box-icon.png';
 import EyeInvisibleIcon from './eye-invisible-icon.png';
@@ -47,7 +48,10 @@ export {
   ArrowLeftIcon,
   AuditIcon,
   AvatarImage,
-  BadgeIcon, BatchIcon, BoxIcon, CalendarIcon,
+  BadgeIcon,
+  BatchIcon,
+  BoxIcon,
+  CalendarIcon,
   CameraIcon,
   ChartIcon,
   CloseIcon,
@@ -55,6 +59,7 @@ export {
   DeleteIcon,
   DeliveryNoteIcon,
   DeliveryPlanIcon,
+  EditIcon,
   EmailIcon,
   EmptyBoxIcon,
   EyeInvisibleIcon,
@@ -75,8 +80,11 @@ export {
   ShelvingIcon,
   SitesIcon,
   StoNotPickedIcon,
-  StoPickedIcon, StopWatchGreenIcon,
-  StopWatchRedIcon, StoreIcon, SwapIcon,
+  StoPickedIcon,
+  StopWatchGreenIcon,
+  StopWatchRedIcon,
+  StoreIcon,
+  SwapIcon,
   SwitchOff,
   SwitchOn,
   TaskAssignIcon,

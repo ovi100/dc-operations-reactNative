@@ -1,3 +1,4 @@
+import { API_URL } from '@env';
 import React, { useState } from 'react';
 import {
   ActivityIndicator, Image, KeyboardAvoidingView,
@@ -11,7 +12,6 @@ import { EyeInvisibleIcon, EyeVisibleIcon } from '../../constant/icons';
 import useActivity from '../../hooks/useActivity';
 import styles from '../../styles/button';
 import { validateInput } from '../../utils';
-import { API_URL } from '@env';
 
 const Register = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -46,7 +46,6 @@ const Register = ({ navigation }) => {
           type: 'customError',
           text1: 'Check your internet connection',
         });
-        setIsLoading(false);
       }
 
       const data = await response.json();
@@ -65,7 +64,6 @@ const Register = ({ navigation }) => {
         );
 
         setTimeout(() => {
-          setIsLoading(false);
           navigation.push('Login');
         }, 1500);
       } else {
@@ -73,14 +71,14 @@ const Register = ({ navigation }) => {
           type: 'customError',
           text1: data.message,
         });
-        setIsLoading(false);
       }
     } catch (error) {
-      setIsLoading(false);
       Toast.show({
         type: 'customInfo',
         text1: error.message,
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -103,13 +101,13 @@ const Register = ({ navigation }) => {
         text1: 'please enter a password',
       });
       return;
-    } else if (emailError) {
+    } else if (emailError && !staffId) {
       Toast.show({
         type: 'customError',
         text1: emailError,
       });
       return;
-    } else if (staffIdError) {
+    } else if (staffIdError && !email) {
       Toast.show({
         type: 'customError',
         text1: staffIdError,
@@ -127,7 +125,7 @@ const Register = ({ navigation }) => {
           <TextInput
             className={`border ${nameError ? 'border-red-500' : 'border-[#bcbcbc]'
               } h-[60px] text-[#a9a9a9] rounded-md px-4`}
-            placeholder="Enter name"
+            placeholder="Enter your name"
             placeholderTextColor='#bcbcbc'
             selectionColor="#bcbcbc"
             onChangeText={value => {
@@ -144,7 +142,7 @@ const Register = ({ navigation }) => {
         <View className="email relative mb-4">
           <TextInput
             className="h-[60px] border border-[#bcbcbc] text-[#a9a9a9] rounded-md px-4"
-            placeholder="Enter email"
+            placeholder="Enter your email"
             placeholderTextColor='#bcbcbc'
             selectionColor="#bcbcbc"
             keyboardType="email-address"
@@ -153,7 +151,7 @@ const Register = ({ navigation }) => {
               setEmailError(validateInput('email', value));
             }}
           />
-          {emailError && (
+          {emailError && !staffId && (
             <Text className="absolute right-2 top-3 text-red-500 mt-1">
               {emailError}
             </Text>
@@ -162,7 +160,7 @@ const Register = ({ navigation }) => {
         <View className="staff-id relative mb-4">
           <TextInput
             className="h-[60px] border border-[#bcbcbc] text-[#a9a9a9] rounded-md px-4"
-            placeholder="Enter staff id"
+            placeholder="Enter your staff id"
             placeholderTextColor='#bcbcbc'
             selectionColor="#bcbcbc"
             keyboardType="number-pad"
@@ -171,7 +169,7 @@ const Register = ({ navigation }) => {
               setStaffIdError(validateInput('staff id', value));
             }}
           />
-          {staffIdError && (
+          {staffIdError && !email && (
             <Text className="absolute right-2 top-3 text-red-500 mt-1">
               {staffIdError}
             </Text>

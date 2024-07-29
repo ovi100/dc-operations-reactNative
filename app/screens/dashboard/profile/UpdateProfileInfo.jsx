@@ -1,3 +1,4 @@
+import { API_URL } from '@env';
 import { useEffect, useLayoutEffect, useState } from "react";
 import {
   SafeAreaView,
@@ -136,7 +137,6 @@ const UpdateProfileInfo = ({ navigation, route }) => {
     }
   };
 
-  console.log(route.params);
   return (
     <SafeAreaView className="flex-1 bg-white">
       <View className="flex-1 px-4">
@@ -166,7 +166,7 @@ const UpdateProfileInfo = ({ navigation, route }) => {
               placeholder="Enter updateEmail"
               placeholderTextColor='#bcbcbc'
               selectionColor="#bcbcbc"
-              keyboardType="updateEmail-address"
+              keyboardType="email-address"
               value={updateEmail ? updateEmail : ''}
               editable={email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? false : true}
               onChangeText={value => {

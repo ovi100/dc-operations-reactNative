@@ -86,6 +86,7 @@ const PickingSto = ({ navigation, route }) => {
       await fetch(API_URL + 'api/service/sto-picking', postOptions)
         .then(response => response.json())
         .then(data => {
+          // console.log(data);
           if (data.status) {
             setArticles(data.items);
           } else {

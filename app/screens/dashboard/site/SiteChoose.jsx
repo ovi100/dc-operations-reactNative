@@ -19,6 +19,8 @@ const SiteChoose = ({ navigation }) => {
 
   useLayoutEffect(() => {
     let screenOptions = {
+      headerTitle: 'Choose Site',
+      headerTitleAlign: 'center',
       headerSearchBarOptions: {
         autoCapitalize: 'words',
         headerIconColor: 'black',

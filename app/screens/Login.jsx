@@ -10,6 +10,7 @@ import {
   View
 } from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
+import Toast from 'react-native-toast-message';
 import CustomToast from '../../components/CustomToast';
 import { ButtonLogin } from '../../components/buttons';
 import {
@@ -20,7 +21,6 @@ import useAppContext from '../../hooks/useAppContext';
 import { version } from '../../package.json';
 import styles from '../../styles/button';
 import { validateInput } from '../../utils';
-import Toast from 'react-native-toast-message';
 
 const Login = ({ navigation }) => {
   const { authInfo } = useAppContext();
@@ -70,7 +70,7 @@ const Login = ({ navigation }) => {
             <TextInput
               className={`border ${userIdError ? 'border-red-500' : 'border-[#bcbcbc]'
                 } h-[60px] text-[#a9a9a9] rounded-md px-4`}
-              placeholder="Enter email or user id"
+              placeholder="Enter email or staff id"
               placeholderTextColor='#bcbcbc'
               selectionColor="#bcbcbc"
               onChangeText={value => {

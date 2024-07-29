@@ -2,14 +2,16 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { HeaderBackButton } from '@react-navigation/elements';
 import React, { useEffect, useLayoutEffect, useState } from 'react';
 import {
-  ActivityIndicator, Alert, Image, ScrollView, Switch,
-  Text, TouchableWithoutFeedback, View,
+  ActivityIndicator,
+  Image, ScrollView, Switch,
+  Text, TouchableWithoutFeedback, View
 } from 'react-native';
 import Dialog from '../../../../components/Dialog';
 import { ButtonLogin } from '../../../../components/buttons';
 import {
   AvatarImage,
   BadgeIcon,
+  EditIcon,
   EmailIcon,
   IdIcon,
   PasswordIcon,
@@ -124,25 +126,37 @@ const Profile = ({ navigation, route }) => {
                 </View>
                 <View className="email border-b border-gray-200 flex-row items-center py-2.5">
                   <Image className="w-6 h-6 mr-3" source={EmailIcon} />
-                  <Text className="text-base text-gray-400 font-medium">
-                    {user.email}
-                  </Text>
+                  {user.email ?
+                    (<Text className="text-base text-gray-400 font-medium">
+                      {user.email}
+                    </Text>) : (
+                      <TouchableWithoutFeedback onPress={() => navigation.push('UpdateProfileInfo', { ...user, screen })}>
+                        <Text className="text-center text-blue-600 text-base font-semibold capitalize">add email</Text>
+                      </TouchableWithoutFeedback>
+                    )}
                 </View>
-                <View className="update-info border-b border-gray-200 flex-row items-center py-2.5">
+                <View className="staff-id border-b border-gray-200 flex-row items-center py-2.5">
                   <Image className="w-6 h-6 mr-3" source={IdIcon} />
-                  <Text className="text-base text-gray-400 font-medium">
-                    {user.staffId ? user.staff : (
+                  {user.staffId ?
+                    (<Text className="text-base text-gray-400 font-medium">
+                      {user.staffId}
+                    </Text>) : (
                       <TouchableWithoutFeedback onPress={() => navigation.push('UpdateProfileInfo', { ...user, screen })}>
                         <Text className="text-center text-blue-600 text-base font-semibold capitalize">add staff id</Text>
                       </TouchableWithoutFeedback>
                     )}
-                  </Text>
                 </View>
                 <View className="role border-b border-gray-200 flex-row items-center py-2.5">
                   <Image className="w-6 h-6 mr-3" source={BadgeIcon} />
                   <Text className="text-base text-gray-400 font-medium capitalize">
                     {user.role}
                   </Text>
+                </View>
+                <View className="update-info border-b border-gray-200 flex-row items-center py-2.5">
+                  <Image className="w-6 h-6 mr-3" source={EditIcon} />
+                  <TouchableWithoutFeedback onPress={() => navigation.push('UpdateProfileInfo', { ...user, screen })}>
+                    <Text className="text-center text-blue-600 text-base font-semibold capitalize">update info</Text>
+                  </TouchableWithoutFeedback>
                 </View>
                 <View className="password-change border-b border-gray-200 flex-row items-center py-2.5">
                   <Image className="w-6 h-6 mr-3" source={PasswordIcon} />

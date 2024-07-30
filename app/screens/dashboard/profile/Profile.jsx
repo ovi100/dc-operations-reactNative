@@ -9,7 +9,6 @@ import {
 import Dialog from '../../../../components/Dialog';
 import { ButtonLogin } from '../../../../components/buttons';
 import {
-  AvatarImage,
   BadgeIcon,
   EditIcon,
   EmailIcon,
@@ -112,12 +111,6 @@ const Profile = ({ navigation, route }) => {
           <ScrollView className="">
             <View className="content h-full flex-col justify-between">
               <View className="top">
-                <View className="profile-image mx-auto mb-4">
-                  <Image
-                    className="w-28 h-28 rounded-full"
-                    source={AvatarImage}
-                  />
-                </View>
                 <View className="name border-b border-gray-200 flex-row items-center py-2.5">
                   <Image className="w-6 h-6 mr-3" source={ProfileIcon} />
                   <Text className="text-base text-gray-400 font-medium capitalize">

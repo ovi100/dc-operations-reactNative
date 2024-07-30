@@ -12,13 +12,14 @@ import NoAccess from '../../../components/animations/NoAccess';
 import { ButtonProfile } from '../../../components/buttons';
 import {
   AuditIcon,
+  DamageIcon,
   DeliveryNoteIcon,
   DeliveryPlanIcon,
   PackingIcon,
   PickingIcon,
   ReceivingIcon,
   ShelvingIcon,
-  TaskAssignIcon,
+  TaskAssignIcon
 } from '../../../constant/icons';
 import useAppContext from '../../../hooks/useAppContext';
 import { getStorage } from '../../../hooks/useStorage';
@@ -110,7 +111,7 @@ const Home = ({navigation, route}) => {
       types: ['dc'],
     },
     {
-      name: 'Final Delivery Note',
+      name: 'FD Note',
       icon: DeliveryNoteIcon,
       screen: 'DeliveryNote',
       role: 'DN charge',
@@ -125,6 +126,22 @@ const Home = ({navigation, route}) => {
       permission: 'audit-access',
       types: ['dc', 'outlet', 'darkstore'],
     },
+    {
+      name: 'Damage Info',
+      icon: DamageIcon,
+      screen: 'Damage',
+      role: 'delivery man',
+      permission: 'damage-access',
+      types: ['outlet', 'darkstore'],
+    },
+    // {
+    //   name: 'Return',
+    //   icon: ReturnIcon,
+    //   screen: 'Return',
+    //   role: 'delivery man',
+    //   permission: 'return-access',
+    //   types: ['outlet', 'darkstore'],
+    // },
   ];
 
   if (user?.site && sites.length > 0) {

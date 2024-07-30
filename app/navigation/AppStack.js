@@ -1,4 +1,4 @@
-import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React from 'react';
 import useAppContext from '../../hooks/useAppContext';
 // screens components
@@ -9,6 +9,8 @@ import AuditBatchDetails from '../screens/dashboard/audit/AuditBatchDetails';
 import AuditBatchList from '../screens/dashboard/audit/AuditBatchList';
 import AuditBinDetails from '../screens/dashboard/audit/AuditBinDetails';
 import AuditBinList from '../screens/dashboard/audit/AuditBinList';
+import Damage from '../screens/dashboard/damage/Damage';
+import DamageList from '../screens/dashboard/damage/DamageList';
 import DcPoArticleDetails from '../screens/dashboard/dcReceiving/DcPoArticleDetails';
 import DcPoDetails from '../screens/dashboard/dcReceiving/DcPoDetails';
 import DcReceiving from '../screens/dashboard/dcReceiving/DcReceiving';
@@ -57,6 +59,32 @@ const AppStack = () => {
         showBackButton: false,
         showIcon: false,
         textAlign: 'left',
+      },
+    },
+    {
+      id: 'damage',
+      name: 'Damage',
+      component: Damage,
+      icon: null,
+      settings: {
+        title: '',
+        showHeader: false,
+        showBackButton: false,
+        showIcon: false,
+        textAlign: 'center',
+      },
+    },
+    {
+      id: 'damage-list',
+      name: 'DamageList',
+      component: DamageList,
+      icon: null,
+      settings: {
+        title: '',
+        showHeader: false,
+        showBackButton: false,
+        showIcon: false,
+        textAlign: 'center',
       },
     },
     {

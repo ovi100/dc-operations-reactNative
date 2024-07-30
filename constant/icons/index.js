@@ -8,6 +8,7 @@ import CalendarIcon from './calendar-icon.png';
 import CameraIcon from './camera-icon.png';
 import CloseIcon from './close-icon.png';
 import ClosedBoxIcon from './closed-box-icon.png';
+import DamageIcon from './damage.png';
 import DeleteIcon from './delete-icon.png';
 import DeliveryNoteIcon from './delivery-note-icon.png';
 import DeliveryPlanIcon from './delivery-plan-icon.png';
@@ -56,6 +57,7 @@ export {
   ChartIcon,
   CloseIcon,
   ClosedBoxIcon,
+  DamageIcon,
   DeleteIcon,
   DeliveryNoteIcon,
   DeliveryPlanIcon,

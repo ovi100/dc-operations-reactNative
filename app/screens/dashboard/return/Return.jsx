@@ -1,38 +1,44 @@
-import { CommonActions } from '@react-navigation/native';
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useState } from 'react';
 import {
   DeviceEventEmitter,
   FlatList,
-  Platform,
   SafeAreaView,
   Text,
   View
 } from 'react-native';
+import { ButtonProfile } from '../../../../components/buttons';
 import { articles } from '../../../../constant/data';
 import { toast } from '../../../../utils';
 import SunmiScanner from '../../../../utils/sunmi/scanner';
 
-const Return = ({ navigation }) => {
+const Return = ({ navigation, route }) => {
   const { startScan, stopScan } = SunmiScanner;
   const [barcode, setBarcode] = useState('');
   const tableHeader = ['Article ID', 'Article Name', 'Outlet', 'Quantity'];
 
-  useEffect(() => {
-    if (Platform.constants.Manufacturer === 'SUNMI') {
-      startScan();
-      DeviceEventEmitter.addListener('ScanDataReceived', data => {
-        setBarcode(data.code);
-        navigation.dispatch(CommonActions.setParams({}));
-      });
+  useLayoutEffect(() => {
+    let screenOptions = {
+      headerBackVisible: true,
+      headerTitle: 'Return',
+      headerTitleAlign: 'center',
+      headerRight: () => (
+        <ButtonProfile onPress={() => navigation.replace('Profile', { screen: route.name, data: null })} />
+      ),
+    };
+    navigation.setOptions(screenOptions);
+  }, [navigation.isFocused()]);
 
-      return () => {
-        stopScan();
-        DeviceEventEmitter.removeAllListeners('ScanDataReceived');
-      };
-    } else {
-      console.log('Device do not have scanner')
-    }
-  }, [Platform]);
+  useEffect(() => {
+    startScan();
+    DeviceEventEmitter.addListener('ScanDataReceived', data => {
+      setBarcode(data.code);
+    });
+
+    return () => {
+      stopScan();
+      DeviceEventEmitter.removeAllListeners('ScanDataReceived');
+    };
+  }, [navigation.isFocused()]);
 
   const renderItem = ({ item, index }) => (
     <View
@@ -56,7 +62,7 @@ const Return = ({ navigation }) => {
   );
 
   if (barcode) {
-    const article = articles.find(item => String(item.barcode) === String(barcode));
+    const article = articles.find(item => item.barcode === barcode);
     if (article) {
       navigation.push('ReturnDetails', article);
       setBarcode('');
@@ -67,14 +73,8 @@ const Return = ({ navigation }) => {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white pt-14">
+    <SafeAreaView className="flex-1 bg-white">
       <View className="flex-1 px-4">
-        <View className="screen-header flex-row items-center mb-4">
-          <Text className="text-lg flex-1 text-sh text-center font-semibold capitalize">
-            return
-          </Text>
-        </View>
-
         <View className="content flex-1">
           <View className="h-full pb-2">
             <View className="flex-row bg-th mb-2 py-2">

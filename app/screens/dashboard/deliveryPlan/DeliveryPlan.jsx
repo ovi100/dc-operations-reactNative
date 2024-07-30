@@ -1,3 +1,4 @@
+import { API_URL } from '@env';
 import CheckBox from '@react-native-community/checkbox';
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useEffect, useLayoutEffect, useState } from 'react';
@@ -16,14 +17,13 @@ import {
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../components/CustomToast';
 import Dialog from '../../../../components/Dialog';
+import FalseHeader from '../../../../components/FalseHeader';
 import Modal from '../../../../components/Modal';
 import ServerError from '../../../../components/animations/ServerError';
-import { ButtonBack, ButtonLg, ButtonLoading, ButtonProfile } from '../../../../components/buttons';
+import { ButtonLg, ButtonLoading, ButtonProfile } from '../../../../components/buttons';
 import useActivity from '../../../../hooks/useActivity';
 import { getStorage, setStorage } from '../../../../hooks/useStorage';
 import { dateRange } from '../../../../utils';
-import { API_URL } from '@env';
-import FalseHeader from '../../../../components/FalseHeader';
 
 const DeliveryPlan = ({ navigation, route }) => {
   const [isLoading, setIsLoading] = useState(false);

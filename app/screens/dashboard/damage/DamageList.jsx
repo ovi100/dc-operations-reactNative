@@ -63,7 +63,7 @@ const DamageList = ({ navigation, route }) => {
 
   const handelCheckbox = id => {
     let newItems = damageList.map(item =>
-      id === item._id ? { ...item, selected: !item.selected } : item,
+      id === item.id ? { ...item, selected: !item.selected } : item,
     );
     setSelectedList(newItems.filter(item => item.selected));
     setDamageList(newItems);
@@ -80,26 +80,26 @@ const DamageList = ({ navigation, route }) => {
   };
 
   const renderItem = ({ item }) => (
-    <TouchableOpacity onPress={() => handelCheckbox(item._id)}>
+    <TouchableOpacity onPress={() => handelCheckbox(item.id)}>
       <View
-        key={item._id}
+        key={item.id}
         className={`flex-row items-center border ${item.selected ? 'border-green-500' : 'border-tb'} rounded-lg mt-2.5 p-4`}
       >
         <View className="w-1/3 flex-row items-center">
           <CheckBox
             tintColors={item.selected ? '#56D342' : '#ffffff'}
             value={item.selected}
-            onValueChange={() => handelCheckbox(item._id)}
+            onValueChange={() => handelCheckbox(item.id)}
           />
           <Text className="text-black" numberOfLines={1}>
-            {item.tpnData.material}
+            {item.material}
           </Text>
         </View>
         <Text className="w-1/3 text-black text-sm text-center capitalize" numberOfLines={2}>
-          {item.damageType ? item.damageType : item.reportType}
+          {item.reportType}
         </Text>
         <Text className="w-1/3 text-black text-sm text-center" numberOfLines={1}>
-          {item.tpnData.tpnQuantity}
+          {item.quantity}
         </Text>
       </View>
     </TouchableOpacity>
@@ -176,20 +176,15 @@ const DamageList = ({ navigation, route }) => {
                 </Text>
               ))}
             </View>
-            {damageList.length === 0 ? (
-              <View className="w-full bg-white px-3">
-                <Text className="mt-10 text-gray-400 text-lg text-center">No articles left</Text>
-              </View>
-            ) : (
-              <FlatList
-                data={damageList}
-                renderItem={renderItem}
-                keyExtractor={item => item._id}
-                initialNumToRender={10}
-                onEndReached={handleEndReached}
-                ListFooterComponent={articles.length > 10 ? renderFooter : null}
-                ListFooterComponentStyle={{ paddingVertical: 10 }}
-              />)}
+            <FlatList
+              data={damageList}
+              renderItem={renderItem}
+              keyExtractor={item => item.id}
+              initialNumToRender={10}
+              onEndReached={handleEndReached}
+              ListFooterComponent={articles.length > 10 ? renderFooter : null}
+              ListFooterComponentStyle={{ paddingVertical: 10 }}
+            />
           </View>
           {selectedList.length > 0 && (
             <View className="button">
@@ -206,7 +201,7 @@ const DamageList = ({ navigation, route }) => {
       <Dialog
         isOpen={dialogVisible}
         modalHeader="Are you sure?"
-        modalSubHeader="Do you want to agree with damage?"
+        modalSubHeader="Selected item will be confirm as damage or missing"
         onClose={() => setDialogVisible(false)}
         onSubmit={() => approveDamageList()}
         leftButtonText="cancel"

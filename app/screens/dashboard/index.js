@@ -19,7 +19,7 @@ import {
   PickingIcon,
   ReceivingIcon,
   ShelvingIcon,
-  TaskAssignIcon
+  TaskAssignIcon,
 } from '../../../constant/icons';
 import useAppContext from '../../../hooks/useAppContext';
 import { getStorage } from '../../../hooks/useStorage';
@@ -187,6 +187,16 @@ const Home = ({navigation, route}) => {
               </Text>
             </View>
             <View className="w-4/5 mt-3">
+              {user.email && (
+                <Text className="text text-center text-gray-400 text-lg mb-2">
+                  {user.email}
+                </Text>
+              )}
+              {user.staffId && (
+                <Text className="text text-center text-gray-400 text-lg mb-2">
+                  {user.staffId}
+                </Text>
+              )}
               <Text className="text text-center text-gray-400 text-lg">
                 You don't have any permission. Please contact with admin
               </Text>

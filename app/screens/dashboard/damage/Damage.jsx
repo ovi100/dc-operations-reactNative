@@ -75,12 +75,26 @@ const Damage = ({ navigation, route }) => {
       await fetch(API_URL + `api/tpn?filterBy=dn&pageSize=100&value=${code}`, options)
         .then(response => response.json())
         .then(data => {
-          console.log(data);
           if (data.status) {
             const result = data.items.map(item => {
-              return { ...item, selected: false };
+              const newObj = {
+                id: item._id,
+                material: item.tpnData.material,
+                quantity: item.tpnData.tpnQuantity,
+                reportType: item.damageType ? item.damageType : item.reportType,
+                remarks: item.remarks,
+                selected: false,
+              };
+              return newObj;
             }).filter(item => item.remarks !== 'damage report confirm');
-            navigation.replace('DamageList', { dn: code, articles: result });
+            if (result.length) {
+              navigation.replace('DamageList', { dn: code, articles: result });
+            } else {
+              Toast.show({
+                type: 'customInfo',
+                text1: 'No damage report found',
+              });
+            }
           } else {
             Toast.show({
               type: 'customError',

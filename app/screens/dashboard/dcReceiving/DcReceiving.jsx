@@ -191,7 +191,7 @@ const DcReceiving = ({ navigation, route }) => {
         <View className="input-box w-4/5">
           <TextInput
             className="bg-[#F5F6FA] text-black rounded-bl-lg rounded-tl-lg px-4"
-            placeholder="Search by purchase order"
+            placeholder="Search by po number"
             keyboardType="phone-pad"
             placeholderTextColor="#CBC9D9"
             selectionColor="#CBC9D9"

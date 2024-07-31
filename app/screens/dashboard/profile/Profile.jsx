@@ -203,7 +203,7 @@ const Profile = ({ navigation, route }) => {
                   <Text className="text-gray-400 text-center font-bold capitalize">
                     shwapno operations app
                   </Text>
-                  <Text className="text-gray-400 text-center font-bold capitalize">
+                  <Text className="text-gray-400 text-center font-bold">
                     DV{version}
                   </Text>
                 </View>

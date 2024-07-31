@@ -111,7 +111,7 @@ const DamageList = ({ navigation, route }) => {
       setIsButtonLoading(true);
       try {
         selectedList.map(async item => {
-          await fetch(API_URL + 'api/tpn/' + item._id, {
+          await fetch(API_URL + 'api/tpn/' + item.id, {
             method: 'PATCH',
             headers: {
               authorization: token,
@@ -126,7 +126,7 @@ const DamageList = ({ navigation, route }) => {
                   type: 'customSuccess',
                   text1: data.message,
                 });
-                const updateTpnData = damageList.filter(damageItem => damageItem._id !== item._id);
+                const updateTpnData = damageList.filter(damageItem => damageItem.id !== item.id);
                 setDamageList(updateTpnData);
               } else {
                 Toast.show({

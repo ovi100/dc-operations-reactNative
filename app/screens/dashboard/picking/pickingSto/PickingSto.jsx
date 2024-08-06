@@ -1,38 +1,51 @@
-import { API_URL } from '@env';
-import { HeaderBackButton } from '@react-navigation/elements';
-import { useFocusEffect } from '@react-navigation/native';
-import React, { useCallback, useEffect, useLayoutEffect, useState } from 'react';
+import {API_URL} from '@env';
+import {HeaderBackButton} from '@react-navigation/elements';
+import {useFocusEffect} from '@react-navigation/native';
+import React, {useCallback, useEffect, useLayoutEffect, useState} from 'react';
 import {
   ActivityIndicator,
-  DeviceEventEmitter, FlatList,
+  DeviceEventEmitter,
+  FlatList,
   SafeAreaView,
   Text,
   TouchableOpacity,
-  TouchableWithoutFeedback, View
+  TouchableWithoutFeedback,
+  View,
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../../components/CustomToast';
 import FalseHeader from '../../../../../components/FalseHeader';
 import ServerError from '../../../../../components/animations/ServerError';
-import { ButtonProfile } from '../../../../../components/buttons';
+import {ButtonProfile} from '../../../../../components/buttons';
 import useAppContext from '../../../../../hooks/useAppContext';
 import useBackHandler from '../../../../../hooks/useBackHandler';
-import { getStorage } from '../../../../../hooks/useStorage';
+import {getStorage} from '../../../../../hooks/useStorage';
 import SunmiScanner from '../../../../../utils/sunmi/scanner';
-import { updateStoTracking } from '../processStoData';
+import {updateStoTracking} from '../processStoData';
 
-const PickingSto = ({ navigation, route }) => {
-  const { sto, picker, pickerId, packer, packerId } = route.params;
+const PickingSto = ({navigation, route}) => {
+  const {sto, picker, pickerId, packer, packerId} = route.params;
   const [isLoading, setIsLoading] = useState(false);
+  const [isChecking, setIsChecking] = useState(false);
   const [pressMode, setPressMode] = useState(false);
   const [barcode, setBarcode] = useState('');
   const [user, setUser] = useState({});
   const [token, setToken] = useState('');
   let [articles, setArticles] = useState([]);
-  const { startScan, stopScan } = SunmiScanner;
-  const { StoInfo } = useAppContext();
-  const { stoInfo, stoItems } = StoInfo;
-  let pickedSto = [], stoTrackInfo = {};
+  const {startScan, stopScan} = SunmiScanner;
+  const {StoInfo} = useAppContext();
+  const {stoInfo, stoItems} = StoInfo;
+  let pickedSto = [],
+    stoTrackInfo = {};
+  const specialCodes = [
+    '2304145',
+    '2304146',
+    '2304147',
+    '2304149',
+    '2304150',
+    '2304422',
+    '2600241',
+  ];
 
   // Custom hook to navigate screen
   useBackHandler('Picking');
@@ -45,7 +58,14 @@ const PickingSto = ({ navigation, route }) => {
         <HeaderBackButton onPress={() => navigation.replace('Picking')} />
       ),
       headerRight: () => (
-        <ButtonProfile onPress={() => navigation.replace('Profile', { screen: route.name, data: route.params })} />
+        <ButtonProfile
+          onPress={() =>
+            navigation.replace('Profile', {
+              screen: route.name,
+              data: route.params,
+            })
+          }
+        />
       ),
     };
     navigation.setOptions(screenOptions);
@@ -56,7 +76,7 @@ const PickingSto = ({ navigation, route }) => {
       await getStorage('token', setToken);
       await getStorage('user', setUser, 'object');
       await getStorage('pressMode', setPressMode);
-    }
+    };
     getAsyncStorage();
   }, [navigation.isFocused()]);
 
@@ -72,6 +92,12 @@ const PickingSto = ({ navigation, route }) => {
     };
   }, [navigation.isFocused()]);
 
+  useEffect(() => {
+    if (barcode && pressMode !== 'true') {
+      checkBarcode(barcode);
+    }
+  }, [barcode, pressMode]);
+
   const getStoDetails = async () => {
     const postOptions = {
       method: 'POST',
@@ -79,7 +105,7 @@ const PickingSto = ({ navigation, route }) => {
         authorization: token,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ sto, site: user.site }),
+      body: JSON.stringify({sto, site: user.site}),
     };
 
     try {
@@ -114,7 +140,7 @@ const PickingSto = ({ navigation, route }) => {
     setIsLoading(true);
     await getStoDetails();
     setIsLoading(false);
-  }
+  };
 
   useFocusEffect(
     useCallback(() => {
@@ -126,21 +152,29 @@ const PickingSto = ({ navigation, route }) => {
 
   if (stoItems) {
     remainingStoItems = stoItems.filter(stoItem => stoItem.sto !== sto);
-    pickedSto = stoItems.filter(stoItem => stoItem.sto === sto && stoItem.quantity === stoItem.pickedQuantity);
+    pickedSto = stoItems.filter(
+      stoItem =>
+        stoItem.sto === sto && stoItem.quantity === stoItem.pickedQuantity,
+    );
     remainingStoInfo = stoInfo.filter(item => item.sto !== sto);
     let matchedItem = stoInfo.find(item => item.sto === sto);
     stoTrackInfo = {
       ...matchedItem,
       pickedSku: pickedSto.length,
       remainingSku: matchedItem?.sku - pickedSto.length,
-    }
+    };
   }
 
   const postStoTracking = async () => {
     let postData = {};
     const isOnlyItem = stoTrackInfo.sku === 1 && stoTrackInfo.pickedSku === 1;
-    const isFirstItem = stoTrackInfo.sku > 1 && stoTrackInfo.pickedSku === 1 && articles.length > 1;
-    const isLastItem = stoTrackInfo.sku - stoTrackInfo.pickedSku === 0 && stoTrackInfo.pickedSku > 1;
+    const isFirstItem =
+      stoTrackInfo.sku > 1 &&
+      stoTrackInfo.pickedSku === 1 &&
+      articles.length > 1;
+    const isLastItem =
+      stoTrackInfo.sku - stoTrackInfo.pickedSku === 0 &&
+      stoTrackInfo.pickedSku > 1;
 
     // console.log('isOnlyItem', isOnlyItem);
     // console.log('isFirstItem', isFirstItem);
@@ -156,7 +190,7 @@ const PickingSto = ({ navigation, route }) => {
         packerId,
         pickingStartingTime: new Date(),
         pickingEndingTime: new Date(),
-        status: 'inbound picked'
+        status: 'inbound picked',
       };
     } else if (isFirstItem) {
       postData = {
@@ -167,20 +201,20 @@ const PickingSto = ({ navigation, route }) => {
         packer,
         packerId,
         pickingStartingTime: new Date(),
-        status: 'inbound picking'
+        status: 'inbound picking',
       };
     } else if (isLastItem) {
       postData = {
         sto,
         pickedSku: stoTrackInfo.pickedSku,
         pickingEndingTime: new Date(),
-        status: 'inbound picked'
+        status: 'inbound picked',
       };
     } else {
       postData = {
         sto,
         pickedSku: stoTrackInfo.pickedSku,
-        status: 'inbound picking'
+        status: 'inbound picking',
       };
     }
     await updateStoTracking(token, postData);
@@ -192,8 +226,14 @@ const PickingSto = ({ navigation, route }) => {
 
   // console.log(articles)
 
-  const goToStoArticleBins = async (article) => {
-    navigation.replace('PickingArticleBinDetails', { ...article, picker, pickerId, packer, packerId });
+  const goToStoArticleBins = async article => {
+    navigation.replace('PickingArticleBinDetails', {
+      ...article,
+      picker,
+      pickerId,
+      packer,
+      packerId,
+    });
   };
 
   if (barcode && pressMode === 'true') {
@@ -203,27 +243,43 @@ const PickingSto = ({ navigation, route }) => {
     });
   }
 
-  const checkBarcode = async (barcode) => {
+  const checkBarcode = async barcode => {
     try {
-      await fetch('https://api.shwapno.net/shelvesu/api/barcodes/barcode/' + barcode, {
-        method: 'GET',
-        headers: {
-          authorization: token,
-          'Content-Type': 'application/json',
-        }
-      })
+      setIsChecking(true);
+      await fetch(
+        'https://api.shwapno.net/shelvesu/api/barcodes/barcode/' + barcode,
+        {
+          method: 'GET',
+          headers: {
+            authorization: token,
+            'Content-Type': 'application/json',
+          },
+        },
+      )
         .then(response => response.json())
         .then(result => {
           if (result.status) {
             const isValidBarcode = result.data.barcode.includes(barcode);
-            const article = articles.find(item => item.material === result.data.material);
-
-            if (article && isValidBarcode) {
+            const isScannable = articles.some(article => {
+              const isLooseCommodity =
+                article.code.startsWith('24') && article.unit === 'KG';
+              const isCustomArticle = specialCodes.includes(article.code);
+              return isValidBarcode && (!isLooseCommodity || isCustomArticle);
+            });
+            const article = articles.find(
+              item => item.material === result.data.material,
+            );
+            if (!isScannable && article) {
+              Toast.show({
+                type: 'customInfo',
+                text1: `Please receive ${article.code} by taping on the product`,
+              });
+            } else if (isScannable && article && isValidBarcode) {
               goToStoArticleBins(article);
             } else {
               Toast.show({
                 type: 'customInfo',
-                text1: 'Article not found!',
+                text1: 'Article not found in the list',
               });
             }
           } else {
@@ -246,26 +302,32 @@ const PickingSto = ({ navigation, route }) => {
       });
     } finally {
       setBarcode('');
+      setIsChecking(false);
     }
   };
 
-  if (barcode && pressMode !== 'true') {
-    checkBarcode(barcode);
-  }
-
-  const renderItem = ({ item, index }) => (
+  const renderItem = ({item, index}) => (
     <>
-      {pressMode === 'true' ? (
+      {pressMode === 'true' ||
+      (item.material.startsWith('24') && item.unit === 'KG') ||
+      specialCodes.includes(item.material) ? (
         <TouchableOpacity onPress={() => goToStoArticleBins(item)}>
           <View
             key={index}
-            className="flex-row items-center justify-between border border-tb rounded-lg mt-2.5 p-2">
+            className={`${
+              (item.material.startsWith('24') && item.unit === 'KG') ||
+              specialCodes.includes(item.material)
+                ? 'border-green-500'
+                : 'border-tb'
+            } flex-row items-center justify-between border rounded-lg mt-2.5 p-2`}>
             <View className="article-info w-1/2">
               <View className="flex-row items-center">
                 <Text className="text-xs text-black mr-2" numberOfLines={1}>
                   {item.material}
                 </Text>
-                <Text className="text-black text-xs font-bold" numberOfLines={1}>
+                <Text
+                  className="text-black text-xs font-bold"
+                  numberOfLines={1}>
                   quantity {'--> ' + item.quantity}
                 </Text>
               </View>
@@ -280,13 +342,13 @@ const PickingSto = ({ navigation, route }) => {
                     <Text
                       className="text-black text-xs text-center mb-1 last:mb-0"
                       numberOfLines={2}
-                      key={item.bin}
-                    >
+                      key={item.bin}>
                       {item.bin}({item.quantity})
                     </Text>
                   ))}
                   {item.bins.slice(2).length > 0 && (
-                    <TouchableWithoutFeedback onPress={() => goToStoArticleBins(item)}>
+                    <TouchableWithoutFeedback
+                      onPress={() => goToStoArticleBins(item)}>
                       <Text
                         className="text-blue-600 text-center mt-1"
                         numberOfLines={1}>
@@ -295,7 +357,11 @@ const PickingSto = ({ navigation, route }) => {
                     </TouchableWithoutFeedback>
                   )}
                 </>
-              ) : (<Text className="text-black text-sm text-center">No bin has been assigned</Text>)}
+              ) : (
+                <Text className="text-black text-sm text-center">
+                  No bin has been assigned
+                </Text>
+              )}
             </View>
           </View>
         </TouchableOpacity>
@@ -323,13 +389,13 @@ const PickingSto = ({ navigation, route }) => {
                   <Text
                     className="text-black text-xs text-center mb-1 last:mb-0"
                     numberOfLines={2}
-                    key={item.bin}
-                  >
+                    key={item.bin}>
                     {item.bin}({item.quantity})
                   </Text>
                 ))}
                 {item.bins.slice(2).length > 0 && (
-                  <TouchableWithoutFeedback onPress={() => goToStoArticleBins(item)}>
+                  <TouchableWithoutFeedback
+                    onPress={() => goToStoArticleBins(item)}>
                     <Text
                       className="text-blue-600 text-center mt-1"
                       numberOfLines={1}>
@@ -338,7 +404,11 @@ const PickingSto = ({ navigation, route }) => {
                   </TouchableWithoutFeedback>
                 )}
               </>
-            ) : (<Text className="text-black text-xs text-center">No bin has been assigned</Text>)}
+            ) : (
+              <Text className="text-black text-xs text-center">
+                No bin has been assigned
+              </Text>
+            )}
           </View>
         </View>
       )}
@@ -347,13 +417,13 @@ const PickingSto = ({ navigation, route }) => {
 
   if (isLoading && articles.length === 0) {
     return (
-      <View className="w-full h-screen justify-center px-3">
+      <View className="bg-white w-full h-screen justify-center px-3">
         <ActivityIndicator size="large" color="#EB4B50" />
         <Text className="mt-4 text-gray-400 text-base text-center">
           Loading sto articles. Please wait......
         </Text>
       </View>
-    )
+    );
   }
 
   return (
@@ -366,18 +436,25 @@ const PickingSto = ({ navigation, route }) => {
               <Text className="text-white text-center font-bold">
                 Article Info
               </Text>
-              <Text className="text-white text-center font-bold">
-                Bin Info
-              </Text>
+              <Text className="text-white text-center font-bold">Bin Info</Text>
             </View>
             {!isLoading && articles.length === 0 ? (
               <View className="w-full h-[90%] justify-center px-4">
                 <ServerError message="No sku left picking" />
                 <View className="button w-1/3 mx-auto mt-5">
                   <TouchableOpacity onPress={() => finalStoData()}>
-                    <Text className="bg-blue-600 text-white text-lg text-center rounded p-2 capitalize">retry</Text>
+                    <Text className="bg-blue-600 text-white text-lg text-center rounded p-2 capitalize">
+                      retry
+                    </Text>
                   </TouchableOpacity>
                 </View>
+              </View>
+            ) : isChecking ? (
+              <View className="w-full h-[85vh] justify-center bg-white px-3">
+                <ActivityIndicator size="large" color="#EB4B50" />
+                <Text className="mt-4 text-gray-400 text-base text-center">
+                  Checking barcode. Please wait......
+                </Text>
               </View>
             ) : (
               <FlatList

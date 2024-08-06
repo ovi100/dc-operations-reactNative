@@ -105,7 +105,7 @@ const PickingArticleDetails = ({ navigation, route }) => {
       })
         .then(response => response.json())
         .then(async result => {
-          console.log('Article Tracking post response: ' + JSON.stringify(result));
+          // console.log('Article Tracking post response: ' + JSON.stringify(result));
           if (result.status) {
             const article = result.data;
             if (article.quantity === article.inboundPickedQuantity) {

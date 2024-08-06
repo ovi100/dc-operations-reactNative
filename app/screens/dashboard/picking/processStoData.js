@@ -1,6 +1,6 @@
-import { API_URL } from '@env';
+import {API_URL} from '@env';
 import Toast from 'react-native-toast-message';
-import { groupBy } from '../../../../utils';
+import {groupBy, toast} from '../../../../utils';
 
 const stoItemsByBin = (stoItems, inventoryItems) => {
   const binObject = groupBy(inventoryItems, 'bin');
@@ -39,31 +39,10 @@ const updateStoTracking = async (token, postData) => {
       body: JSON.stringify(postData),
     })
       .then(response => response.json())
-      .then(data => {
-        console.log('sto tracking update', data);
-        if (data.status) {
-          Toast.show({
-            type: 'customSuccess',
-            text1: data.message,
-          });
-        } else {
-          Toast.show({
-            type: 'customError',
-            text1: data.message,
-          });
-        }
-      })
-      .catch(error => {
-        Toast.show({
-          type: 'customError',
-          text1: error.message,
-        });
-      });
+      .then(data => toast(data.message))
+      .catch(error => toast(error.message));
   } catch (error) {
-    Toast.show({
-      type: 'customError',
-      text1: error.message,
-    });
+    toast(error.message);
   }
 };
 
@@ -79,7 +58,7 @@ const updateArticleTracking = async (token, postData) => {
     })
       .then(response => response.json())
       .then(data => {
-        console.log('article tracking updated', data);
+        // console.log('article tracking updated', data);
         if (data.status) {
           Toast.show({
             type: 'customSuccess',
@@ -106,5 +85,4 @@ const updateArticleTracking = async (token, postData) => {
   }
 };
 
-export { stoItemsByBin, updateArticleTracking, updateStoTracking };
-
+export {stoItemsByBin, updateArticleTracking, updateStoTracking};

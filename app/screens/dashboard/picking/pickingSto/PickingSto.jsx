@@ -1,7 +1,7 @@
-import {API_URL} from '@env';
-import {HeaderBackButton} from '@react-navigation/elements';
-import {useFocusEffect} from '@react-navigation/native';
-import React, {useCallback, useEffect, useLayoutEffect, useState} from 'react';
+import { API_URL } from '@env';
+import { HeaderBackButton } from '@react-navigation/elements';
+import { useFocusEffect } from '@react-navigation/native';
+import React, { useCallback, useEffect, useLayoutEffect, useState } from 'react';
 import {
   ActivityIndicator,
   DeviceEventEmitter,
@@ -16,15 +16,15 @@ import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../../components/CustomToast';
 import FalseHeader from '../../../../../components/FalseHeader';
 import ServerError from '../../../../../components/animations/ServerError';
-import {ButtonProfile} from '../../../../../components/buttons';
+import { ButtonProfile } from '../../../../../components/buttons';
 import useAppContext from '../../../../../hooks/useAppContext';
 import useBackHandler from '../../../../../hooks/useBackHandler';
-import {getStorage} from '../../../../../hooks/useStorage';
+import { getStorage } from '../../../../../hooks/useStorage';
 import SunmiScanner from '../../../../../utils/sunmi/scanner';
-import {updateStoTracking} from '../processStoData';
+import { updateStoTracking } from '../processStoData';
 
-const PickingSto = ({navigation, route}) => {
-  const {sto, picker, pickerId, packer, packerId} = route.params;
+const PickingSto = ({ navigation, route }) => {
+  const { sto, picker, pickerId, packer, packerId } = route.params;
   const [isLoading, setIsLoading] = useState(false);
   const [isChecking, setIsChecking] = useState(false);
   const [pressMode, setPressMode] = useState(false);
@@ -32,9 +32,9 @@ const PickingSto = ({navigation, route}) => {
   const [user, setUser] = useState({});
   const [token, setToken] = useState('');
   let [articles, setArticles] = useState([]);
-  const {startScan, stopScan} = SunmiScanner;
-  const {StoInfo} = useAppContext();
-  const {stoInfo, stoItems} = StoInfo;
+  const { startScan, stopScan } = SunmiScanner;
+  const { StoInfo } = useAppContext();
+  const { stoInfo, stoItems } = StoInfo;
   let pickedSto = [],
     stoTrackInfo = {};
   const specialCodes = [
@@ -105,7 +105,7 @@ const PickingSto = ({navigation, route}) => {
         authorization: token,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({sto, site: user.site}),
+      body: JSON.stringify({ sto, site: user.site }),
     };
 
     try {
@@ -217,7 +217,9 @@ const PickingSto = ({navigation, route}) => {
         status: 'inbound picking',
       };
     }
-    await updateStoTracking(token, postData);
+    if (token) {
+      await updateStoTracking(token, postData);
+    }
   };
 
   if (stoTrackInfo.pickedSku > 0) {
@@ -306,20 +308,19 @@ const PickingSto = ({navigation, route}) => {
     }
   };
 
-  const renderItem = ({item, index}) => (
+  const renderItem = ({ item, index }) => (
     <>
       {pressMode === 'true' ||
-      (item.material.startsWith('24') && item.unit === 'KG') ||
-      specialCodes.includes(item.material) ? (
+        (item.material.startsWith('24') && item.unit === 'KG') ||
+        specialCodes.includes(item.material) ? (
         <TouchableOpacity onPress={() => goToStoArticleBins(item)}>
           <View
             key={index}
-            className={`${
-              (item.material.startsWith('24') && item.unit === 'KG') ||
+            className={`${(item.material.startsWith('24') && item.unit === 'KG') ||
               specialCodes.includes(item.material)
-                ? 'border-green-500'
-                : 'border-tb'
-            } flex-row items-center justify-between border rounded-lg mt-2.5 p-2`}>
+              ? 'border-green-500'
+              : 'border-tb'
+              } flex-row items-center justify-between border rounded-lg mt-2.5 p-2`}>
             <View className="article-info w-1/2">
               <View className="flex-row items-center">
                 <Text className="text-xs text-black mr-2" numberOfLines={1}>

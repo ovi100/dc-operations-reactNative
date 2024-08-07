@@ -1,9 +1,10 @@
 import { API_URL } from '@env';
+import { HeaderBackButton } from '@react-navigation/elements';
 import { useFocusEffect } from '@react-navigation/native';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useState } from 'react';
 import {
   ActivityIndicator, FlatList,
-  Image, SafeAreaView,
+  SafeAreaView,
   Text,
   TextInput,
   TouchableOpacity,
@@ -12,8 +13,8 @@ import {
 import Toast from 'react-native-toast-message';
 import CustomToast from '../../../../../components/CustomToast';
 import Dialog from '../../../../../components/Dialog';
-import { ButtonLg } from '../../../../../components/buttons';
-import { ArrowLeftIcon } from '../../../../../constant/icons';
+import FalseHeader from '../../../../../components/FalseHeader';
+import { ButtonLg, ButtonProfile } from '../../../../../components/buttons';
 import useBackHandler from '../../../../../hooks/useBackHandler';
 import { getStorage } from '../../../../../hooks/useStorage';
 import { updateArticleTracking, updateStoTracking } from '../processStoData';
@@ -37,6 +38,27 @@ const PickedSto = ({ navigation, route }) => {
       await getStorage('user', setUser, 'object');
     }
     getAsyncStorage();
+  }, [navigation.isFocused()]);
+
+  useLayoutEffect(() => {
+    let screenOptions = {
+      headerTitle: `Picked STO ${sto}`,
+      headerTitleAlign: 'center',
+      headerLeft: () => (
+        <HeaderBackButton onPress={() => navigation.replace('Picking')} />
+      ),
+      headerRight: () => (
+        <ButtonProfile
+          onPress={() =>
+            navigation.replace('Profile', {
+              screen: route.name,
+              data: route.params,
+            })
+          }
+        />
+      ),
+    };
+    navigation.setOptions(screenOptions);
   }, [navigation.isFocused()]);
 
   const getStoDetails = async () => {
@@ -256,7 +278,7 @@ const PickedSto = ({ navigation, route }) => {
 
   if (isLoading && articles.length === 0) {
     return (
-      <View className="w-full h-screen justify-center px-3">
+      <View className="bg-white w-full h-screen justify-center px-3">
         <ActivityIndicator size="large" color="#EB4B50" />
         <Text className="mt-4 text-gray-400 text-base text-center">
           Loading sto articles. Please wait......
@@ -267,7 +289,7 @@ const PickedSto = ({ navigation, route }) => {
 
   if (isSending) {
     return (
-      <View className="w-full h-screen justify-center px-3">
+      <View className="bg-white w-full h-screen justify-center px-3">
         <ActivityIndicator size="large" color="#EB4B50" />
         <Text className="mt-4 text-gray-400 text-base text-center">
           Sending to packing zone. Please wait......
@@ -277,16 +299,9 @@ const PickedSto = ({ navigation, route }) => {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white pt-8">
+    <SafeAreaView className="flex-1 bg-white">
       <View className="flex-1 h-full px-4">
-        <View className="screen-header flex-row items-center mb-4">
-          <TouchableOpacity onPress={() => navigation.replace('Picking')}>
-            <Image source={ArrowLeftIcon} />
-          </TouchableOpacity>
-          <Text className="flex-1 text-lg text-sh text-center font-semibold">
-            Picked STO {sto}
-          </Text>
-        </View>
+        <FalseHeader />
         <View className="content flex-1 justify-between mt-3 pb-2">
           {!isLoading && articles.length === 0 ? (
             <View className="w-full h-[90%] justify-center px-3">
